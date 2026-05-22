@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    @apply m-0 min-w-[320px] bg-[#050608] text-[#f4f7fb] antialiased;
+    background-image:
+      radial-gradient(circle at 14% 16%, rgba(121, 92, 70, 0.14), transparent 30%),
+      radial-gradient(circle at 76% 12%, rgba(86, 102, 145, 0.16), transparent 34%),
+      radial-gradient(circle at 18% 74%, rgba(76, 70, 112, 0.12), transparent 34%),
+      radial-gradient(circle at 84% 70%, rgba(64, 91, 118, 0.13), transparent 32%),
+      radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.03), transparent 24%),
+      linear-gradient(180deg, #030406 0%, #07080c 38%, #080a10 100%);
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.18;
+    mix-blend-mode: screen;
+    background:
+      radial-gradient(circle at 48% 8%, rgba(255, 255, 255, 0.06), transparent 20%),
+      radial-gradient(circle at 18% 82%, rgba(136, 89, 63, 0.14), transparent 28%),
+      radial-gradient(circle at 84% 64%, rgba(86, 107, 143, 0.14), transparent 30%),
+      radial-gradient(circle at 56% 40%, rgba(90, 70, 122, 0.1), transparent 32%),
+      radial-gradient(circle at 30% 26%, rgba(96, 118, 150, 0.08), transparent 26%);
+    filter: blur(118px);
+    z-index: -2;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    z-index: -1;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.32) 0.6px, transparent 0.7px),
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 8px 8px, 140px 140px, 140px 140px;
+    mix-blend-mode: soft-light;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  ::selection {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply border border-white/[0.08] bg-white/[0.035] shadow-[0_44px_140px_rgba(0,0,0,0.5)] backdrop-blur-[28px];
+  }
+
+  .section-shell {
+    @apply mx-auto w-[min(1440px,calc(100vw-24px))] md:w-[min(1440px,calc(100vw-40px))];
+  }
+
+  .section-title {
+    @apply text-[clamp(2.5rem,6vw,6rem)] font-semibold leading-[0.95] tracking-[-0.06em] text-white;
+  }
+
+  .section-copy {
+    @apply text-base leading-7 text-white/70 md:text-lg;
+  }
+
+  .eyebrow {
+    @apply mb-4 inline-block text-[0.72rem] font-medium uppercase tracking-[0.28em] text-white/50;
+  }
+
+  .pill-button {
+    @apply inline-flex min-h-12 items-center justify-center rounded-full border border-white/10 px-6 text-sm font-medium transition-all duration-300;
+  }
+}
