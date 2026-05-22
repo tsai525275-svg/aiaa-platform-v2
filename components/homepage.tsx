@@ -268,94 +268,23 @@ export function Homepage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.18 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
-            className="relative mx-auto mt-14 max-w-[1320px]"
+            className="relative mx-auto mt-14 max-w-[1120px]"
           >
-            <div className="absolute inset-x-[10%] top-[4%] h-24 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.1),transparent_72%)] blur-3xl" />
+            <div className="absolute inset-x-[12%] top-[6%] h-24 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.12),transparent_72%)] blur-3xl" />
 
-            <div className="relative">
-              <div className="glass-panel absolute -left-6 top-[12%] hidden w-48 overflow-hidden rounded-[2rem] p-3 lg:block">
-                <div className="aspect-[4/5] rounded-[1.6rem] bg-[linear-gradient(145deg,#24303e,#10141a)] p-3 transition-transform duration-700 hover:scale-[1.03]">
-                  <div className="flex h-full flex-col justify-between rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.01)),radial-gradient(circle_at_62%_28%,rgba(255,255,255,0.18),transparent_18%),linear-gradient(145deg,#50617b,#1a2029_58%,#0d1015)] p-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.24em] text-white/42">Portrait</span>
-                    <span className="text-sm font-medium text-white/86">Identity preview</span>
-                  </div>
-                </div>
-              </div>
+            <div className="relative overflow-hidden rounded-[2.6rem] bg-[#07090d] shadow-[0_36px_120px_rgba(0,0,0,0.5)]">
+              <div className="aspect-[16/9]">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,7,10,0.1),rgba(6,7,10,0.58)_78%,rgba(6,7,10,0.82))]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(255,255,255,0.16),transparent_18%),radial-gradient(circle_at_18%_18%,rgba(90,110,146,0.24),transparent_22%),radial-gradient(circle_at_78%_16%,rgba(108,80,124,0.22),transparent_24%),radial-gradient(circle_at_50%_82%,rgba(118,91,73,0.16),transparent_26%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0)_34%,rgba(255,255,255,0.04)_100%)]" />
 
-              <div className="glass-panel absolute -right-6 bottom-[14%] hidden w-56 overflow-hidden rounded-[2rem] p-3 lg:block">
-                <div className="aspect-[5/4] rounded-[1.6rem] bg-[linear-gradient(145deg,#252c38,#0f1218)] p-3 transition-transform duration-700 hover:scale-[1.03]">
-                  <div className="grid h-full grid-cols-2 gap-2">
-                    <div className="rounded-[1rem] bg-[linear-gradient(145deg,#48546a,#171b23)]" />
-                    <div className="rounded-[1rem] bg-[linear-gradient(145deg,#5e5147,#1d2128)]" />
-                    <div className="col-span-2 rounded-[1rem] bg-[linear-gradient(145deg,#2d4250,#15181e)]" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="glass-panel relative mx-auto max-w-[1120px] overflow-hidden rounded-[2.8rem] p-4 md:p-5">
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01)),linear-gradient(145deg,#11141a,#090b10)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_8%,rgba(255,255,255,0.08),transparent_18%),radial-gradient(circle_at_20%_92%,rgba(128,91,72,0.18),transparent_26%),radial-gradient(circle_at_84%_82%,rgba(84,101,142,0.18),transparent_28%)]" />
-
-                <div className="relative overflow-hidden rounded-[2.25rem] border border-white/8 bg-[#0b0d12] shadow-[0_36px_120px_rgba(0,0,0,0.5)]">
-                  <div className="aspect-[16/9]">
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,7,10,0.1),rgba(6,7,10,0.58)_78%,rgba(6,7,10,0.82))]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(90,110,146,0.24),transparent_22%),radial-gradient(circle_at_78%_16%,rgba(108,80,124,0.22),transparent_24%),radial-gradient(circle_at_50%_82%,rgba(118,91,73,0.16),transparent_26%)]" />
-
-                    <div className="absolute left-[4%] top-[8%] grid w-[63%] grid-cols-3 gap-3 md:gap-4">
-                      <div className="aspect-[1.15/0.8] rounded-[1.35rem] bg-[linear-gradient(145deg,#5f6f87,#171b23_58%,#0e1218)] shadow-[0_20px_45px_rgba(0,0,0,0.25)] transition-transform duration-700 hover:scale-[1.02]" />
-                      <div className="aspect-[1.15/0.8] rounded-[1.35rem] bg-[linear-gradient(145deg,#6b5f55,#211f25_58%,#0d1015)] shadow-[0_20px_45px_rgba(0,0,0,0.25)] transition-transform duration-700 hover:scale-[1.02]" />
-                      <div className="aspect-[1.15/0.8] rounded-[1.35rem] bg-[linear-gradient(145deg,#4b596f,#181d25_58%,#0d1015)] shadow-[0_20px_45px_rgba(0,0,0,0.25)] transition-transform duration-700 hover:scale-[1.02]" />
-                    </div>
-
-                    <div className="absolute left-[7%] top-[32%] w-[55%] rounded-[1.7rem] bg-[linear-gradient(145deg,#2b3442,#0f1319)] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.36)] md:p-4">
-                      <div className="aspect-[16/9] rounded-[1.4rem] bg-[radial-gradient(circle_at_55%_45%,rgba(255,255,255,0.18),transparent_18%),linear-gradient(145deg,#51627d,#21252d_60%,#0e1117)]" />
-                    </div>
-
-                    <div className="absolute right-[5%] top-[12%] flex w-[22%] flex-col gap-3 md:gap-4">
-                      <div className="rounded-[1.35rem] bg-[linear-gradient(145deg,#232932,#0f1217)] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
-                        <div className="aspect-[1.05/0.82] rounded-[1.1rem] bg-[linear-gradient(145deg,#4a566a,#171c23)]" />
-                      </div>
-                      <div className="rounded-[1.35rem] bg-[linear-gradient(145deg,#1b2028,#0d1015)] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
-                        <div className="grid gap-2">
-                          <div className="aspect-[1.2/0.72] rounded-[1rem] bg-[linear-gradient(145deg,#2f4250,#12161c)]" />
-                          <div className="aspect-[1.2/0.72] rounded-[1rem] bg-[linear-gradient(145deg,#56495f,#171a22)]" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-[8%] left-[6%] flex max-w-[42%] flex-wrap gap-3 text-left">
-                      <span className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-[0.72rem] uppercase tracking-[0.24em] text-white/50 backdrop-blur-xl">
-                        Identity registry
-                      </span>
-                      <span className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-[0.72rem] uppercase tracking-[0.24em] text-white/50 backdrop-blur-xl">
-                        Benchmark signal
-                      </span>
-                    </div>
-
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/12 bg-black/35 backdrop-blur-xl md:h-[4.4rem] md:w-[4.4rem]">
-                        <div className="ml-1 h-0 w-0 border-y-[8px] border-l-[13px] border-y-transparent border-l-white md:border-y-[10px] md:border-l-[16px]" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative mx-auto -mt-6 w-full max-w-[760px] px-3 md:-mt-8">
-                  <div className="glass-panel flex flex-wrap items-center justify-center gap-2 rounded-full px-4 py-3 md:gap-3 md:px-5">
-                    {["Plan", "Create", "Refine", "Enter AIAA"].map((item, index) => (
-                      <span
-                        key={item}
-                        className={`rounded-full px-4 py-2 text-sm font-medium transition-transform duration-300 hover:scale-[1.03] md:px-6 ${
-                          index === 3
-                            ? "bg-white text-black"
-                            : "border border-white/10 bg-white/[0.04] text-white/78"
-                        }`}
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  aria-label="Play video"
+                  className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-black/35 text-white backdrop-blur-xl transition-all duration-300 hover:scale-[1.04] hover:bg-black/48 md:h-[4.6rem] md:w-[4.6rem]"
+                >
+                  <span className="ml-1 h-0 w-0 border-y-[9px] border-l-[15px] border-y-transparent border-l-white md:border-y-[11px] md:border-l-[18px]" />
+                </button>
               </div>
             </div>
           </motion.div>
