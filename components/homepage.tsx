@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
@@ -26,6 +26,7 @@ const certificateWalls = [
       "Public identity starts with registry linkage, operator naming, and first-pass issuance visibility.",
     previewCopy:
       "The opening credential layer for public agent identity, ownership linkage, and first registry visibility.",
+    image: "/level-1.png",
     glow: "rgba(90, 136, 210, 0.32)",
     haze: "rgba(81, 119, 206, 0.18)",
     ambient: "rgba(175, 219, 255, 0.08)",
@@ -45,6 +46,7 @@ const certificateWalls = [
       "Validated operation adds accountable use, repeatable audit proof, and stronger entity verification.",
     previewCopy:
       "Identity proofing and entity validation for trusted presence.",
+    image: "/level-2.png",
     glow: "rgba(70, 158, 188, 0.3)",
     haze: "rgba(58, 132, 157, 0.18)",
     ambient: "rgba(172, 242, 255, 0.08)",
@@ -64,6 +66,7 @@ const certificateWalls = [
       "Benchmark evidence, release controls, and deployable operating posture come together here.",
     previewCopy:
       "Verifiable demonstration of agent capabilities, performance, and operational integrity.",
+    image: "/level-3.png",
     glow: "rgba(110, 109, 224, 0.32)",
     haze: "rgba(116, 101, 214, 0.18)",
     ambient: "rgba(214, 206, 255, 0.09)",
@@ -83,6 +86,7 @@ const certificateWalls = [
       "Higher scrutiny, governance review, and public-system readiness define this institutional threshold.",
     previewCopy:
       "Authorized to operate in public systems with higher scrutiny and accountability.",
+    image: "/level-4.png",
     glow: "rgba(207, 216, 236, 0.28)",
     haze: "rgba(176, 185, 212, 0.16)",
     ambient: "rgba(255, 255, 255, 0.08)",
@@ -102,6 +106,7 @@ const certificateWalls = [
       "The apex layer for durable public legitimacy, sovereign trust, and institution-grade visibility.",
     previewCopy:
       "The highest authorization for agents to act with institutional power and global impact.",
+    image: "/level-5.png",
     glow: "rgba(146, 135, 122, 0.26)",
     haze: "rgba(84, 71, 61, 0.2)",
     ambient: "rgba(234, 223, 203, 0.06)",
@@ -442,7 +447,17 @@ export function Homepage() {
           <div className="absolute left-[18%] top-[14%] h-[24rem] w-[24rem] rounded-full bg-[radial-gradient(circle,rgba(111,95,166,0.16),transparent_68%)] blur-[170px]" />
           <div className="absolute right-[20%] top-[18%] h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(76,109,129,0.14),transparent_68%)] blur-[190px]" />
         </div>
-        <div className="relative z-10 flex min-h-[calc(100vh-8rem)] items-center justify-center pb-14">
+        <div className="section-shell relative z-10 pt-6 text-center md:pt-8">
+          <span className="eyebrow">Section 5 / Certification Levels</span>
+          <h2 className="mx-auto mt-4 max-w-5xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.95] tracking-[-0.07em] text-white">
+            AIAA Certification Levels
+          </h2>
+          <p className="section-copy mx-auto mt-5 max-w-3xl">
+            From Operator to Fellow, each level represents a verified stage of AI Agent capability, production readiness, and public trust.
+          </p>
+        </div>
+
+        <div className="relative z-10 flex min-h-[620px] items-center justify-center pb-14 pt-10 md:min-h-[680px] md:pt-12">
             <div
               className="absolute left-1/2 top-[12%] h-[24rem] w-[min(72rem,72vw)] -translate-x-1/2 opacity-80"
               style={{
@@ -472,50 +487,111 @@ export function Homepage() {
               </div>
 
               <div className="relative h-[520px] w-screen overflow-visible">
-                <motion.div
-                  key={activeCertificate.level}
-                  initial={false}
-                  animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 92,
-                    damping: 24,
-                    mass: 0.96
-                  }}
-                  className="absolute left-1/2 top-1/2 z-[50] [transform:translate3d(-50%,-50%,0)]"
-                  style={{ width: "min(52vw, 760px)", minWidth: "0" }}
-                >
-                  <div className="relative h-[400px] overflow-hidden rounded-[1.8rem] border border-white/12 bg-[#0c1016]/88 shadow-[0_50px_160px_rgba(0,0,0,0.58)] backdrop-blur-[24px]">
-                    <div className="absolute inset-0" style={{ backgroundImage: activeCertificate.surface }} />
-                    <div className="absolute inset-0" style={{ backgroundImage: activeCertificate.scene }} />
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0)_18%,rgba(4,6,8,0.1)_40%,rgba(4,6,8,0.4)_64%,rgba(4,6,8,0.7)_100%)]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(255,255,255,0.12),transparent_20%),radial-gradient(circle_at_50%_88%,rgba(255,255,255,0.08),transparent_22%)]" />
-                    <div className="absolute inset-x-[10%] top-[10.5%] text-center">
-                      <div className="text-[0.58rem] uppercase tracking-[0.34em] text-white/82">
-                        CERTIFICATE LEVEL
-                      </div>
-                      <div className="mt-2 text-[0.72rem] text-white/82">A</div>
-                    </div>
+                {[-1, 1].map((offset) => {
+                  const previewIndex =
+                    (activeLevel + offset + certificateWalls.length) % certificateWalls.length;
+                  const preview = certificateWalls[previewIndex];
 
-                    <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
-                      <div className="text-[clamp(3.6rem,5.2vw,5.4rem)] font-semibold leading-[0.88] tracking-[-0.08em] text-white">
-                        {activeCertificate.level}
+                  return (
+                    <button
+                      key={`${preview.level}-${offset}`}
+                      type="button"
+                      onClick={() => cycleLevel(offset as 1 | -1)}
+                      className={`absolute top-1/2 z-[30] hidden h-[300px] w-[360px] -translate-y-1/2 overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#0c1016]/72 text-left opacity-55 shadow-[0_40px_120px_rgba(0,0,0,0.5)] backdrop-blur-[22px] transition-all duration-500 hover:opacity-75 lg:block ${
+                        offset === -1
+                          ? "left-[12vw] -rotate-[3deg]"
+                          : "right-[12vw] rotate-[3deg]"
+                      }`}
+                    >
+                      <div className="absolute inset-0" style={{ backgroundImage: preview.surface }} />
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                          backgroundImage: `linear-gradient(180deg, rgba(4,6,8,0.24) 0%, rgba(4,6,8,0.32) 44%, rgba(4,6,8,0.82) 100%), url(${preview.image})`
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/24 backdrop-blur-[1.5px]" />
+                      <div className="relative flex h-full flex-col justify-center px-8">
+                        <div className="text-[2.3rem] font-semibold tracking-[-0.08em] text-white/62">
+                          {preview.level}
+                        </div>
+                        <div className="mt-5 text-lg text-white/50">{preview.title}</div>
+                        <p className="mt-5 max-w-[14rem] text-sm leading-6 text-white/42">
+                          {preview.copy}
+                        </p>
                       </div>
-                      <div className="mt-3 text-[clamp(1.05rem,1.45vw,1.55rem)] font-medium tracking-[-0.04em] text-white/94">
-                        {activeCertificate.title}
+                    </button>
+                  );
+                })}
+
+                <div className="absolute left-1/2 top-1/2 z-[50] w-[min(52vw,760px)] -translate-x-1/2 -translate-y-1/2">
+                  <motion.div
+                    key={activeCertificate.level}
+                    initial={{
+                      x: carouselDirection === 1 ? 80 : -80,
+                      opacity: 0.86,
+                      scale: 0.96
+                    }}
+                    animate={{ x: 0, opacity: 1, scale: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 92,
+                      damping: 24,
+                      mass: 0.96
+                    }}
+                  >
+                    <div className="relative h-[400px] overflow-hidden rounded-[1.8rem] border border-white/12 bg-[#0c1016]/88 shadow-[0_50px_160px_rgba(0,0,0,0.58)] backdrop-blur-[24px]">
+                      <div className="absolute inset-0" style={{ backgroundImage: activeCertificate.surface }} />
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                          backgroundImage: `linear-gradient(180deg, rgba(4,6,8,0.16) 0%, rgba(4,6,8,0.24) 42%, rgba(4,6,8,0.78) 100%), url(${activeCertificate.image})`
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.18),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0)_22%,rgba(4,6,8,0.18)_52%,rgba(4,6,8,0.62)_100%)]" />
+
+                      <div className="absolute inset-x-[10%] top-[10.5%] text-center">
+                        <div className="text-[0.58rem] uppercase tracking-[0.34em] text-white/82">
+                          CERTIFICATE LEVEL
+                        </div>
+                        <div className="mt-2 text-[0.72rem] text-white/82">A</div>
                       </div>
-                      <p className="mt-5 max-w-[26rem] text-[0.82rem] leading-7 text-white/78">
-                        {activeCertificate.previewCopy ?? activeCertificate.copy}
-                      </p>
-                      <a
-                        href={activeCertificate.href}
-                        className="pill-button mt-8 min-w-[14rem] border-white/20 bg-white/92 px-6 py-3 text-[0.9rem] text-black shadow-[0_8px_40px_rgba(255,255,255,0.08)]"
-                      >
-                        View Level Details <span className="ml-3">→</span>
-                      </a>
+
+                      <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
+                        <div className="text-[clamp(3.6rem,5.2vw,5.4rem)] font-semibold leading-[0.88] tracking-[-0.08em] text-white">
+                          {activeCertificate.level}
+                        </div>
+                        <div className="mt-3 text-[clamp(1.05rem,1.45vw,1.55rem)] font-medium tracking-[-0.04em] text-white/94">
+                          {activeCertificate.title}
+                        </div>
+                        <p className="mt-5 max-w-[26rem] text-[0.82rem] leading-7 text-white/82">
+                          {activeCertificate.previewCopy ?? activeCertificate.copy}
+                        </p>
+                        <a
+                          href={activeCertificate.href}
+                          className="inline-flex min-w-[14rem] items-center justify-center rounded-full border border-white/80 bg-white px-6 py-3 text-[0.9rem] font-semibold text-black shadow-[0_12px_45px_rgba(255,255,255,0.18)] transition-all duration-300 hover:scale-[1.02] hover:bg-white"
+                        >
+                          View Level Details <span className="ml-3">→</span>
+                        </a>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                </div>
+
+                <div className="absolute bottom-4 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3">
+                  {certificateWalls.map((item, index) => (
+                    <button
+                      key={item.level}
+                      type="button"
+                      onClick={() => selectLevel(index)}
+                      aria-label={`Select ${item.level}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        index === activeLevel ? "w-8 bg-white" : "w-3 bg-white/18"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -529,7 +605,7 @@ export function Homepage() {
                   />
                   <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#090b10]">
                     <div className="aspect-[16/10]">
-                      <div className="absolute inset-0" style={{ backgroundImage: activeCertificate.scene }} />
+                      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgba(4,6,8,0.12) 0%, rgba(4,6,8,0.18) 42%, rgba(4,6,8,0.76) 100%), url(${activeCertificate.image})` }} />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0)_24%,rgba(5,6,8,0.18)_48%,rgba(5,6,8,0.72)_100%)]" />
                       <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
                         <div className="text-[clamp(2.8rem,12vw,4.4rem)] font-semibold leading-[0.92] tracking-[-0.08em] text-white">
@@ -539,7 +615,7 @@ export function Homepage() {
                         <p className="mt-4 max-w-md text-sm leading-7 text-white/64">
                           {activeCertificate.copy}
                         </p>
-                        <a href={activeCertificate.href} className="pill-button mt-6 bg-white text-black">
+                        <a href={activeCertificate.href} className="inline-flex items-center justify-center rounded-full border border-white/80 bg-white px-6 py-3 text-sm font-semibold text-black shadow-[0_12px_45px_rgba(255,255,255,0.18)] transition-all duration-300 hover:scale-[1.02] hover:bg-white">
                           View Level Details <span className="ml-2">→</span>
                         </a>
                       </div>
@@ -736,3 +812,6 @@ export function Homepage() {
     </main>
   );
 }
+
+
+
