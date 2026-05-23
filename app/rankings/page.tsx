@@ -1,7 +1,9 @@
 import { SiteHeader } from "@/components/site-header"
+import { headers } from "next/headers"
 import type { ReactNode } from "react"
 
-export const revalidate = 3600
+export const dynamic = "force-dynamic"
+export const revalidate = 300
 
 const trackedRepos = [
   "Significant-Gravitas/AutoGPT",
@@ -101,7 +103,7 @@ type GitHubRepo = {
   owner: {
     login: string
     avatar_url: string
-    html_url: string
+    html_url?: string
   }
 }
 
@@ -168,6 +170,31 @@ const repoScopes: Record<string, string> = {
   "langgenius/dify": "Agent App Platform"
 }
 
+async function getBaseUrl() {
+  const headerStore = await headers()
+  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host")
+  const protocol = headerStore.get("x-forwarded-proto") ?? (host?.includes("localhost") ? "http" : "https")
+
+  if (!host) return "http://localhost:3000"
+
+  return `${protocol}://${host}`
+}
+
+async function fetchApi<T>(path: string) {
+  try {
+    const baseUrl = await getBaseUrl()
+    const response = await fetch(`${baseUrl}${path}`, {
+      cache: "no-store"
+    })
+
+    if (!response.ok) return null
+
+    return (await response.json()) as T
+  } catch {
+    return null
+  }
+}
+
 function githubHeaders(userAgent: string) {
   return {
     Accept: "application/vnd.github+json",
@@ -176,6 +203,45 @@ function githubHeaders(userAgent: string) {
       ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
       : {})
   }
+}
+
+async function fetchGitHubRepo(repo: string) {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${repo}`, {
+      headers: githubHeaders("AIAA Rankings Overview"),
+      next: {
+        revalidate: 3600
+      }
+    })
+
+    if (!response.ok) return null
+
+    return (await response.json()) as GitHubRepo
+  } catch {
+    return null
+  }
+}
+
+async function fetchGitHubContributors(repo: string) {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${repo}/contributors?per_page=30`, {
+      headers: githubHeaders("AIAA Rankings Overview"),
+      next: {
+        revalidate: 3600
+      }
+    })
+
+    if (!response.ok) return []
+
+    return (await response.json()) as GitHubContributor[]
+  } catch {
+    return []
+  }
+}
+
+function avatarFromFullName(fullName: string) {
+  const owner = fullName.split("/")[0]
+  return `https://github.com/${owner}.png?size=64`
 }
 
 function formatNumber(value: number) {
@@ -211,45 +277,88 @@ function calculateFrameworkScore(repo: GitHubRepo, contributorSample: number) {
   return Math.round(activityScore + starScore + forkScore + contributorScore + issueScore)
 }
 
+function repoApiItemToRow(
+  item: {
+    rank?: string
+    name: string
+    fullName: string
+    url: string
+    stars: number
+    forks: number
+    openIssues: number
+    language: string | null
+    pushedAt: string
+    updatedAt: string
+    ownerAvatarUrl?: string
+    momentumScore?: number
+  },
+  index: number
+): RepoRow {
+  return {
+    rank: String(index + 1).padStart(2, "0"),
+    name: item.name,
+    fullName: item.fullName,
+    url: item.url,
+    stars: item.stars,
+    forks: item.forks,
+    openIssues: item.openIssues,
+    language: item.language,
+    pushedAt: item.pushedAt,
+    updatedAt: item.updatedAt,
+    ownerAvatarUrl: item.ownerAvatarUrl ?? avatarFromFullName(item.fullName),
+    scope: repoScopes[item.fullName] ?? "AI Agent Repository",
+    momentumScore: item.momentumScore
+  }
+}
+
+function githubRepoToRow(repo: GitHubRepo, index: number): RepoRow {
+  return {
+    rank: String(index + 1).padStart(2, "0"),
+    name: repo.name,
+    fullName: repo.full_name,
+    url: repo.html_url,
+    stars: repo.stargazers_count,
+    forks: repo.forks_count,
+    openIssues: repo.open_issues_count,
+    language: repo.language,
+    pushedAt: repo.pushed_at,
+    updatedAt: repo.updated_at,
+    ownerAvatarUrl: repo.owner.avatar_url,
+    scope: repoScopes[repo.full_name] ?? "AI Agent Repository",
+    momentumScore: calculateMomentum(repo)
+  }
+}
+
 async function getRepoRows(mode: "stars" | "trending") {
-  const rows = await Promise.all(
-    trackedRepos.map(async (repo) => {
-      const response = await fetch(`https://api.github.com/repos/${repo}`, {
-        headers: githubHeaders("AIAA Ranking Overview"),
-        next: {
-          revalidate: 3600
-        }
-      })
+  type RepoApiResponse = {
+    results: Array<{
+      rank: string
+      name: string
+      fullName: string
+      url: string
+      stars: number
+      forks: number
+      openIssues: number
+      language: string | null
+      pushedAt: string
+      updatedAt: string
+      ownerAvatarUrl?: string
+      momentumScore?: number
+    }>
+  }
 
-      if (!response.ok) return null
+  const data = await fetchApi<RepoApiResponse>(mode === "stars" ? "/api/github/repos" : "/api/github/trending")
+  const apiRows = (data?.results ?? []).slice(0, 5).map(repoApiItemToRow)
 
-      const data = (await response.json()) as GitHubRepo
+  if (apiRows.length > 0) return apiRows
 
-      return {
-        name: data.name,
-        fullName: data.full_name,
-        url: data.html_url,
-        stars: data.stargazers_count,
-        forks: data.forks_count,
-        openIssues: data.open_issues_count,
-        language: data.language,
-        pushedAt: data.pushed_at,
-        updatedAt: data.updated_at,
-        ownerAvatarUrl: data.owner.avatar_url,
-        scope: repoScopes[data.full_name] ?? "AI Agent Repository",
-        momentumScore: calculateMomentum(data)
-      } satisfies Omit<RepoRow, "rank">
-    })
-  )
+  const repos = (await Promise.all(trackedRepos.map(fetchGitHubRepo))).filter((repo): repo is GitHubRepo => repo !== null)
+  const sorted = repos.sort((a, b) => {
+    if (mode === "stars") return b.stargazers_count - a.stargazers_count
+    return calculateMomentum(b) - calculateMomentum(a)
+  })
 
-  return rows
-    .filter((row): row is Exclude<(typeof rows)[number], null> => row !== null)
-    .sort((a, b) => mode === "stars" ? b.stars - a.stars : (b.momentumScore ?? 0) - (a.momentumScore ?? 0))
-    .slice(0, 5)
-    .map((item, index) => ({
-      rank: String(index + 1).padStart(2, "0"),
-      ...item
-    }))
+  return sorted.slice(0, 5).map(githubRepoToRow)
 }
 
 function scoreBuilder(repoCount: number, totalContributions: number) {
@@ -257,43 +366,45 @@ function scoreBuilder(repoCount: number, totalContributions: number) {
 }
 
 async function getBuilderRows() {
-  const builderMap = new Map<string, Omit<BuilderRow, "rank">>()
+  type BuilderApiResponse = {
+    results: Array<{
+      rank: string
+      login: string
+      avatarUrl: string
+      profileUrl: string
+      repoCount: number
+      totalContributions: number
+      builderScore: number
+    }>
+  }
 
+  const data = await fetchApi<BuilderApiResponse>("/api/github/builders")
+  const apiRows = (data?.results ?? [])
+    .slice(0, 5)
+    .map((item, index) => ({
+      ...item,
+      rank: String(index + 1).padStart(2, "0")
+    }))
+
+  if (apiRows.length > 0) return apiRows
+
+  const builderMap = new Map<string, BuilderRow>()
   await Promise.all(
     trackedRepos.map(async (repo) => {
-      const response = await fetch(`https://api.github.com/repos/${repo}/contributors?per_page=30`, {
-        headers: githubHeaders("AIAA Builder Overview"),
-        next: {
-          revalidate: 3600
-        }
-      })
-
-      if (!response.ok) return
-
-      const contributors = (await response.json()) as GitHubContributor[]
+      const contributors = await fetchGitHubContributors(repo)
 
       contributors
-        .filter((item) => item.login && item.type === "User")
+        .filter((item) => item.type === "User")
         .forEach((item) => {
           const current = builderMap.get(item.login)
-
-          if (!current) {
-            builderMap.set(item.login, {
-              login: item.login,
-              avatarUrl: item.avatar_url,
-              profileUrl: item.html_url,
-              repoCount: 1,
-              totalContributions: item.contributions,
-              builderScore: scoreBuilder(1, item.contributions)
-            })
-            return
-          }
-
-          const repoCount = current.repoCount + 1
-          const totalContributions = current.totalContributions + item.contributions
+          const repoCount = current ? current.repoCount + 1 : 1
+          const totalContributions = (current?.totalContributions ?? 0) + item.contributions
 
           builderMap.set(item.login, {
-            ...current,
+            rank: "00",
+            login: item.login,
+            avatarUrl: item.avatar_url,
+            profileUrl: item.html_url,
             repoCount,
             totalContributions,
             builderScore: scoreBuilder(repoCount, totalContributions)
@@ -306,65 +417,77 @@ async function getBuilderRows() {
     .sort((a, b) => b.builderScore - a.builderScore)
     .slice(0, 5)
     .map((item, index) => ({
-      rank: String(index + 1).padStart(2, "0"),
-      ...item
+      ...item,
+      rank: String(index + 1).padStart(2, "0")
     }))
 }
 
 async function getContributorSample(repo: string) {
-  const response = await fetch(`https://api.github.com/repos/${repo}/contributors?per_page=30`, {
-    headers: githubHeaders("AIAA Framework Overview"),
-    next: {
-      revalidate: 3600
-    }
-  })
-
-  if (!response.ok) return 0
-
-  const contributors = (await response.json()) as GitHubContributor[]
-
+  const contributors = await fetchGitHubContributors(repo)
   return contributors.filter((item) => item.type === "User").length
 }
 
 async function getFrameworkRows() {
+  type FrameworkApiResponse = {
+    results: Array<{
+      rank: string
+      name: string
+      fullName: string
+      url: string
+      ownerAvatarUrl: string
+      scope: string
+      summary: string
+      whyIncluded: string
+      stars: number
+      forks: number
+      language: string | null
+      contributorSample: number
+      frameworkScore: number
+    }>
+  }
+
+  const data = await fetchApi<FrameworkApiResponse>("/api/github/frameworks")
+  const apiRows = (data?.results ?? [])
+    .slice(0, 5)
+    .map((item, index) => ({
+      ...item,
+      rank: String(index + 1).padStart(2, "0")
+    }))
+
+  if (apiRows.length > 0) return apiRows
+
   const rows = await Promise.all(
     frameworkConfigs.map(async (framework) => {
-      const response = await fetch(`https://api.github.com/repos/${framework.repo}`, {
-        headers: githubHeaders("AIAA Framework Overview"),
-        next: {
-          revalidate: 3600
-        }
-      })
+      const repo = await fetchGitHubRepo(framework.repo)
+      if (!repo) return null
 
-      if (!response.ok) return null
-
-      const data = (await response.json()) as GitHubRepo
       const contributorSample = await getContributorSample(framework.repo)
 
       return {
-        name: data.name,
-        fullName: data.full_name,
-        url: data.html_url,
-        ownerAvatarUrl: data.owner.avatar_url,
+        rank: "00",
+        name: repo.name,
+        fullName: repo.full_name,
+        url: repo.html_url,
+        ownerAvatarUrl: repo.owner.avatar_url,
         scope: framework.scope,
         summary: framework.summary,
         whyIncluded: framework.whyIncluded,
-        stars: data.stargazers_count,
-        forks: data.forks_count,
-        language: data.language,
+        stars: repo.stargazers_count,
+        forks: repo.forks_count,
+        language: repo.language,
         contributorSample,
-        frameworkScore: calculateFrameworkScore(data, contributorSample)
-      } satisfies Omit<FrameworkRow, "rank">
+        frameworkScore: calculateFrameworkScore(repo, contributorSample)
+      }
     })
   )
 
   return rows
-    .filter((row): row is Exclude<(typeof rows)[number], null> => row !== null)
+    .filter((item): item is Omit<FrameworkRow, "rank"> & { rank: string } => item !== null)
     .sort((a, b) => b.frameworkScore - a.frameworkScore)
     .slice(0, 5)
     .map((item, index) => ({
-      rank: String(index + 1).padStart(2, "0"),
-      ...item
+      ...item,
+      rank: String(index + 1).padStart(2, "0")
     }))
 }
 
