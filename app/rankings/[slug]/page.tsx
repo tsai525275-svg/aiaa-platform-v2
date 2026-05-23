@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { rankingCategories } from "../ranking-data";
 
@@ -495,7 +496,7 @@ function Background() {
   );
 }
 
-function PageFrame({ children }: { children: React.ReactNode }) {
+function PageFrame({ children }: { children: ReactNode }) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#06070a] text-white">
       <SiteHeader />
@@ -559,7 +560,7 @@ function StaticPreviewPage({ slug }: { slug: string }) {
         </div>
         <div className="mt-5 grid gap-3 lg:grid-cols-3">
           <InfoStrip label="Ranking Criteria" items={category.criteria} />
-          <InfoStrip label="Data Sources" items={category.dataSources ?? ["Public data onboarding"]} />
+          <InfoStrip label="Data Sources" items={category.dataSource ?? ["Public data onboarding"]} />
           <InfoStrip label="Methodology" items={category.methodology ?? ["Preview framework"]} />
         </div>
       </section>
