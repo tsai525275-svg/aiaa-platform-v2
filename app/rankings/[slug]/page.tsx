@@ -94,13 +94,21 @@ export default async function RankingDetailPage({
               <p className="text-base leading-8 text-white/70 md:text-lg">
                 {category.description}
               </p>
-              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+              <div className="mt-7 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.035] p-4">
                   <div className="text-xs uppercase tracking-[0.26em] text-white/36">
                     Update frequency
                   </div>
                   <div className="mt-2 text-lg font-medium text-white/86">
                     {category.updateFrequency}
+                  </div>
+                </div>
+                <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.035] p-4">
+                  <div className="text-xs uppercase tracking-[0.26em] text-white/36">
+                    Last updated
+                  </div>
+                  <div className="mt-2 text-lg font-medium text-white/86">
+                    {category.lastUpdated}
                   </div>
                 </div>
                 <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.035] p-4">
@@ -116,26 +124,60 @@ export default async function RankingDetailPage({
           </div>
 
           <div className="mt-10 grid gap-8 lg:grid-cols-[0.56fr_1.44fr]">
-            <aside className="glass-panel h-fit rounded-[2rem] p-6 md:p-8">
-              <div className="text-xs uppercase tracking-[0.3em] text-white/42">
-                Ranking criteria
+            <aside className="space-y-5">
+              <div className="glass-panel h-fit rounded-[2rem] p-6 md:p-8">
+                <div className="text-xs uppercase tracking-[0.3em] text-white/42">
+                  Ranking criteria
+                </div>
+                <div className="mt-6 space-y-3">
+                  {category.criteria.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[1.2rem] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm text-white/70"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="mt-6 space-y-3">
-                {category.criteria.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-[1.2rem] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm text-white/70"
-                  >
-                    {item}
-                  </div>
-                ))}
+
+              <div className="glass-panel h-fit rounded-[2rem] p-6 md:p-8">
+                <div className="text-xs uppercase tracking-[0.3em] text-white/42">
+                  Data sources
+                </div>
+                <div className="mt-6 space-y-3">
+                  {category.dataSource.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[1.2rem] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm text-white/70"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <a
-                href="/#access"
-                className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition-all duration-300 hover:scale-[1.02]"
-              >
-                Apply for review
-              </a>
+
+              <div className="glass-panel h-fit rounded-[2rem] p-6 md:p-8">
+                <div className="text-xs uppercase tracking-[0.3em] text-white/42">
+                  Methodology
+                </div>
+                <div className="mt-6 space-y-3">
+                  {category.methodology.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[1.2rem] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm text-white/70"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                <a
+                  href="/#access"
+                  className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition-all duration-300 hover:scale-[1.02]"
+                >
+                  Apply for review
+                </a>
+              </div>
             </aside>
 
             <div className="glass-panel overflow-hidden rounded-[2.2rem] p-4 md:p-5">
@@ -154,7 +196,10 @@ export default async function RankingDetailPage({
                   </thead>
                   <tbody>
                     {category.entries.map((entry) => (
-                      <tr key={`${entry.rank}-${entry.name}`} className="border-b border-white/8 last:border-b-0">
+                      <tr
+                        key={`${entry.rank}-${entry.name}`}
+                        className="border-b border-white/8 last:border-b-0"
+                      >
                         <td className="px-4 py-6 text-[1.55rem] font-semibold tracking-[-0.07em] text-white/42">
                           {entry.rank}
                         </td>
@@ -189,7 +234,8 @@ export default async function RankingDetailPage({
                   </tbody>
                 </table>
               </div>
-            </div>          </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>

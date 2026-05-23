@@ -14,6 +14,9 @@ export type RankingCategory = {
   title: string
   description: string
   updateFrequency: string
+  lastUpdated: string
+  dataSource: string[]
+  methodology: string[]
   criteria: string[]
   entries: RankingEntry[]
 }
@@ -26,6 +29,20 @@ export const rankingCategories: RankingCategory[] = [
     description:
       "A market ranking for AI Agent products, automation platforms, coding agents, browser agents, and enterprise agent systems.",
     updateFrequency: "Weekly",
+    lastUpdated: "2026-05-23",
+    dataSource: [
+      "AIAA internal review",
+      "Public product pages",
+      "Market visibility signals",
+      "Community adoption signals",
+    ],
+    methodology: [
+      "Product maturity",
+      "Real usage",
+      "Automation depth",
+      "Safety control",
+      "Enterprise readiness",
+    ],
     criteria: [
       "Product maturity",
       "Real usage",
@@ -62,6 +79,20 @@ export const rankingCategories: RankingCategory[] = [
     description:
       "A ranking for open source AI Agent projects based on public GitHub attention, repository scale, and ecosystem visibility.",
     updateFrequency: "Weekly",
+    lastUpdated: "2026-05-23",
+    dataSource: [
+      "GitHub public repository data",
+      "Public contributor activity",
+      "Repository visibility signals",
+      "Open source ecosystem review",
+    ],
+    methodology: [
+      "Stars",
+      "Forks",
+      "Contributor count",
+      "Repository activity",
+      "Ecosystem relevance",
+    ],
     criteria: [
       "Stars",
       "Forks",
@@ -98,6 +129,20 @@ export const rankingCategories: RankingCategory[] = [
     description:
       "A growth ranking for AI Agent repositories based on recent momentum, developer attention, and update velocity.",
     updateFrequency: "Weekly",
+    lastUpdated: "2026-05-23",
+    dataSource: [
+      "GitHub public repository data",
+      "Recent repository activity",
+      "Release activity",
+      "Developer attention signals",
+    ],
+    methodology: [
+      "7 day growth",
+      "30 day growth",
+      "Commit activity",
+      "Release frequency",
+      "Momentum consistency",
+    ],
     criteria: [
       "7 day star growth",
       "30 day star growth",
@@ -134,6 +179,20 @@ export const rankingCategories: RankingCategory[] = [
     description:
       "A builder ranking for developers who shape the AI Agent open source ecosystem through repositories, commits, and influence.",
     updateFrequency: "Monthly",
+    lastUpdated: "2026-05-23",
+    dataSource: [
+      "GitHub public profiles",
+      "Public repository ownership",
+      "Open source contribution signals",
+      "Developer ecosystem review",
+    ],
+    methodology: [
+      "Agent repository impact",
+      "Follower signal",
+      "Contribution depth",
+      "Recent activity",
+      "Builder influence",
+    ],
     criteria: [
       "Agent repository impact",
       "Follower signal",
@@ -170,6 +229,20 @@ export const rankingCategories: RankingCategory[] = [
     description:
       "A framework ranking for developers and companies choosing infrastructure for agent workflows, orchestration, memory, and tool calling.",
     updateFrequency: "Monthly",
+    lastUpdated: "2026-05-23",
+    dataSource: [
+      "Public documentation",
+      "GitHub repository data",
+      "Framework ecosystem review",
+      "Developer adoption signals",
+    ],
+    methodology: [
+      "Developer experience",
+      "Documentation",
+      "Tool calling",
+      "Enterprise fit",
+      "Agent workflow support",
+    ],
     criteria: [
       "Developer experience",
       "Documentation",
