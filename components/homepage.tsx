@@ -11,6 +11,8 @@ const carouselCards = [
   "Operator documentary"
 ];
 
+const featureVideoEmbedUrl = "https://www.youtube.com/embed/jIZLM9mAi5Y?autoplay=1&rel=0";
+
 const rankingRows = [
   { rank: "01", name: "Hermes Agent", score: "98.4", status: "L5 institutional" },
   { rank: "02", name: "Atlas Operator", score: "97.1", status: "L4 public systems" },
@@ -161,6 +163,7 @@ export function Homepage() {
   const manifestoRef = useRef<HTMLElement | null>(null);
   const [activeLevel, setActiveLevel] = useState(0);
   const [carouselDirection, setCarouselDirection] = useState<1 | -1>(1);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
@@ -274,13 +277,17 @@ export function Homepage() {
 
             <div className="relative overflow-hidden rounded-[2.6rem] bg-[#07090d] shadow-[0_36px_120px_rgba(0,0,0,0.5)]">
               <div className="aspect-[16/9]">
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,7,10,0.1),rgba(6,7,10,0.58)_78%,rgba(6,7,10,0.82))]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(255,255,255,0.16),transparent_18%),radial-gradient(circle_at_18%_18%,rgba(90,110,146,0.24),transparent_22%),radial-gradient(circle_at_78%_16%,rgba(108,80,124,0.22),transparent_24%),radial-gradient(circle_at_50%_82%,rgba(118,91,73,0.16),transparent_26%)]" />
-                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0)_34%,rgba(255,255,255,0.04)_100%)]" />
+                <img
+                  src="/aiaa-video-poster.png"
+                  alt="AIAA official film preview"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/14" />
 
                 <button
                   type="button"
                   aria-label="Play video"
+                  onClick={() => setIsVideoOpen(true)}
                   className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-black/35 text-white backdrop-blur-xl transition-all duration-300 hover:scale-[1.04] hover:bg-black/48 md:h-[4.6rem] md:w-[4.6rem]"
                 >
                   <span className="ml-1 h-0 w-0 border-y-[9px] border-l-[15px] border-y-transparent border-l-white md:border-y-[11px] md:border-l-[18px]" />
@@ -738,6 +745,32 @@ export function Homepage() {
         </div>
         </div>
       </section>
+
+      {isVideoOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/86 px-4 backdrop-blur-sm">
+          <button
+            type="button"
+            aria-label="Close video"
+            onClick={() => setIsVideoOpen(false)}
+            className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border border-white/16 bg-white/8 text-2xl leading-none text-white transition-all duration-300 hover:bg-white/14"
+          >
+            ×
+          </button>
+
+          <div className="relative w-[min(1120px,94vw)] overflow-hidden rounded-[1.8rem] border border-white/12 bg-black shadow-[0_40px_160px_rgba(0,0,0,0.72)]">
+            <div className="aspect-video">
+              <iframe
+                src={featureVideoEmbedUrl}
+                title="AIAA official film"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="h-full w-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }
