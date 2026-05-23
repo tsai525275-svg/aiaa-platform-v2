@@ -238,7 +238,7 @@ async function getRepoRows(mode: "stars" | "trending") {
   );
 
   return rows
-    .filter((row): row is Omit<RepoRow, "rank"> => row !== null)
+    .filter((row): row is Exclude<(typeof rows)[number], null> => row !== null)
     .sort((a, b) => mode === "stars" ? b.stars - a.stars : (b.momentumScore ?? 0) - (a.momentumScore ?? 0))
     .map((item, index) => ({
       rank: String(index + 1).padStart(2, "0"),
@@ -610,3 +610,4 @@ export default async function RankingDetailPage({
 
   return <StaticPreviewPage slug={slug} />;
 }
+
