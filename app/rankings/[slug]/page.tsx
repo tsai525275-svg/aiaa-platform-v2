@@ -2,12 +2,90 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { rankingCategories } from "../ranking-data";
 
+export const revalidate = 3600;
+
+const liveGitHubRepos = [
+  "Significant-Gravitas/AutoGPT",
+  "langchain-ai/langgraph",
+  "crewAIInc/crewAI",
+  "All-Hands-AI/OpenHands",
+  "browser-use/browser-use",
+  "microsoft/autogen",
+  "run-llama/llama_index",
+  "FlowiseAI/Flowise",
+  "microsoft/semantic-kernel",
+  "langgenius/dify"
+];
+
+type GitHubRepo = {
+  id: number;
+  full_name: string;
+  name: string;
+  html_url: string;
+  description: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  pushed_at: string;
+  updated_at: string;
+  language: string | null;
+};
+
+type DisplayEntry = {
+  rank: string;
+  name: string;
+  level: string;
+  category: string;
+  signal: string;
+  verification: string;
+  score: string;
+  url?: string;
+};
+
+async function getGitHubStarsEntries(): Promise<DisplayEntry[]> {
+  const results = await Promise.all(
+    liveGitHubRepos.map(async (repo) => {
+      const response = await fetch(`https://api.github.com/repos/${repo}`, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "User-Agent": "AIAA Ranking System"
+        },
+        next: {
+          revalidate: 3600
+        }
+      });
+
+      if (!response.ok) return null;
+
+      const data = (await response.json()) as GitHubRepo;
+      return data;
+    })
+  );
+
+  return results
+    .filter((repo): repo is GitHubRepo => repo !== null)
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .map((repo, index) => ({
+      rank: String(index + 1).padStart(2, "0"),
+      name: repo.name,
+      level: "Public Data",
+      category: repo.language ?? "Repository",
+      signal: `${repo.stargazers_count.toLocaleString()} stars`,
+      verification: "GitHub API",
+      score: repo.forks_count.toLocaleString(),
+      url: repo.html_url
+    }));
+}
+
+
 const levelBadgeClass = (level: string) => {
   if (level === "Level 1") return "border-sky-300/35 bg-sky-300/[0.12] text-sky-100";
   if (level === "Level 2") return "border-purple-300/35 bg-purple-300/[0.12] text-purple-100";
   if (level === "Level 3") return "border-amber-300/35 bg-amber-300/[0.14] text-amber-100";
   if (level === "Level 4") return "border-yellow-200/30 bg-black/55 text-yellow-100";
   if (level === "Level 5") return "border-white/35 bg-white/[0.18] text-white";
+
+  if (level === "Public Data") return "border-sky-300/25 bg-sky-300/[0.10] text-sky-100";
 
   return "border-white/12 bg-white/[0.05] text-white/62";
 };
@@ -23,6 +101,10 @@ const verificationBadgeClass = (verification: string) => {
 
   if (verification === "Preview") {
     return "border-white/12 bg-white/[0.05] text-white/58";
+  }
+
+  if (verification === "GitHub API") {
+    return "border-emerald-300/25 bg-emerald-300/[0.12] text-emerald-100";
   }
 
   return "border-white/10 bg-white/[0.04] text-white/58";
@@ -41,6 +123,10 @@ export default async function RankingDetailPage({
   const category = rankingCategories.find((item) => item.slug === slug);
 
   if (!category) notFound();
+
+  const isGitHubStarsLive = slug === "github-stars";
+  const liveEntries = isGitHubStarsLive ? await getGitHubStarsEntries() : [];
+  const entries: DisplayEntry[] = liveEntries.length > 0 ? liveEntries : category.entries;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#06070a] text-white">
@@ -98,7 +184,9 @@ export default async function RankingDetailPage({
           </div>
 
           <div className="mt-8 rounded-[1.5rem] border border-amber-200/16 bg-amber-200/[0.06] px-5 py-4 text-sm leading-7 text-amber-50/74">
-            This page is a public preview of the AIAA ranking framework. Candidate order, scores, and verification states are not final rankings. Final rankings will be published after source review, data verification, and AIAA methodology approval.
+            {isGitHubStarsLive
+              ? "This GitHub Stars table is powered by the GitHub REST API and refreshed through an hourly cache. AIAA certification status is not assigned from GitHub data. Certification requires separate AIAA review."
+              : "This page is a public preview of the AIAA ranking framework. Candidate order, scores, and verification states are not final rankings. Final rankings will be published after source review, data verification, and AIAA methodology approval."}
           </div>
 
           <div className="mt-10 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
@@ -169,11 +257,11 @@ export default async function RankingDetailPage({
                     <div>Category</div>
                     <div>Signal</div>
                     <div className="text-center">Verification</div>
-                    <div className="text-right">Score</div>
+                    <div className="text-right">{isGitHubStarsLive ? "Forks" : "Score"}</div>
                   </div>
 
                   <div className="divide-y divide-white/8">
-                    {category.entries.map((entry) => (
+                    {entries.map((entry) => (
                       <div
                         key={`${entry.rank}-${entry.name}`}
                         className="grid grid-cols-[0.5fr_1.45fr_0.85fr_1fr_1fr_1fr_0.7fr] items-center gap-4 px-4 py-5 text-sm"
@@ -182,7 +270,13 @@ export default async function RankingDetailPage({
                           {entry.rank}
                         </div>
                         <div className="font-medium text-white">
-                          {entry.name}
+                          {entry.url ? (
+                            <a href={entry.url} target="_blank" rel="noreferrer" className="transition-colors duration-300 hover:text-sky-100">
+                              {entry.name}
+                            </a>
+                          ) : (
+                            entry.name
+                          )}
                         </div>
                         <div className="flex justify-center">
                           <span className={`inline-flex min-w-[6.8rem] justify-center rounded-full border px-3 py-1 text-xs ${levelBadgeClass(entry.level)}`}>
