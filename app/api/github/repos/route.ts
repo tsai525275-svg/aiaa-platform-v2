@@ -27,6 +27,10 @@ type GitHubRepo = {
   pushed_at: string;
   updated_at: string;
   language: string | null;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
 };
 
 type GitHubRepoResult = {
@@ -41,12 +45,24 @@ type GitHubRepoResult = {
   language: string | null;
   pushedAt: string;
   updatedAt: string;
+  ownerLogin: string;
+  ownerAvatarUrl: string;
 };
 
 type GitHubRepoError = {
   repo: string;
   error: string;
 };
+
+function githubHeaders(userAgent: string) {
+  const token = process.env.GITHUB_TOKEN;
+
+  return {
+    Accept: "application/vnd.github+json",
+    "User-Agent": userAgent,
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
+}
 
 function isGitHubRepoResult(
   item: GitHubRepoResult | GitHubRepoError
@@ -58,10 +74,7 @@ export async function GET() {
   const results: Array<GitHubRepoResult | GitHubRepoError> = await Promise.all(
     repos.map(async (repo) => {
       const response = await fetch(`https://api.github.com/repos/${repo}`, {
-        headers: {
-          Accept: "application/vnd.github+json",
-          "User-Agent": "AIAA Ranking System"
-        },
+        headers: githubHeaders("AIAA Ranking System"),
         next: {
           revalidate: 3600
         }
@@ -87,7 +100,9 @@ export async function GET() {
         openIssues: data.open_issues_count,
         language: data.language,
         pushedAt: data.pushed_at,
-        updatedAt: data.updated_at
+        updatedAt: data.updated_at,
+        ownerLogin: data.owner.login,
+        ownerAvatarUrl: data.owner.avatar_url
       };
     })
   );

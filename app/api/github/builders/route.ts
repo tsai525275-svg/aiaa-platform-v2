@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 
-export const revalidate = 3600
+export const revalidate = 3600;
 
 const repos = [
   "Significant-Gravitas/AutoGPT",
@@ -13,68 +13,75 @@ const repos = [
   "FlowiseAI/Flowise",
   "microsoft/semantic-kernel",
   "langgenius/dify"
-]
+];
 
 type GitHubContributor = {
-  login: string
-  avatar_url: string
-  html_url: string
-  contributions: number
-  type: string
-}
+  login: string;
+  avatar_url: string;
+  html_url: string;
+  contributions: number;
+  type: string;
+};
 
 type BuilderRecord = {
-  login: string
-  avatarUrl: string
-  profileUrl: string
-  repoCount: number
-  totalContributions: number
-  repositories: string[]
-  builderScore: number
-}
+  login: string;
+  avatarUrl: string;
+  profileUrl: string;
+  repoCount: number;
+  totalContributions: number;
+  repositories: string[];
+  builderScore: number;
+};
 
 type GitHubRepoError = {
-  repo: string
-  error: string
+  repo: string;
+  error: string;
+};
+
+function githubHeaders(userAgent: string) {
+  const token = process.env.GITHUB_TOKEN;
+
+  return {
+    Accept: "application/vnd.github+json",
+    "User-Agent": userAgent,
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
 }
 
 function scoreBuilder(repoCount: number, totalContributions: number) {
-  return Math.round(repoCount * 120 + totalContributions)
+  return Math.round(repoCount * 120 + totalContributions);
 }
 
 export async function GET() {
-  const builderMap = new Map<string, BuilderRecord>()
-  const errors: GitHubRepoError[] = []
+  const builderMap = new Map<string, BuilderRecord>();
+  const errors: GitHubRepoError[] = [];
 
   await Promise.all(
     repos.map(async (repo) => {
       const response = await fetch(
         `https://api.github.com/repos/${repo}/contributors?per_page=30`,
         {
-          headers: {
-            Accept: "application/vnd.github+json",
-            "User-Agent": "AIAA Builder Signal"
-          },
+          headers: githubHeaders("AIAA Builder Signal"),
           next: {
             revalidate: 3600
           }
         }
-      )
+      );
 
       if (!response.ok) {
         errors.push({
           repo,
           error: `GitHub request failed with status ${response.status}`
-        })
-        return
+        });
+        return;
       }
 
-      const contributors = (await response.json()) as GitHubContributor[]
+      const contributors = (await response.json()) as GitHubContributor[];
 
       contributors
         .filter((item) => item.login && item.type === "User")
         .forEach((item) => {
-          const current = builderMap.get(item.login)
+          const current = builderMap.get(item.login);
 
           if (!current) {
             builderMap.set(item.login, {
@@ -85,20 +92,19 @@ export async function GET() {
               totalContributions: item.contributions,
               repositories: [repo],
               builderScore: scoreBuilder(1, item.contributions)
-            })
-            return
+            });
+            return;
           }
 
           const nextRepoCount = current.repositories.includes(repo)
             ? current.repoCount
-            : current.repoCount + 1
+            : current.repoCount + 1;
 
           const nextRepositories = current.repositories.includes(repo)
             ? current.repositories
-            : [...current.repositories, repo]
+            : [...current.repositories, repo];
 
-          const nextTotalContributions =
-            current.totalContributions + item.contributions
+          const nextTotalContributions = current.totalContributions + item.contributions;
 
           builderMap.set(item.login, {
             ...current,
@@ -106,10 +112,10 @@ export async function GET() {
             totalContributions: nextTotalContributions,
             repositories: nextRepositories,
             builderScore: scoreBuilder(nextRepoCount, nextTotalContributions)
-          })
-        })
+          });
+        });
     })
-  )
+  );
 
   const results = Array.from(builderMap.values())
     .sort((a, b) => b.builderScore - a.builderScore)
@@ -117,7 +123,7 @@ export async function GET() {
     .map((item, index) => ({
       rank: String(index + 1).padStart(2, "0"),
       ...item
-    }))
+    }));
 
   return NextResponse.json({
     source: "GitHub REST API",
@@ -128,5 +134,5 @@ export async function GET() {
     trackedRepositories: repos.length,
     results,
     errors
-  })
+  });
 }
