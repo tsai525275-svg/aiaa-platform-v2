@@ -1,86 +1,14 @@
 import { SiteHeader } from "@/components/site-header";
-
-const rankingGroups = [
-  {
-    id: "agent-products",
-    label: "01",
-    title: "AI Agent Product Ranking",
-    description:
-      "A market ranking for AI Agent products, automation platforms, coding agents, browser agents, and enterprise agent systems.",
-    metrics: ["Product maturity", "Real usage", "Automation depth", "Safety control"],
-    rows: [
-      { rank: "01", name: "OpenAI Agent", category: "Agent Platform", signal: "Product index", status: "Tracking" },
-      { rank: "02", name: "Claude Computer Use", category: "Computer Agent", signal: "Capability index", status: "Tracking" },
-      { rank: "03", name: "Devin", category: "Coding Agent", signal: "Developer index", status: "Tracking" },
-      { rank: "04", name: "Manus", category: "General Agent", signal: "Market index", status: "Tracking" },
-      { rank: "05", name: "Zapier Agents", category: "Workflow Agent", signal: "Automation index", status: "Tracking" }
-    ]
-  },
-  {
-    id: "github-stars",
-    label: "02",
-    title: "GitHub Stars Ranking",
-    description:
-      "A public open source ranking for AI Agent frameworks and tools, based on stars, forks, contributors, and update frequency.",
-    metrics: ["Stars", "Forks", "Contributors", "Last update"],
-    rows: [
-      { rank: "01", name: "LangGraph", category: "Agent Framework", signal: "GitHub data pending", status: "API ready" },
-      { rank: "02", name: "CrewAI", category: "Multi Agent Framework", signal: "GitHub data pending", status: "API ready" },
-      { rank: "03", name: "AutoGen", category: "Multi Agent Framework", signal: "GitHub data pending", status: "API ready" },
-      { rank: "04", name: "OpenHands", category: "Coding Agent", signal: "GitHub data pending", status: "API ready" },
-      { rank: "05", name: "Browser Use", category: "Browser Agent", signal: "GitHub data pending", status: "API ready" }
-    ]
-  },
-  {
-    id: "github-trending",
-    label: "03",
-    title: "GitHub Trending Growth Ranking",
-    description:
-      "A growth ranking that tracks which AI Agent projects are gaining attention fastest over 7, 30, and 90 day windows.",
-    metrics: ["7 day growth", "30 day growth", "Commit activity", "Release cadence"],
-    rows: [
-      { rank: "01", name: "Fastest rising project", category: "Open Source", signal: "Growth data pending", status: "Planned" },
-      { rank: "02", name: "Fastest rising framework", category: "Framework", signal: "Growth data pending", status: "Planned" },
-      { rank: "03", name: "Fastest rising tool", category: "Developer Tool", signal: "Growth data pending", status: "Planned" },
-      { rank: "04", name: "Fastest rising benchmark", category: "Evaluation", signal: "Growth data pending", status: "Planned" },
-      { rank: "05", name: "Fastest rising agent app", category: "Product", signal: "Growth data pending", status: "Planned" }
-    ]
-  },
-  {
-    id: "github-builders",
-    label: "04",
-    title: "GitHub AI Agent Builders Ranking",
-    description:
-      "A talent ranking for engineers, builders, and maintainers who contribute to the AI Agent ecosystem.",
-    metrics: ["Followers", "Agent repos", "Total stars", "Recent activity"],
-    rows: [
-      { rank: "01", name: "Agent framework maintainer", category: "Builder", signal: "Profile data pending", status: "Planned" },
-      { rank: "02", name: "Open source agent creator", category: "Builder", signal: "Profile data pending", status: "Planned" },
-      { rank: "03", name: "Benchmark contributor", category: "Research Builder", signal: "Profile data pending", status: "Planned" },
-      { rank: "04", name: "Automation engineer", category: "Operator", signal: "Profile data pending", status: "Planned" },
-      { rank: "05", name: "Tooling contributor", category: "Developer Tooling", signal: "Profile data pending", status: "Planned" }
-    ]
-  },
-  {
-    id: "frameworks",
-    label: "05",
-    title: "AI Agent Framework Ranking",
-    description:
-      "A technical ranking for frameworks used to build, deploy, evaluate, and manage AI Agent systems.",
-    metrics: ["Developer experience", "Documentation", "Tool calling", "Enterprise fit"],
-    rows: [
-      { rank: "01", name: "LangGraph", category: "Framework", signal: "Framework index", status: "Tracking" },
-      { rank: "02", name: "CrewAI", category: "Framework", signal: "Framework index", status: "Tracking" },
-      { rank: "03", name: "AutoGen", category: "Framework", signal: "Framework index", status: "Tracking" },
-      { rank: "04", name: "Semantic Kernel", category: "Framework", signal: "Framework index", status: "Tracking" },
-      { rank: "05", name: "LlamaIndex Agents", category: "Framework", signal: "Framework index", status: "Tracking" }
-    ]
-  }
-];
+import { rankingCategories } from "./ranking-data";
 
 const rankingStats = [
-  { label: "Ranking systems", value: "5" },
-  { label: "Tracked categories", value: "25" },
+  { label: "Ranking systems", value: rankingCategories.length.toString() },
+  {
+    label: "Tracked entries",
+    value: rankingCategories
+      .reduce((total, group) => total + group.entries.length, 0)
+      .toString()
+  },
   { label: "Data phase", value: "V1" },
   { label: "Update model", value: "Manual first" }
 ];
@@ -128,12 +56,16 @@ export default function RankingsPage() {
 
       <section className="relative pb-24 md:pb-40">
         <div className="section-shell grid gap-6">
-          {rankingGroups.map((group) => (
-            <article key={group.id} id={group.id} className="glass-panel overflow-hidden rounded-[2.5rem] p-6 md:p-8">
+          {rankingCategories.map((group) => (
+            <article
+              key={group.slug}
+              id={group.slug}
+              className="glass-panel overflow-hidden rounded-[2.5rem] p-6 md:p-8"
+            >
               <div className="grid gap-8 lg:grid-cols-[0.9fr_1.4fr]">
                 <div>
                   <div className="text-[0.72rem] uppercase tracking-[0.3em] text-white/38">
-                    Ranking {group.label}
+                    {group.eyebrow}
                   </div>
                   <h2 className="mt-4 text-[clamp(2rem,4vw,4.2rem)] font-semibold leading-[0.94] tracking-[-0.07em] text-white">
                     {group.title}
@@ -143,25 +75,39 @@ export default function RankingsPage() {
                   </p>
 
                   <div className="mt-7 flex flex-wrap gap-2">
-                    {group.metrics.map((metric) => (
-                      <span key={metric} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/62">
+                    {group.criteria.map((metric) => (
+                      <span
+                        key={metric}
+                        className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/62"
+                      >
                         {metric}
                       </span>
                     ))}
                   </div>
+
+                  <a
+                    href={`/rankings/${group.slug}`}
+                    className="mt-8 inline-flex min-h-11 items-center justify-center rounded-full border border-white/14 bg-white px-5 text-sm font-medium text-black transition-transform duration-300 hover:scale-[1.03]"
+                  >
+                    View Full Ranking <span className="ml-3">→</span>
+                  </a>
                 </div>
 
                 <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
-                  <div className="grid grid-cols-[0.42fr_1.25fr_1fr_1fr_0.8fr] border-b border-white/8 px-4 py-3 text-[0.62rem] uppercase tracking-[0.22em] text-white/34">
+                  <div className="grid grid-cols-[0.42fr_1.25fr_1fr_1fr_0.72fr_0.7fr] border-b border-white/8 px-4 py-3 text-[0.62rem] uppercase tracking-[0.22em] text-white/34">
                     <span>Rank</span>
                     <span>Name</span>
                     <span>Category</span>
                     <span>Signal</span>
                     <span>Status</span>
+                    <span>Score</span>
                   </div>
 
-                  {group.rows.map((row) => (
-                    <div key={`${group.id}-${row.rank}`} className="grid grid-cols-[0.42fr_1.25fr_1fr_1fr_0.8fr] items-center gap-2 border-b border-white/6 px-4 py-4 text-sm last:border-b-0">
+                  {group.entries.slice(0, 5).map((row) => (
+                    <div
+                      key={`${group.slug}-${row.rank}`}
+                      className="grid grid-cols-[0.42fr_1.25fr_1fr_1fr_0.72fr_0.7fr] items-center gap-2 border-b border-white/6 px-4 py-4 text-sm last:border-b-0"
+                    >
                       <span className="font-semibold text-white/80">{row.rank}</span>
                       <span className="font-medium text-white">{row.name}</span>
                       <span className="text-white/52">{row.category}</span>
@@ -169,6 +115,7 @@ export default function RankingsPage() {
                       <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-center text-xs text-white/60">
                         {row.status}
                       </span>
+                      <span className="font-semibold text-white/80">{row.score}</span>
                     </div>
                   ))}
                 </div>
