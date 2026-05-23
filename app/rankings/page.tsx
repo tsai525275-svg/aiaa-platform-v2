@@ -18,7 +18,7 @@ export default function RankingsPage() {
     <main className="relative min-h-screen overflow-hidden bg-[#07080b] text-white">
       <SiteHeader />
 
-      <section className="relative overflow-hidden pt-36 pb-20 md:pt-44 md:pb-28">
+      <section className="relative overflow-hidden pb-20 pt-36 md:pb-28 md:pt-44">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,8,11,0.42),rgba(7,8,11,0.92)_65%,rgba(7,8,11,1))]" />
           <div className="absolute left-[-8%] top-[8%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(104,118,164,0.2),transparent_62%)] blur-[140px]" />
@@ -62,7 +62,7 @@ export default function RankingsPage() {
               id={group.slug}
               className="glass-panel overflow-hidden rounded-[2.5rem] p-6 md:p-8"
             >
-              <div className="grid gap-8 lg:grid-cols-[0.9fr_1.4fr]">
+              <div className="grid gap-8 xl:grid-cols-[0.78fr_1.45fr]">
                 <div>
                   <div className="text-[0.72rem] uppercase tracking-[0.3em] text-white/38">
                     {group.eyebrow}
@@ -93,31 +93,51 @@ export default function RankingsPage() {
                   </a>
                 </div>
 
-                <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
-                  <div className="grid grid-cols-[0.42fr_1.25fr_1fr_1fr_0.72fr_0.7fr] border-b border-white/8 px-4 py-3 text-[0.62rem] uppercase tracking-[0.22em] text-white/34">
-                    <span>Rank</span>
-                    <span>Name</span>
-                    <span>Category</span>
-                    <span>Signal</span>
-                    <span>Status</span>
-                    <span>Score</span>
-                  </div>
-
-                  {group.entries.slice(0, 5).map((row) => (
-                    <div
-                      key={`${group.slug}-${row.rank}`}
-                      className="grid grid-cols-[0.42fr_1.25fr_1fr_1fr_0.72fr_0.7fr] items-center gap-2 border-b border-white/6 px-4 py-4 text-sm last:border-b-0"
-                    >
-                      <span className="font-semibold text-white/80">{row.rank}</span>
-                      <span className="font-medium text-white">{row.name}</span>
-                      <span className="text-white/52">{row.category}</span>
-                      <span className="text-white/52">{row.signal}</span>
-                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-center text-xs text-white/60">
-                        {row.status}
-                      </span>
-                      <span className="font-semibold text-white/80">{row.score}</span>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto rounded-[2rem] border border-white/10 bg-black/20">
+                  <table className="w-full border-collapse text-left" style={{ minWidth: "980px" }}>
+                    <thead>
+                      <tr className="border-b border-white/8 text-[0.62rem] uppercase tracking-[0.22em] text-white/34">
+                        <th className="px-4 py-4 font-medium">Rank</th>
+                        <th className="px-4 py-4 font-medium">Name</th>
+                        <th className="px-4 py-4 font-medium">Level</th>
+                        <th className="px-4 py-4 font-medium">Category</th>
+                        <th className="px-4 py-4 font-medium">Signal</th>
+                        <th className="px-4 py-4 font-medium">Verification</th>
+                        <th className="px-4 py-4 text-right font-medium">Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.entries.slice(0, 5).map((row) => (
+                        <tr key={`${group.slug}-${row.rank}`} className="border-b border-white/6 last:border-b-0">
+                          <td className="px-4 py-5 text-sm font-semibold text-white/80">
+                            {row.rank}
+                          </td>
+                          <td className="px-4 py-5 text-sm font-medium text-white">
+                            {row.name}
+                          </td>
+                          <td className="px-4 py-5">
+                            <span className="inline-flex min-w-24 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/64">
+                              {row.level}
+                            </span>
+                          </td>
+                          <td className="px-4 py-5 text-sm text-white/52">
+                            {row.category}
+                          </td>
+                          <td className="px-4 py-5 text-sm text-white/52">
+                            {row.signal}
+                          </td>
+                          <td className="px-4 py-5">
+                            <span className="inline-flex min-w-28 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/60">
+                              {row.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-5 text-right text-sm font-semibold text-white/80">
+                            {row.score}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </article>

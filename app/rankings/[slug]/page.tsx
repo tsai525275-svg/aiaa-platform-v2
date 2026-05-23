@@ -28,7 +28,7 @@ export default async function RankingDetailPage({
           <div className="absolute inset-0 opacity-[0.04] mix-blend-soft-light [background-image:radial-gradient(rgba(255,255,255,0.9)_0.6px,transparent_0.6px)] [background-size:7px_7px]" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-[1280px]">
+        <div className="relative z-10 mx-auto max-w-[1380px]">
           <a
             href="/rankings"
             className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-white/68 transition-colors duration-300 hover:text-white"
@@ -36,7 +36,7 @@ export default async function RankingDetailPage({
             ← Back to rankings
           </a>
 
-          <div className="mt-10 grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-end">
             <div>
               <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/42">
                 {category.eyebrow}
@@ -71,7 +71,7 @@ export default async function RankingDetailPage({
             </div>
           </div>
 
-          <div className="mt-10 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.56fr_1.44fr]">
             <aside className="glass-panel h-fit rounded-[2rem] p-6 md:p-8">
               <div className="text-xs uppercase tracking-[0.3em] text-white/42">
                 Ranking criteria
@@ -95,43 +95,53 @@ export default async function RankingDetailPage({
             </aside>
 
             <div className="glass-panel overflow-hidden rounded-[2.2rem] p-4 md:p-5">
-              <div className="hidden grid-cols-[0.55fr_1.5fr_1fr_1fr_0.65fr] gap-4 border-b border-white/8 px-4 pb-4 text-xs uppercase tracking-[0.26em] text-white/36 md:grid">
-                <div>Rank</div>
-                <div>Name</div>
-                <div>Category</div>
-                <div>Signal</div>
-                <div className="text-right">Score</div>
-              </div>
-
-              <div className="divide-y divide-white/8">
-                {category.entries.map((entry) => (
-                  <div
-                    key={`${entry.rank}-${entry.name}`}
-                    className="grid gap-4 px-4 py-5 md:grid-cols-[0.55fr_1.5fr_1fr_1fr_0.65fr] md:items-center"
-                  >
-                    <div className="text-[1.7rem] font-semibold tracking-[-0.07em] text-white/36 md:text-[2rem]">
-                      {entry.rank}
-                    </div>
-                    <div>
-                      <div className="text-lg font-medium text-white md:text-xl">
-                        {entry.name}
-                      </div>
-                      <div className="mt-1 text-sm text-white/42 md:hidden">
-                        {entry.category}
-                      </div>
-                    </div>
-                    <div className="hidden text-sm text-white/56 md:block">
-                      {entry.category}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/56">
-                      <span className="h-2 w-2 rounded-full bg-white/42" />
-                      {entry.signal}
-                    </div>
-                    <div className="text-left text-xl font-semibold text-white md:text-right">
-                      {entry.score}
-                    </div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[1040px]">
+                  <div className="grid grid-cols-[0.45fr_1.45fr_0.8fr_1fr_1fr_0.8fr_0.6fr] gap-4 border-b border-white/8 px-4 pb-4 text-xs uppercase tracking-[0.26em] text-white/36">
+                    <div>Rank</div>
+                    <div>Name</div>
+                    <div>Level</div>
+                    <div>Category</div>
+                    <div>Signal</div>
+                    <div>Verification</div>
+                    <div className="text-right">Score</div>
                   </div>
-                ))}
+
+                  <div className="divide-y divide-white/8">
+                    {category.entries.map((entry) => (
+                      <div
+                        key={`${entry.rank}-${entry.name}`}
+                        className="grid grid-cols-[0.45fr_1.45fr_0.8fr_1fr_1fr_0.8fr_0.6fr] items-center gap-4 px-4 py-5"
+                      >
+                        <div className="text-[1.55rem] font-semibold tracking-[-0.07em] text-white/42">
+                          {entry.rank}
+                        </div>
+                        <div className="text-lg font-medium text-white">
+                          {entry.name}
+                        </div>
+                        <div>
+                          <span className="inline-flex min-w-24 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/72">
+                            {entry.level}
+                          </span>
+                        </div>
+                        <div className="text-sm text-white/58">
+                          {entry.category}
+                        </div>
+                        <div className="text-sm text-white/58">
+                          {entry.signal}
+                        </div>
+                        <div>
+                          <span className="inline-flex min-w-24 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/58">
+                            {entry.status}
+                          </span>
+                        </div>
+                        <div className="text-right text-xl font-semibold text-white">
+                          {entry.score}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
