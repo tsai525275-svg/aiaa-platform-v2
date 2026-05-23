@@ -77,6 +77,67 @@ async function getGitHubStarsEntries(): Promise<DisplayEntry[]> {
     }));
 }
 
+type MomentumRepo = GitHubRepo & {
+  momentumScore: number;
+};
+
+function daysSince(dateText: string) {
+  const now = Date.now();
+  const then = new Date(dateText).getTime();
+  return Math.max(0, Math.floor((now - then) / 86400000));
+}
+
+function calculateMomentum(repo: GitHubRepo) {
+  const pushedDays = daysSince(repo.pushed_at);
+  const updatedDays = daysSince(repo.updated_at);
+
+  const recencyScore = Math.max(0, 100 - pushedDays * 3);
+  const updateScore = Math.max(0, 60 - updatedDays * 2);
+  const starScore = Math.min(100, repo.stargazers_count / 1500);
+  const forkScore = Math.min(60, repo.forks_count / 700);
+  const issueScore = Math.min(40, repo.open_issues_count / 20);
+
+  return Math.round(recencyScore + updateScore + starScore + forkScore + issueScore);
+}
+
+async function getGitHubTrendingEntries(): Promise<DisplayEntry[]> {
+  const results = await Promise.all(
+    liveGitHubRepos.map(async (repo) => {
+      const response = await fetch(`https://api.github.com/repos/${repo}`, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "User-Agent": "AIAA Momentum Signal"
+        },
+        next: {
+          revalidate: 3600
+        }
+      });
+
+      if (!response.ok) return null;
+
+      const data = (await response.json()) as GitHubRepo;
+      return {
+        ...data,
+        momentumScore: calculateMomentum(data)
+      };
+    })
+  );
+
+  return results
+    .filter((repo): repo is MomentumRepo => repo !== null)
+    .sort((a, b) => b.momentumScore - a.momentumScore)
+    .map((repo, index) => ({
+      rank: String(index + 1).padStart(2, "0"),
+      name: repo.name,
+      level: "Public Data",
+      category: repo.language ?? "Repository",
+      signal: `${repo.stargazers_count.toLocaleString()} stars`,
+      verification: "GitHub API",
+      score: repo.momentumScore.toLocaleString(),
+      url: repo.html_url
+    }));
+}
+
 
 const levelBadgeClass = (level: string) => {
   if (level === "Level 1") return "border-sky-300/35 bg-sky-300/[0.12] text-sky-100";
@@ -125,7 +186,12 @@ export default async function RankingDetailPage({
   if (!category) notFound();
 
   const isGitHubStarsLive = slug === "github-stars";
-  const liveEntries = isGitHubStarsLive ? await getGitHubStarsEntries() : [];
+  const isGitHubTrendingLive = slug === "github-trending";
+  const liveEntries = isGitHubStarsLive
+    ? await getGitHubStarsEntries()
+    : isGitHubTrendingLive
+      ? await getGitHubTrendingEntries()
+      : [];
   const entries: DisplayEntry[] = liveEntries.length > 0 ? liveEntries : category.entries;
 
   return (
@@ -186,7 +252,9 @@ export default async function RankingDetailPage({
           <div className="mt-8 rounded-[1.5rem] border border-amber-200/16 bg-amber-200/[0.06] px-5 py-4 text-sm leading-7 text-amber-50/74">
             {isGitHubStarsLive
               ? "This GitHub Stars table is powered by the GitHub REST API and refreshed through an hourly cache. AIAA certification status is not assigned from GitHub data. Certification requires separate AIAA review."
-              : "This page is a public preview of the AIAA ranking framework. Candidate order, scores, and verification states are not final rankings. Final rankings will be published after source review, data verification, and AIAA methodology approval."}
+              : isGitHubTrendingLive
+                ? "This GitHub Trending table uses Momentum Signal V1. It is powered by public GitHub metadata and refreshed through an hourly cache. This is not seven day star growth. Daily snapshot tracking will be added later."
+                : "This page is a public preview of the AIAA ranking framework. Candidate order, scores, and verification states are not final rankings. Final rankings will be published after source review, data verification, and AIAA methodology approval."}
           </div>
 
           <div className="mt-10 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
@@ -257,7 +325,7 @@ export default async function RankingDetailPage({
                     <div>Category</div>
                     <div>Signal</div>
                     <div className="text-center">Verification</div>
-                    <div className="text-right">{isGitHubStarsLive ? "Forks" : "Score"}</div>
+                    <div className="text-right">{isGitHubStarsLive ? "Forks" : isGitHubTrendingLive ? "Momentum" : "Score"}</div>
                   </div>
 
                   <div className="divide-y divide-white/8">
