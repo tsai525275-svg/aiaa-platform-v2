@@ -2,6 +2,50 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { rankingCategories } from "../ranking-data";
 
+const verificationBadgeClass = (status: string) => {
+  if (status === "Verified") {
+    return "border-emerald-300/25 bg-emerald-300/[0.12] text-emerald-100";
+  }
+
+  if (status === "Under Review") {
+    return "border-amber-300/25 bg-amber-300/[0.12] text-amber-100";
+  }
+
+  if (status === "Public Data") {
+    return "border-sky-300/25 bg-sky-300/[0.12] text-sky-100";
+  }
+
+  if (status === "Listed") {
+    return "border-violet-300/25 bg-violet-300/[0.12] text-violet-100";
+  }
+
+  return "border-white/10 bg-white/[0.04] text-white/60";
+};
+
+const levelBadgeClass = (level: string) => {
+  if (level === "Level 1") {
+    return "border-cyan-300/35 bg-cyan-300/[0.14] text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.12)]";
+  }
+
+  if (level === "Level 2") {
+    return "border-violet-300/35 bg-violet-300/[0.14] text-violet-100 shadow-[0_0_18px_rgba(167,139,250,0.12)]";
+  }
+
+  if (level === "Level 3") {
+    return "border-amber-300/35 bg-amber-300/[0.14] text-amber-100 shadow-[0_0_18px_rgba(251,191,36,0.12)]";
+  }
+
+  if (level === "Level 4") {
+    return "border-yellow-200/30 bg-[#17130a] text-yellow-100 shadow-[0_0_18px_rgba(234,179,8,0.12)]";
+  }
+
+  if (level === "Level 5") {
+    return "border-white/42 bg-white/[0.18] text-white shadow-[0_0_20px_rgba(255,255,255,0.14)]";
+  }
+
+  return "border-white/10 bg-white/[0.04] text-white/60";
+};
+
 export function generateStaticParams() {
   return rankingCategories.map((category) => ({ slug: category.slug }));
 }
@@ -96,55 +140,56 @@ export default async function RankingDetailPage({
 
             <div className="glass-panel overflow-hidden rounded-[2.2rem] p-4 md:p-5">
               <div className="overflow-x-auto">
-                <div className="min-w-[1040px]">
-                  <div className="grid grid-cols-[0.45fr_1.45fr_0.8fr_1fr_1fr_0.8fr_0.6fr] gap-4 border-b border-white/8 px-4 pb-4 text-xs uppercase tracking-[0.26em] text-white/36">
-                    <div>Rank</div>
-                    <div>Name</div>
-                    <div>Level</div>
-                    <div>Category</div>
-                    <div>Signal</div>
-                    <div>Verification</div>
-                    <div className="text-right">Score</div>
-                  </div>
-
-                  <div className="divide-y divide-white/8">
+                <table className="w-full border-collapse text-left" style={{ minWidth: "1120px" }}>
+                  <thead>
+                    <tr className="border-b border-white/8 text-xs uppercase tracking-[0.26em] text-white/36">
+                      <th className="px-4 py-4 font-medium">Rank</th>
+                      <th className="px-4 py-4 font-medium">Name</th>
+                      <th className="px-4 py-4 text-center font-medium">Level</th>
+                      <th className="px-4 py-4 font-medium">Category</th>
+                      <th className="px-4 py-4 font-medium">Signal</th>
+                      <th className="px-4 py-4 text-center font-medium">Verification</th>
+                      <th className="px-4 py-4 text-right font-medium">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {category.entries.map((entry) => (
-                      <div
-                        key={`${entry.rank}-${entry.name}`}
-                        className="grid grid-cols-[0.45fr_1.45fr_0.8fr_1fr_1fr_0.8fr_0.6fr] items-center gap-4 px-4 py-5"
-                      >
-                        <div className="text-[1.55rem] font-semibold tracking-[-0.07em] text-white/42">
+                      <tr key={`${entry.rank}-${entry.name}`} className="border-b border-white/8 last:border-b-0">
+                        <td className="px-4 py-6 text-[1.55rem] font-semibold tracking-[-0.07em] text-white/42">
                           {entry.rank}
-                        </div>
-                        <div className="text-lg font-medium text-white">
+                        </td>
+                        <td className="px-4 py-6 text-lg font-medium text-white">
                           {entry.name}
-                        </div>
-                        <div>
-                          <span className="inline-flex min-w-24 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/72">
+                        </td>
+                        <td className="px-4 py-6 text-center">
+                          <span
+                            className={`inline-flex min-w-[7rem] items-center justify-center rounded-full border px-3 py-1 text-xs font-medium ${levelBadgeClass(entry.level)}`}
+                          >
                             {entry.level}
                           </span>
-                        </div>
-                        <div className="text-sm text-white/58">
+                        </td>
+                        <td className="px-4 py-6 text-sm text-white/58">
                           {entry.category}
-                        </div>
-                        <div className="text-sm text-white/58">
+                        </td>
+                        <td className="px-4 py-6 text-sm text-white/58">
                           {entry.signal}
-                        </div>
-                        <div>
-                          <span className="inline-flex min-w-24 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/58">
+                        </td>
+                        <td className="px-4 py-6 text-center">
+                          <span
+                            className={`inline-flex min-w-[7rem] items-center justify-center rounded-full border px-3 py-1 text-xs font-medium ${verificationBadgeClass(entry.status)}`}
+                          >
                             {entry.status}
                           </span>
-                        </div>
-                        <div className="text-right text-xl font-semibold text-white">
+                        </td>
+                        <td className="px-4 py-6 text-right text-xl font-semibold text-white">
                           {entry.score}
-                        </div>
-                      </div>
+                        </td>
+                      </tr>
                     ))}
-                  </div>
-                </div>
+                  </tbody>
+                </table>
               </div>
-            </div>
-          </div>
+            </div>          </div>
         </div>
       </section>
     </main>
