@@ -50,16 +50,23 @@ function requireEnv(name: string) {
 }
 
 async function readApi<T>(origin: string, path: string) {
-  const response = await fetch(`${origin}${path}`, {
-    cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "AIAA Snapshot Runner"
-    }
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${origin}${path}`, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "AIAA Snapshot Runner"
+      }
+    });
+  } catch (error) {
+    throw new Error(`${path} fetch failed: ${error instanceof Error ? error.message : "Unknown fetch error"}`);
+  }
 
   if (!response.ok) {
-    throw new Error(`${path} failed with ${response.status}`);
+    const message = await response.text();
+    throw new Error(`${path} failed with ${response.status}: ${message}`);
   }
 
   return (await response.json()) as ApiResponse<T>;
@@ -76,19 +83,25 @@ async function upsertRows(table: string, onConflict: string, rows: unknown[]) {
   const supabaseUrl = requireEnv("SUPABASE_URL").replace(/\/$/, "");
   const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/${table}?on_conflict=${onConflict}`,
-    {
-      method: "POST",
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        "Content-Type": "application/json",
-        Prefer: "resolution=merge-duplicates,return=minimal"
-      },
-      body: JSON.stringify(rows)
-    }
-  );
+  let response: Response;
+
+  try {
+    response = await fetch(
+      `${supabaseUrl}/rest/v1/${table}?on_conflict=${onConflict}`,
+      {
+        method: "POST",
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates,return=minimal"
+        },
+        body: JSON.stringify(rows)
+      }
+    );
+  } catch (error) {
+    throw new Error(`${table} Supabase fetch failed: ${error instanceof Error ? error.message : "Unknown fetch error"}`);
+  }
 
   if (!response.ok) {
     const message = await response.text();
@@ -214,3 +227,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
