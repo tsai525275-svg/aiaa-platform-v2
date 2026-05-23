@@ -1,5 +1,5 @@
 const navItems = [
-  { label: "World", href: "/#world" },
+  { label: "World", href: "/world" },
   { label: "Standards", href: "/#standards" },
   { label: "Rankings", href: "/rankings" },
   { label: "Registry", href: "/#registry" },
