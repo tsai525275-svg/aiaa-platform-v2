@@ -4,7 +4,7 @@ import { rankingCategories } from "../ranking-data";
 
 export const revalidate = 3600;
 
-const liveGitHubRepos = [
+const trackedRepos = [
   "Significant-Gravitas/AutoGPT",
   "langchain-ai/langgraph",
   "crewAIInc/crewAI",
@@ -29,22 +29,180 @@ type GitHubRepo = {
   pushed_at: string;
   updated_at: string;
   language: string | null;
+  owner: {
+    login: string;
+    avatar_url: string;
+    html_url: string;
+  };
 };
 
-type DisplayEntry = {
+type RepoRow = {
   rank: string;
+  id: number;
   name: string;
-  level: string;
-  category: string;
-  signal: string;
-  verification: string;
-  score: string;
-  url?: string;
+  fullName: string;
+  description: string | null;
+  url: string;
+  stars: number;
+  forks: number;
+  openIssues: number;
+  language: string | null;
+  pushedAt: string;
+  updatedAt: string;
+  ownerLogin: string;
+  ownerAvatarUrl: string;
+  momentumScore?: number;
 };
 
-async function getGitHubStarsEntries(): Promise<DisplayEntry[]> {
-  const results = await Promise.all(
-    liveGitHubRepos.map(async (repo) => {
+type GitHubContributor = {
+  login: string;
+  avatar_url: string;
+  html_url: string;
+  contributions: number;
+  type: string;
+};
+
+type BuilderRow = {
+  rank: string;
+  login: string;
+  avatarUrl: string;
+  profileUrl: string;
+  repoCount: number;
+  totalContributions: number;
+  repositories: string[];
+  builderScore: number;
+};
+
+type RepoProfile = {
+  scope: string;
+  summary: string;
+  relevance: string;
+};
+
+const repoProfiles: Record<string, RepoProfile> = {
+  "Significant-Gravitas/AutoGPT": {
+    scope: "Autonomous Agent",
+    summary: "Open source autonomous agent project for goal driven task execution and agent workflows.",
+    relevance: "Included because it is a widely tracked autonomous agent repository."
+  },
+  "langchain-ai/langgraph": {
+    scope: "Agent Orchestration",
+    summary: "Graph based framework for stateful agent workflows, tool calling, and multi step AI systems.",
+    relevance: "Included because it is infrastructure for building agentic applications."
+  },
+  "crewAIInc/crewAI": {
+    scope: "Multi Agent Framework",
+    summary: "Framework for coordinating multiple AI agents that work together across roles and tasks.",
+    relevance: "Included because it focuses on multi agent collaboration and workflow execution."
+  },
+  "All-Hands-AI/OpenHands": {
+    scope: "Coding Agent",
+    summary: "AI driven software development agent for coding tasks, repository work, and developer automation.",
+    relevance: "Included because it represents the coding agent category."
+  },
+  "browser-use/browser-use": {
+    scope: "Browser Agent",
+    summary: "Browser automation agent toolkit for website interaction and online task execution.",
+    relevance: "Included because browser control is a core AI Agent capability."
+  },
+  "microsoft/autogen": {
+    scope: "Multi Agent Framework",
+    summary: "Programming framework for building agent systems and multi agent workflows.",
+    relevance: "Included because it supports agent orchestration and collaboration."
+  },
+  "run-llama/llama_index": {
+    scope: "Data Agent Framework",
+    summary: "Data framework for connecting AI systems to documents, retrieval, tools, and agent workflows.",
+    relevance: "Included because data access and retrieval are core agent infrastructure."
+  },
+  "FlowiseAI/Flowise": {
+    scope: "Agent Builder",
+    summary: "Visual builder for LLM flows, agent workflows, and low code AI applications.",
+    relevance: "Included because it helps teams build agent workflows through a visual interface."
+  },
+  "microsoft/semantic-kernel": {
+    scope: "Enterprise Agent Framework",
+    summary: "Application framework for integrating LLMs, plugins, tools, and enterprise AI workflows.",
+    relevance: "Included because it supports enterprise agent and tool calling architecture."
+  },
+  "langgenius/dify": {
+    scope: "Agent App Platform",
+    summary: "Platform for building AI applications and agentic workflows with production oriented features.",
+    relevance: "Included because it is an agent application platform with public repository signals."
+  }
+};
+
+const liveCopy = {
+  "github-stars": {
+    eyebrow: "GitHub Ranking 01",
+    title: "GitHub Stars Ranking",
+    description: "A repository ranking based on public GitHub star counts across tracked AI Agent repositories.",
+    modelLabel: "Ranking Model",
+    modelValue: "Stars",
+    statusValue: "Public GitHub data",
+    notice: "This table ranks repositories by public GitHub attention. It does not represent AIAA certification.",
+    criteria: ["Stars", "Forks", "Repository activity", "Public metadata"],
+    dataSources: ["Public GitHub repository metadata", "Repository star counts", "Repository fork counts"],
+    methodology: ["Rank repositories by public star count", "Show repository scope and summary", "Keep AIAA certification status separate"]
+  },
+  "github-trending": {
+    eyebrow: "GitHub Ranking 02",
+    title: "GitHub Trending Ranking",
+    description: "A repository ranking based on public GitHub momentum signals across tracked AI Agent repositories.",
+    modelLabel: "Signal Model",
+    modelValue: "Momentum Signal V1",
+    statusValue: "Public GitHub data",
+    notice: "This table uses public metadata to estimate current momentum. Daily snapshot tracking will add true 7 day and 30 day growth later.",
+    criteria: ["Recent updates", "Stars", "Forks", "Open issues"],
+    dataSources: ["Public GitHub repository metadata", "Repository activity signals", "Repository star counts"],
+    methodology: ["Calculate Momentum Signal V1", "Use stars, forks, issues, and update recency", "Add daily snapshots later"]
+  },
+  "github-builders": {
+    eyebrow: "GitHub Ranking 03",
+    title: "GitHub Builders Ranking",
+    description: "A builder ranking based on public GitHub contributor metadata across tracked AI Agent repositories.",
+    modelLabel: "Signal Model",
+    modelValue: "Builder Signal V1",
+    statusValue: "Public GitHub data",
+    notice: "This table ranks people, not software and not skills. It does not represent AIAA identity certification or employment verification.",
+    criteria: ["Contributions", "Tracked repositories", "Open source activity", "Builder signal"],
+    dataSources: ["Public GitHub contributor metadata", "Repository contributor lists", "Public profile URLs"],
+    methodology: ["Aggregate public contributors", "Combine repo count and contribution count", "Keep identity certification separate"]
+  }
+};
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US").format(value);
+}
+
+function daysSince(dateText: string) {
+  const now = Date.now();
+  const then = new Date(dateText).getTime();
+  return Math.max(0, Math.floor((now - then) / 86400000));
+}
+
+function calculateMomentum(repo: GitHubRepo) {
+  const pushedDays = daysSince(repo.pushed_at);
+  const updatedDays = daysSince(repo.updated_at);
+  const recencyScore = Math.max(0, 100 - pushedDays * 3);
+  const updateScore = Math.max(0, 60 - updatedDays * 2);
+  const starScore = Math.min(100, repo.stargazers_count / 1500);
+  const forkScore = Math.min(60, repo.forks_count / 700);
+  const issueScore = Math.min(40, repo.open_issues_count / 20);
+  return Math.round(recencyScore + updateScore + starScore + forkScore + issueScore);
+}
+
+function getRepoProfile(fullName: string, description: string | null) {
+  return repoProfiles[fullName] ?? {
+    scope: "AI Agent Repository",
+    summary: description ?? "Tracked open source repository reviewed for AI Agent relevance.",
+    relevance: "Included because it appears in the tracked AI Agent repository set."
+  };
+}
+
+async function getRepoRows(mode: "stars" | "trending") {
+  const rows = await Promise.all(
+    trackedRepos.map(async (repo) => {
       const response = await fetch(`https://api.github.com/repos/${repo}`, {
         headers: {
           Accept: "application/vnd.github+json",
@@ -58,118 +216,381 @@ async function getGitHubStarsEntries(): Promise<DisplayEntry[]> {
       if (!response.ok) return null;
 
       const data = (await response.json()) as GitHubRepo;
-      return data;
+
+      return {
+        id: data.id,
+        name: data.name,
+        fullName: data.full_name,
+        description: data.description,
+        url: data.html_url,
+        stars: data.stargazers_count,
+        forks: data.forks_count,
+        openIssues: data.open_issues_count,
+        language: data.language,
+        pushedAt: data.pushed_at,
+        updatedAt: data.updated_at,
+        ownerLogin: data.owner.login,
+        ownerAvatarUrl: data.owner.avatar_url,
+        momentumScore: calculateMomentum(data)
+      } satisfies Omit<RepoRow, "rank">;
     })
   );
 
-  return results
-    .filter((repo): repo is GitHubRepo => repo !== null)
-    .sort((a, b) => b.stargazers_count - a.stargazers_count)
-    .map((repo, index) => ({
+  return rows
+    .filter((row): row is Omit<RepoRow, "rank"> => row !== null)
+    .sort((a, b) => mode === "stars" ? b.stars - a.stars : (b.momentumScore ?? 0) - (a.momentumScore ?? 0))
+    .map((item, index) => ({
       rank: String(index + 1).padStart(2, "0"),
-      name: repo.name,
-      level: "Public Data",
-      category: repo.language ?? "Repository",
-      signal: `${repo.stargazers_count.toLocaleString()} stars`,
-      verification: "GitHub API",
-      score: repo.forks_count.toLocaleString(),
-      url: repo.html_url
+      ...item
     }));
 }
 
-type MomentumRepo = GitHubRepo & {
-  momentumScore: number;
-};
-
-function daysSince(dateText: string) {
-  const now = Date.now();
-  const then = new Date(dateText).getTime();
-  return Math.max(0, Math.floor((now - then) / 86400000));
+function scoreBuilder(repoCount: number, totalContributions: number) {
+  return Math.round(repoCount * 120 + totalContributions);
 }
 
-function calculateMomentum(repo: GitHubRepo) {
-  const pushedDays = daysSince(repo.pushed_at);
-  const updatedDays = daysSince(repo.updated_at);
+async function getBuilderRows() {
+  const builderMap = new Map<string, Omit<BuilderRow, "rank">>();
 
-  const recencyScore = Math.max(0, 100 - pushedDays * 3);
-  const updateScore = Math.max(0, 60 - updatedDays * 2);
-  const starScore = Math.min(100, repo.stargazers_count / 1500);
-  const forkScore = Math.min(60, repo.forks_count / 700);
-  const issueScore = Math.min(40, repo.open_issues_count / 20);
-
-  return Math.round(recencyScore + updateScore + starScore + forkScore + issueScore);
-}
-
-async function getGitHubTrendingEntries(): Promise<DisplayEntry[]> {
-  const results = await Promise.all(
-    liveGitHubRepos.map(async (repo) => {
-      const response = await fetch(`https://api.github.com/repos/${repo}`, {
+  await Promise.all(
+    trackedRepos.map(async (repo) => {
+      const response = await fetch(`https://api.github.com/repos/${repo}/contributors?per_page=30`, {
         headers: {
           Accept: "application/vnd.github+json",
-          "User-Agent": "AIAA Momentum Signal"
+          "User-Agent": "AIAA Builder Signal"
         },
         next: {
           revalidate: 3600
         }
       });
 
-      if (!response.ok) return null;
+      if (!response.ok) return;
 
-      const data = (await response.json()) as GitHubRepo;
-      return {
-        ...data,
-        momentumScore: calculateMomentum(data)
-      };
+      const contributors = (await response.json()) as GitHubContributor[];
+
+      contributors
+        .filter((item) => item.login && item.type === "User")
+        .forEach((item) => {
+          const current = builderMap.get(item.login);
+
+          if (!current) {
+            builderMap.set(item.login, {
+              login: item.login,
+              avatarUrl: item.avatar_url,
+              profileUrl: item.html_url,
+              repoCount: 1,
+              totalContributions: item.contributions,
+              repositories: [repo],
+              builderScore: scoreBuilder(1, item.contributions)
+            });
+            return;
+          }
+
+          const repositories = current.repositories.includes(repo) ? current.repositories : [...current.repositories, repo];
+          const totalContributions = current.totalContributions + item.contributions;
+          const repoCount = repositories.length;
+
+          builderMap.set(item.login, {
+            ...current,
+            repoCount,
+            totalContributions,
+            repositories,
+            builderScore: scoreBuilder(repoCount, totalContributions)
+          });
+        });
     })
   );
 
-  return results
-    .filter((repo): repo is MomentumRepo => repo !== null)
-    .sort((a, b) => b.momentumScore - a.momentumScore)
-    .map((repo, index) => ({
+  return Array.from(builderMap.values())
+    .sort((a, b) => b.builderScore - a.builderScore)
+    .slice(0, 30)
+    .map((item, index) => ({
       rank: String(index + 1).padStart(2, "0"),
-      name: repo.name,
-      level: "Public Data",
-      category: repo.language ?? "Repository",
-      signal: `${repo.stargazers_count.toLocaleString()} stars`,
-      verification: "GitHub API",
-      score: repo.momentumScore.toLocaleString(),
-      url: repo.html_url
+      ...item
     }));
 }
 
+function SignalBadge() {
+  return (
+    <span className="inline-flex min-w-[8.6rem] justify-center rounded-full border border-emerald-300/30 bg-emerald-300/[0.10] px-4 py-2 text-sm font-medium text-emerald-100">
+      Public GitHub
+    </span>
+  );
+}
 
-const levelBadgeClass = (level: string) => {
-  if (level === "Level 1") return "border-sky-300/35 bg-sky-300/[0.12] text-sky-100";
-  if (level === "Level 2") return "border-purple-300/35 bg-purple-300/[0.12] text-purple-100";
-  if (level === "Level 3") return "border-amber-300/35 bg-amber-300/[0.14] text-amber-100";
-  if (level === "Level 4") return "border-yellow-200/30 bg-black/55 text-yellow-100";
-  if (level === "Level 5") return "border-white/35 bg-white/[0.18] text-white";
+function ScopeBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex min-w-[8.2rem] justify-center rounded-full border border-white/18 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80">
+      {label}
+    </span>
+  );
+}
 
-  if (level === "Public Data") return "border-sky-300/25 bg-sky-300/[0.10] text-sky-100";
+function InfoStrip({ items, label }: { items: string[]; label: string }) {
+  return (
+    <details className="rounded-[1.35rem] border border-white/10 bg-white/[0.025] p-4">
+      <summary className="cursor-pointer text-xs uppercase tracking-[0.28em] text-white/52">
+        {label}
+      </summary>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {items.map((item) => (
+          <span key={item} className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-white/68">
+            {item}
+          </span>
+        ))}
+      </div>
+    </details>
+  );
+}
 
-  return "border-white/12 bg-white/[0.05] text-white/62";
-};
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[1rem] border border-white/8 bg-white/[0.035] px-4 py-3">
+      <div className="text-[0.62rem] uppercase tracking-[0.22em] text-white/38">{label}</div>
+      <div className="mt-1 text-lg font-semibold text-white">{value}</div>
+    </div>
+  );
+}
 
-const verificationBadgeClass = (verification: string) => {
-  if (verification === "Source Review") {
-    return "border-amber-300/25 bg-amber-300/[0.12] text-amber-100";
-  }
+function LiveHero({ slug }: { slug: keyof typeof liveCopy }) {
+  const copy = liveCopy[slug];
 
-  if (verification === "Data Pending") {
-    return "border-sky-300/25 bg-sky-300/[0.12] text-sky-100";
-  }
+  return (
+    <section className="pt-32 md:pt-36">
+      <a href="/rankings" className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-white/70 hover:text-white">
+        ← Back to rankings
+      </a>
 
-  if (verification === "Preview") {
-    return "border-white/12 bg-white/[0.05] text-white/58";
-  }
+      <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+        <div>
+          <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/42">{copy.eyebrow}</div>
+          <h1 className="mt-4 max-w-[52rem] text-[clamp(2.8rem,6vw,5.6rem)] font-semibold leading-[0.92] tracking-[-0.08em] text-white">
+            {copy.title}
+          </h1>
+        </div>
 
-  if (verification === "GitHub API") {
-    return "border-emerald-300/25 bg-emerald-300/[0.12] text-emerald-100";
-  }
+        <div className="rounded-[2rem] border border-white/8 bg-white/[0.035] p-6 md:p-7">
+          <p className="text-base leading-7 text-white/66 md:text-lg md:leading-8">{copy.description}</p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[1.25rem] border border-white/12 bg-white/[0.035] p-4">
+              <div className="text-xs uppercase tracking-[0.26em] text-white/38">{copy.modelLabel}</div>
+              <div className="mt-2 text-lg font-medium text-white/88">{copy.modelValue}</div>
+            </div>
+            <div className="rounded-[1.25rem] border border-white/12 bg-white/[0.035] p-4">
+              <div className="text-xs uppercase tracking-[0.26em] text-white/38">Data Status</div>
+              <div className="mt-2 text-lg font-medium text-white/88">{copy.statusValue}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  return "border-white/10 bg-white/[0.04] text-white/58";
-};
+      <div className="mt-7 rounded-[1.35rem] border border-white/14 bg-white/[0.025] px-5 py-4 text-sm leading-6 text-white/68">
+        {copy.notice}
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-3">
+        <InfoStrip label="Ranking Criteria" items={copy.criteria} />
+        <InfoStrip label="Data Sources" items={copy.dataSources} />
+        <InfoStrip label="Methodology" items={copy.methodology} />
+      </div>
+    </section>
+  );
+}
+
+function RepoTable({ items, mode }: { items: RepoRow[]; mode: "stars" | "trending" }) {
+  return (
+    <section className="mt-8 rounded-[2rem] border border-white/8 bg-white/[0.025] p-3 md:p-5">
+      <div className="overflow-x-auto">
+        <div className="min-w-[1180px]">
+          <div className="grid grid-cols-[0.42fr_1.7fr_0.9fr_0.9fr_0.65fr_0.65fr_0.75fr] gap-4 border-b border-white/12 px-4 py-4 text-xs uppercase tracking-[0.26em] text-white/42">
+            <div>Rank</div>
+            <div>Repository</div>
+            <div>Scope</div>
+            <div>Public Signal</div>
+            <div>{mode === "trending" ? "Momentum" : "Stars"}</div>
+            <div>Forks</div>
+            <div>Language</div>
+          </div>
+
+          {items.map((item) => {
+            const profile = getRepoProfile(item.fullName, item.description);
+            const primaryMetric = mode === "trending" ? item.momentumScore ?? 0 : item.stars;
+
+            return (
+              <div key={`${mode}-${item.fullName}`} className="grid grid-cols-[0.42fr_1.7fr_0.9fr_0.9fr_0.65fr_0.65fr_0.75fr] gap-4 border-b border-white/8 px-4 py-5 last:border-b-0">
+                <div className="text-[2rem] font-semibold leading-none tracking-[-0.08em] text-white">{item.rank}</div>
+                <div className="flex min-w-0 gap-4">
+                  <img src={item.ownerAvatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-2xl border border-white/12 bg-white/[0.04] object-cover" />
+                  <div className="min-w-0">
+                    <a href={item.url} target="_blank" rel="noreferrer" className="break-words text-xl font-medium text-white hover:text-white/70">
+                      {item.name}
+                    </a>
+                    <div className="mt-1 break-words text-sm text-white/44">{item.fullName}</div>
+                    <p className="mt-2 text-sm leading-6 text-white/62">{profile.summary}</p>
+                  </div>
+                </div>
+                <div><ScopeBadge label={profile.scope} /></div>
+                <div><SignalBadge /></div>
+                <div className="text-lg font-semibold text-white">{formatNumber(primaryMetric)}</div>
+                <div className="text-lg font-semibold text-white">{formatNumber(item.forks)}</div>
+                <div className="text-lg font-semibold text-white">{item.language ?? "Public repo"}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BuilderTable({ items }: { items: BuilderRow[] }) {
+  return (
+    <section className="mt-8 rounded-[2rem] border border-white/8 bg-white/[0.025] p-3 md:p-5">
+      <div className="overflow-x-auto">
+        <div className="min-w-[1080px]">
+          <div className="grid grid-cols-[0.42fr_1.65fr_0.9fr_0.9fr_0.65fr_0.55fr_0.6fr] gap-4 border-b border-white/12 px-4 py-4 text-xs uppercase tracking-[0.26em] text-white/42">
+            <div>Rank</div>
+            <div>Builder</div>
+            <div>Scope</div>
+            <div>Public Signal</div>
+            <div>Contributions</div>
+            <div>Repos</div>
+            <div>Score</div>
+          </div>
+
+          {items.map((item) => (
+            <div key={item.login} className="grid grid-cols-[0.42fr_1.65fr_0.9fr_0.9fr_0.65fr_0.55fr_0.6fr] gap-4 border-b border-white/8 px-4 py-5 last:border-b-0">
+              <div className="text-[2rem] font-semibold leading-none tracking-[-0.08em] text-white">{item.rank}</div>
+              <div className="flex min-w-0 gap-4">
+                <img src={item.avatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-2xl border border-white/12 bg-white/[0.04] object-cover" />
+                <div className="min-w-0">
+                  <a href={item.profileUrl} target="_blank" rel="noreferrer" className="break-words text-xl font-medium text-white hover:text-white/70">
+                    {item.login}
+                  </a>
+                  <p className="mt-2 text-sm leading-6 text-white/62">Public contributor detected across tracked AI Agent repositories.</p>
+                  <div className="mt-1 break-words text-xs leading-5 text-white/42">Repos: {item.repositories.slice(0, 3).join(", ")}{item.repositories.length > 3 ? "..." : ""}</div>
+                </div>
+              </div>
+              <div><ScopeBadge label="Open Source Builder" /></div>
+              <div><SignalBadge /></div>
+              <div className="text-lg font-semibold text-white">{formatNumber(item.totalContributions)}</div>
+              <div className="text-lg font-semibold text-white">{formatNumber(item.repoCount)}</div>
+              <div className="text-lg font-semibold text-white">{formatNumber(item.builderScore)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Background() {
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,15,0.18),rgba(6,7,10,0.92)_56%,rgba(6,7,10,1))]" />
+      <div className="absolute left-[-12%] top-[8%] h-[38rem] w-[38rem] rounded-full bg-[radial-gradient(circle,rgba(100,122,168,0.18),transparent_64%)] blur-[140px]" />
+      <div className="absolute right-[-10%] top-[2%] h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(112,85,132,0.18),transparent_64%)] blur-[150px]" />
+      <div className="absolute inset-0 opacity-[0.04] mix-blend-soft-light [background-image:radial-gradient(rgba(255,255,255,0.9)_0.6px,transparent_0.6px)] [background-size:7px_7px]" />
+    </div>
+  );
+}
+
+function PageFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-[#06070a] text-white">
+      <SiteHeader />
+      <Background />
+      <div className="relative z-10 mx-auto max-w-[1440px] px-5 pb-24 md:px-8 md:pb-32">
+        {children}
+      </div>
+    </main>
+  );
+}
+
+async function GitHubStarsPage() {
+  const rows = await getRepoRows("stars");
+  return (
+    <PageFrame>
+      <LiveHero slug="github-stars" />
+      <RepoTable items={rows} mode="stars" />
+    </PageFrame>
+  );
+}
+
+async function GitHubTrendingPage() {
+  const rows = await getRepoRows("trending");
+  return (
+    <PageFrame>
+      <LiveHero slug="github-trending" />
+      <RepoTable items={rows} mode="trending" />
+    </PageFrame>
+  );
+}
+
+async function GitHubBuildersPage() {
+  const rows = await getBuilderRows();
+  return (
+    <PageFrame>
+      <LiveHero slug="github-builders" />
+      <BuilderTable items={rows} />
+    </PageFrame>
+  );
+}
+
+function StaticPreviewPage({ slug }: { slug: string }) {
+  const category = rankingCategories.find((item) => item.slug === slug);
+  if (!category) notFound();
+
+  return (
+    <PageFrame>
+      <section className="pt-32 md:pt-36">
+        <a href="/rankings" className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-white/70 hover:text-white">
+          ← Back to rankings
+        </a>
+        <div className="mt-8">
+          <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/42">{category.eyebrow}</div>
+          <h1 className="mt-4 max-w-[56rem] text-[clamp(2.8rem,6vw,5.6rem)] font-semibold leading-[0.92] tracking-[-0.08em] text-white">
+            {category.title}
+          </h1>
+          <p className="mt-5 max-w-3xl text-base leading-7 text-white/64 md:text-lg md:leading-8">{category.description}</p>
+        </div>
+        <div className="mt-7 rounded-[1.35rem] border border-white/14 bg-white/[0.025] px-5 py-4 text-sm leading-6 text-white/68">
+          This page is a public preview. Final rankings will be published after source review and AIAA methodology approval.
+        </div>
+        <div className="mt-5 grid gap-3 lg:grid-cols-3">
+          <InfoStrip label="Ranking Criteria" items={category.criteria} />
+          <InfoStrip label="Data Sources" items={category.dataSources ?? ["Public data onboarding"]} />
+          <InfoStrip label="Methodology" items={category.methodology ?? ["Preview framework"]} />
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-[2rem] border border-white/8 bg-white/[0.025] p-3 md:p-5">
+        <div className="overflow-x-auto">
+          <div className="min-w-[920px]">
+            <div className="grid grid-cols-[0.5fr_1.6fr_0.95fr_1fr_1fr_0.9fr] gap-4 border-b border-white/12 px-4 py-4 text-xs uppercase tracking-[0.26em] text-white/42">
+              <div>Rank</div>
+              <div>Name</div>
+              <div>Level</div>
+              <div>Category</div>
+              <div>Signal</div>
+              <div>Score</div>
+            </div>
+            {category.entries.map((entry) => (
+              <div key={`${entry.rank}-${entry.name}`} className="grid grid-cols-[0.5fr_1.6fr_0.95fr_1fr_1fr_0.9fr] gap-4 border-b border-white/8 px-4 py-5 last:border-b-0">
+                <div className="text-[2rem] font-semibold leading-none tracking-[-0.08em] text-white">{entry.rank}</div>
+                <div className="text-lg font-medium text-white">{entry.name}</div>
+                <div><ScopeBadge label={entry.level} /></div>
+                <div className="text-lg text-white/76">{entry.category}</div>
+                <div className="text-lg text-white/76">{entry.signal}</div>
+                <div className="text-lg font-semibold text-white">{entry.score}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </PageFrame>
+  );
+}
 
 export function generateStaticParams() {
   return rankingCategories.map((category) => ({ slug: category.slug }));
@@ -181,199 +602,10 @@ export default async function RankingDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const category = rankingCategories.find((item) => item.slug === slug);
 
-  if (!category) notFound();
+  if (slug === "github-stars") return <GitHubStarsPage />;
+  if (slug === "github-trending") return <GitHubTrendingPage />;
+  if (slug === "github-builders") return <GitHubBuildersPage />;
 
-  const isGitHubStarsLive = slug === "github-stars";
-  const isGitHubTrendingLive = slug === "github-trending";
-  const liveEntries = isGitHubStarsLive
-    ? await getGitHubStarsEntries()
-    : isGitHubTrendingLive
-      ? await getGitHubTrendingEntries()
-      : [];
-  const entries: DisplayEntry[] = liveEntries.length > 0 ? liveEntries : category.entries;
-
-  return (
-    <main className="relative min-h-screen overflow-hidden bg-[#06070a] text-white">
-      <SiteHeader />
-
-      <section className="relative overflow-hidden px-5 pb-24 pt-36 md:px-8 md:pb-32 md:pt-44">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,15,0.2),rgba(6,7,10,0.92)_56%,rgba(6,7,10,1))]" />
-          <div className="absolute left-[-12%] top-[8%] h-[38rem] w-[38rem] rounded-full bg-[radial-gradient(circle,rgba(100,122,168,0.18),transparent_64%)] blur-[140px]" />
-          <div className="absolute right-[-10%] top-[2%] h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(112,85,132,0.18),transparent_64%)] blur-[150px]" />
-          <div className="absolute inset-0 opacity-[0.04] mix-blend-soft-light [background-image:radial-gradient(rgba(255,255,255,0.9)_0.6px,transparent_0.6px)] [background-size:7px_7px]" />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-[1280px]">
-          <a
-            href="/rankings"
-            className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-white/68 transition-colors duration-300 hover:text-white"
-          >
-            ← Back to rankings
-          </a>
-
-          <div className="mt-10 grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
-            <div>
-              <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/42">
-                {category.eyebrow}
-              </div>
-              <h1 className="mt-5 max-w-4xl text-[clamp(3rem,6.5vw,6rem)] font-semibold leading-[0.94] tracking-[-0.075em] text-white">
-                {category.title}
-              </h1>
-            </div>
-
-            <div className="glass-panel rounded-[2rem] p-6 md:p-8">
-              <p className="text-base leading-8 text-white/70 md:text-lg">
-                {category.description}
-              </p>
-              <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.035] p-4">
-                  <div className="text-xs uppercase tracking-[0.26em] text-white/36">
-                    Last updated
-                  </div>
-                  <div className="mt-2 text-lg font-medium text-white/86">
-                    {category.lastUpdated}
-                  </div>
-                </div>
-                <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.035] p-4">
-                  <div className="text-xs uppercase tracking-[0.26em] text-white/36">
-                    Update frequency
-                  </div>
-                  <div className="mt-2 text-lg font-medium text-white/86">
-                    {category.updateFrequency}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 rounded-[1.5rem] border border-amber-200/16 bg-amber-200/[0.06] px-5 py-4 text-sm leading-7 text-amber-50/74">
-            {isGitHubStarsLive
-              ? "This GitHub Stars table is powered by the GitHub REST API and refreshed through an hourly cache. AIAA certification status is not assigned from GitHub data. Certification requires separate AIAA review."
-              : isGitHubTrendingLive
-                ? "This GitHub Trending table uses Momentum Signal V1. It is powered by public GitHub metadata and refreshed through an hourly cache. This is not seven day star growth. Daily snapshot tracking will be added later."
-                : "This page is a public preview of the AIAA ranking framework. Candidate order, scores, and verification states are not final rankings. Final rankings will be published after source review, data verification, and AIAA methodology approval."}
-          </div>
-
-          <div className="mt-10 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
-            <aside className="space-y-5">
-              <div className="glass-panel rounded-[2rem] p-6 md:p-8">
-                <div className="text-xs uppercase tracking-[0.3em] text-white/42">
-                  Ranking criteria
-                </div>
-                <div className="mt-6 space-y-3">
-                  {category.criteria.map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-[1.2rem] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm text-white/70"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="glass-panel rounded-[2rem] p-6 md:p-8">
-                <div className="text-xs uppercase tracking-[0.3em] text-white/42">
-                  Data sources
-                </div>
-                <div className="mt-6 space-y-3">
-                  {category.dataSource.map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-[1.2rem] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm text-white/70"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="glass-panel rounded-[2rem] p-6 md:p-8">
-                <div className="text-xs uppercase tracking-[0.3em] text-white/42">
-                  Methodology
-                </div>
-                <div className="mt-6 space-y-3">
-                  {category.methodology.map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-[1.2rem] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm text-white/70"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <a
-                href="/#access"
-                className="inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition-all duration-300 hover:scale-[1.02]"
-              >
-                Submit data for review
-              </a>
-            </aside>
-
-            <div className="glass-panel overflow-hidden rounded-[2.2rem] p-4 md:p-5">
-              <div className="overflow-x-auto">
-                <div className="min-w-[1040px]">
-                  <div className="grid grid-cols-[0.5fr_1.45fr_0.85fr_1fr_1fr_1fr_0.7fr] gap-4 border-b border-white/8 px-4 pb-4 text-xs uppercase tracking-[0.26em] text-white/36">
-                    <div>Rank</div>
-                    <div>Name</div>
-                    <div className="text-center">Level</div>
-                    <div>Category</div>
-                    <div>Signal</div>
-                    <div className="text-center">Verification</div>
-                    <div className="text-right">{isGitHubStarsLive ? "Forks" : isGitHubTrendingLive ? "Momentum" : "Score"}</div>
-                  </div>
-
-                  <div className="divide-y divide-white/8">
-                    {entries.map((entry) => (
-                      <div
-                        key={`${entry.rank}-${entry.name}`}
-                        className="grid grid-cols-[0.5fr_1.45fr_0.85fr_1fr_1fr_1fr_0.7fr] items-center gap-4 px-4 py-5 text-sm"
-                      >
-                        <div className="text-[1.7rem] font-semibold tracking-[-0.07em] text-white/36">
-                          {entry.rank}
-                        </div>
-                        <div className="font-medium text-white">
-                          {entry.url ? (
-                            <a href={entry.url} target="_blank" rel="noreferrer" className="transition-colors duration-300 hover:text-sky-100">
-                              {entry.name}
-                            </a>
-                          ) : (
-                            entry.name
-                          )}
-                        </div>
-                        <div className="flex justify-center">
-                          <span className={`inline-flex min-w-[6.8rem] justify-center rounded-full border px-3 py-1 text-xs ${levelBadgeClass(entry.level)}`}>
-                            {entry.level}
-                          </span>
-                        </div>
-                        <div className="text-white/56">
-                          {entry.category}
-                        </div>
-                        <div className="text-white/56">
-                          {entry.signal}
-                        </div>
-                        <div className="flex justify-center">
-                          <span className={`inline-flex min-w-[7.2rem] justify-center rounded-full border px-3 py-1 text-xs ${verificationBadgeClass(entry.verification)}`}>
-                            {entry.verification}
-                          </span>
-                        </div>
-                        <div className="text-right text-xl font-semibold text-white">
-                          {entry.score}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+  return <StaticPreviewPage slug={slug} />;
 }
