@@ -1,60 +1,42 @@
 import { SiteHeader } from "@/components/site-header";
 import { rankingCategories } from "./ranking-data";
 
-const verificationBadgeClass = (status: string) => {
-  if (status === "Verified") {
-    return "border-emerald-300/25 bg-emerald-300/[0.12] text-emerald-100";
-  }
+const levelBadgeClass = (level: string) => {
+  if (level === "Level 1") return "border-sky-300/35 bg-sky-300/[0.12] text-sky-100";
+  if (level === "Level 2") return "border-purple-300/35 bg-purple-300/[0.12] text-purple-100";
+  if (level === "Level 3") return "border-amber-300/35 bg-amber-300/[0.14] text-amber-100";
+  if (level === "Level 4") return "border-yellow-200/30 bg-black/55 text-yellow-100";
+  if (level === "Level 5") return "border-white/35 bg-white/[0.18] text-white";
 
-  if (status === "Under Review") {
+  return "border-white/12 bg-white/[0.05] text-white/62";
+};
+
+const verificationBadgeClass = (verification: string) => {
+  if (verification === "Source Review") {
     return "border-amber-300/25 bg-amber-300/[0.12] text-amber-100";
   }
 
-  if (status === "Public Data") {
+  if (verification === "Data Pending") {
     return "border-sky-300/25 bg-sky-300/[0.12] text-sky-100";
   }
 
-  if (status === "Listed") {
-    return "border-violet-300/25 bg-violet-300/[0.12] text-violet-100";
+  if (verification === "Preview") {
+    return "border-white/12 bg-white/[0.05] text-white/58";
   }
 
-  return "border-white/10 bg-white/[0.04] text-white/60";
-};
-
-const levelBadgeClass = (level: string) => {
-  if (level === "Level 1") {
-    return "border-cyan-300/35 bg-cyan-300/[0.14] text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.12)]";
-  }
-
-  if (level === "Level 2") {
-    return "border-violet-300/35 bg-violet-300/[0.14] text-violet-100 shadow-[0_0_18px_rgba(167,139,250,0.12)]";
-  }
-
-  if (level === "Level 3") {
-    return "border-amber-300/35 bg-amber-300/[0.14] text-amber-100 shadow-[0_0_18px_rgba(251,191,36,0.12)]";
-  }
-
-  if (level === "Level 4") {
-    return "border-yellow-200/30 bg-[#17130a] text-yellow-100 shadow-[0_0_18px_rgba(234,179,8,0.12)]";
-  }
-
-  if (level === "Level 5") {
-    return "border-white/42 bg-white/[0.18] text-white shadow-[0_0_20px_rgba(255,255,255,0.14)]";
-  }
-
-  return "border-white/10 bg-white/[0.04] text-white/60";
+  return "border-white/10 bg-white/[0.04] text-white/58";
 };
 
 const rankingStats = [
-  { label: "Ranking systems", value: rankingCategories.length.toString() },
+  { label: "Ranking frameworks", value: rankingCategories.length.toString() },
   {
-    label: "Tracked entries",
+    label: "Preview entries",
     value: rankingCategories
       .reduce((total, group) => total + group.entries.length, 0)
       .toString()
   },
-  { label: "Data phase", value: "V1" },
-  { label: "Update model", value: "Manual first" }
+  { label: "Data phase", value: "Preview" },
+  { label: "Verification", value: "Pending" }
 ];
 
 export default function RankingsPage() {
@@ -62,7 +44,7 @@ export default function RankingsPage() {
     <main className="relative min-h-screen overflow-hidden bg-[#07080b] text-white">
       <SiteHeader />
 
-      <section className="relative overflow-hidden pb-20 pt-36 md:pb-28 md:pt-44">
+      <section className="relative overflow-hidden pt-36 pb-20 md:pt-44 md:pb-28">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,8,11,0.42),rgba(7,8,11,0.92)_65%,rgba(7,8,11,1))]" />
           <div className="absolute left-[-8%] top-[8%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(104,118,164,0.2),transparent_62%)] blur-[140px]" />
@@ -73,14 +55,18 @@ export default function RankingsPage() {
         <div className="section-shell relative z-10">
           <div className="mx-auto max-w-5xl text-center">
             <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/44">
-              AIAA Rankings Hub
+              AIAA Rankings Preview
             </div>
-            <h1 className="mt-5 text-[clamp(3.6rem,9vw,8.2rem)] font-semibold leading-[0.88] tracking-[-0.08em] text-white">
-              Ranking the AI Agent economy.
+            <h1 className="mt-5 text-[clamp(3.2rem,8vw,7.2rem)] font-semibold leading-[0.92] tracking-[-0.08em] text-white">
+              Ranking framework for the AI Agent economy.
             </h1>
             <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-white/64 md:text-xl md:leading-9">
-              AIAA tracks products, frameworks, open source projects, GitHub builders, and verified certification signals across the AI Agent ecosystem.
+              AIAA is preparing ranking frameworks for agent products, open source repositories, GitHub builders, and agent frameworks. Public data collection is in progress.
             </p>
+          </div>
+
+          <div className="mx-auto mt-9 max-w-4xl rounded-[1.5rem] border border-amber-200/16 bg-amber-200/[0.06] px-5 py-4 text-center text-sm leading-7 text-amber-50/74">
+            This page is a public preview of the AIAA ranking framework. Final rankings will be published after source review, data verification, and AIAA methodology approval.
           </div>
 
           <div className="mt-14 grid gap-3 md:grid-cols-4">
@@ -106,7 +92,7 @@ export default function RankingsPage() {
               id={group.slug}
               className="glass-panel overflow-hidden rounded-[2.5rem] p-6 md:p-8"
             >
-              <div className="grid gap-8 xl:grid-cols-[0.78fr_1.45fr]">
+              <div className="grid gap-8 lg:grid-cols-[0.9fr_1.4fr]">
                 <div>
                   <div className="text-[0.72rem] uppercase tracking-[0.3em] text-white/38">
                     {group.eyebrow}
@@ -133,59 +119,45 @@ export default function RankingsPage() {
                     href={`/rankings/${group.slug}`}
                     className="mt-8 inline-flex min-h-11 items-center justify-center rounded-full border border-white/14 bg-white px-5 text-sm font-medium text-black transition-transform duration-300 hover:scale-[1.03]"
                   >
-                    View Full Ranking <span className="ml-3">→</span>
+                    View Preview Framework <span className="ml-3">→</span>
                   </a>
                 </div>
 
                 <div className="overflow-x-auto rounded-[2rem] border border-white/10 bg-black/20">
-                  <table className="w-full border-collapse text-left" style={{ minWidth: "980px" }}>
-                    <thead>
-                      <tr className="border-b border-white/8 text-[0.62rem] uppercase tracking-[0.22em] text-white/34">
-                        <th className="px-4 py-4 font-medium">Rank</th>
-                        <th className="px-4 py-4 font-medium">Name</th>
-                        <th className="px-4 py-4 text-center font-medium">Level</th>
-                        <th className="px-4 py-4 font-medium">Category</th>
-                        <th className="px-4 py-4 font-medium">Signal</th>
-                        <th className="px-4 py-4 font-medium">Verification</th>
-                        <th className="px-4 py-4 text-right font-medium">Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.entries.slice(0, 5).map((row) => (
-                        <tr key={`${group.slug}-${row.rank}`} className="border-b border-white/6 last:border-b-0">
-                          <td className="px-4 py-5 text-sm font-semibold text-white/80">
-                            {row.rank}
-                          </td>
-                          <td className="px-4 py-5 text-sm font-medium text-white">
-                            {row.name}
-                          </td>
-                          <td className="px-4 py-5 text-center">
-                            <span
-                              className={`inline-flex min-w-[7rem] items-center justify-center rounded-full border px-3 py-1 text-xs font-medium ${levelBadgeClass(row.level)}`}
-                            >
-                              {row.level}
-                            </span>
-                          </td>
-                          <td className="px-4 py-5 text-sm text-white/52">
-                            {row.category}
-                          </td>
-                          <td className="px-4 py-5 text-sm text-white/52">
-                            {row.signal}
-                          </td>
-                          <td className="px-4 py-5">
-                            <span
-                              className={`inline-flex min-w-28 items-center justify-center rounded-full border px-3 py-1 text-xs ${verificationBadgeClass(row.status)}`}
-                            >
-                              {row.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-5 text-right text-sm font-semibold text-white/80">
-                            {row.score}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="min-w-[920px]">
+                    <div className="grid grid-cols-[0.42fr_1.3fr_0.86fr_1fr_1fr_1fr_0.75fr] border-b border-white/8 px-4 py-3 text-[0.62rem] uppercase tracking-[0.22em] text-white/34">
+                      <span>Rank</span>
+                      <span>Name</span>
+                      <span className="text-center">Level</span>
+                      <span>Category</span>
+                      <span>Signal</span>
+                      <span className="text-center">Verification</span>
+                      <span className="text-right">Score</span>
+                    </div>
+
+                    {group.entries.slice(0, 5).map((row) => (
+                      <div
+                        key={`${group.slug}-${row.rank}`}
+                        className="grid grid-cols-[0.42fr_1.3fr_0.86fr_1fr_1fr_1fr_0.75fr] items-center gap-2 border-b border-white/6 px-4 py-4 text-sm last:border-b-0"
+                      >
+                        <span className="font-semibold text-white/80">{row.rank}</span>
+                        <span className="font-medium text-white">{row.name}</span>
+                        <span className="flex justify-center">
+                          <span className={`inline-flex min-w-[6.8rem] justify-center rounded-full border px-3 py-1 text-xs ${levelBadgeClass(row.level)}`}>
+                            {row.level}
+                          </span>
+                        </span>
+                        <span className="text-white/52">{row.category}</span>
+                        <span className="text-white/52">{row.signal}</span>
+                        <span className="flex justify-center">
+                          <span className={`inline-flex min-w-[7.2rem] justify-center rounded-full border px-3 py-1 text-xs ${verificationBadgeClass(row.verification)}`}>
+                            {row.verification}
+                          </span>
+                        </span>
+                        <span className="text-right font-semibold text-white/80">{row.score}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </article>

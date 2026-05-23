@@ -1,10 +1,10 @@
 import { SiteHeader } from "@/components/site-header";
 
 const intelligenceStats = [
-  { label: "AI Agent News", value: "Editorial" },
-  { label: "GitHub Signals", value: "Ranking" },
-  { label: "Research Watch", value: "Index" },
-  { label: "Company Moves", value: "Market" }
+  { label: "News pipeline", value: "Preview" },
+  { label: "GitHub signals", value: "Onboarding" },
+  { label: "Research watch", value: "Manual" },
+  { label: "Company moves", value: "Review" }
 ];
 
 const worldNav = [
@@ -16,109 +16,62 @@ const worldNav = [
 
 const newsCards = [
   {
-    tag: "Product Watch",
-    title: "Agent platforms moving from demos to operating systems",
-    summary:
-      "AIAA tracks products that combine planning, tool use, browser control, memory, and workflow execution into daily work systems.",
+    label: "Agent product news",
+    title: "Product launch tracking pipeline",
+    copy:
+      "AIAA is preparing an editorial workflow for AI Agent product launches, platform updates, and enterprise agent releases.",
     href: "/rankings/ai-agent-products"
   },
   {
-    tag: "Coding Agents",
-    title: "Software agents are becoming a separate product category",
-    summary:
-      "Coding agents, repo agents, and developer automation tools are tracked as a core part of the agent economy.",
-    href: "/rankings/ai-agent-products"
+    label: "Open source news",
+    title: "Repository movement watchlist",
+    copy:
+      "GitHub signals will track stars, releases, contributors, forks, and repository activity for AI Agent projects.",
+    href: "/rankings/github-stars"
   },
   {
-    tag: "Enterprise Agents",
-    title: "Companies are testing agent systems inside business workflows",
-    summary:
-      "AIAA monitors enterprise deployment signals, governance needs, and the movement from assistant tools to agent operations.",
-    href: "/rankings/agent-frameworks"
+    label: "Market news",
+    title: "Company activity review queue",
+    copy:
+      "AIAA is building a source review process for company moves, product announcements, and market activity.",
+    href: "#companies"
   }
 ];
 
 const githubSignals = [
   {
-    title: "GitHub Stars Ranking",
-    label: "Open source attention",
-    summary: "Track repository visibility, public developer interest, and ecosystem attention.",
+    title: "GitHub Stars Preview",
+    copy: "Repository attention framework for open source AI Agent projects.",
     href: "/rankings/github-stars"
   },
   {
-    title: "GitHub Trending Ranking",
-    label: "Growth momentum",
-    summary: "Track rising projects, release velocity, recent growth, and developer adoption signals.",
+    title: "GitHub Trending Preview",
+    copy: "Growth signal framework for repositories gaining developer attention.",
     href: "/rankings/github-trending"
   },
   {
-    title: "GitHub Builders Ranking",
-    label: "Developer influence",
-    summary: "Track maintainers, builders, contributors, and public engineering influence in AI Agent systems.",
+    title: "GitHub Builders Preview",
+    copy: "Builder signal framework for maintainers, contributors, and agent engineers.",
     href: "/rankings/github-builders"
   }
 ];
 
 const researchCards = [
-  {
-    title: "Agent Evaluation",
-    summary: "Benchmarks, task reliability, tool success rate, and long horizon evaluation.",
-    href: "/standards"
-  },
-  {
-    title: "Tool Use",
-    summary: "Function calling, browser control, API execution, workflow automation, and safe tool boundaries.",
-    href: "/standards"
-  },
-  {
-    title: "Memory and Planning",
-    summary: "Context management, task decomposition, retrieval, persistent memory, and execution planning.",
-    href: "/standards"
-  },
-  {
-    title: "Multi Agent Systems",
-    summary: "Role routing, agent collaboration, supervisor patterns, evaluation loops, and orchestration.",
-    href: "/rankings/agent-frameworks"
-  }
+  "Agent Evaluation",
+  "Tool Use",
+  "Memory Systems",
+  "Multi Agent Collaboration",
+  "Safety Review",
+  "Human Handoff"
 ];
 
 const companyCards = [
-  {
-    company: "OpenAI",
-    focus: "Agent platform and developer tooling",
-    signal: "Product and API ecosystem tracking",
-    href: "/rankings/ai-agent-products"
-  },
-  {
-    company: "Anthropic",
-    focus: "Computer use and enterprise assistant systems",
-    signal: "Capability and safety signal tracking",
-    href: "/rankings/ai-agent-products"
-  },
-  {
-    company: "Google",
-    focus: "Agent products, workspace agents, and model integration",
-    signal: "Enterprise and platform signal tracking",
-    href: "/rankings/ai-agent-products"
-  },
-  {
-    company: "Microsoft",
-    focus: "Copilot agents and business workflow systems",
-    signal: "Enterprise deployment signal tracking",
-    href: "/rankings/ai-agent-products"
-  },
-  {
-    company: "Salesforce",
-    focus: "CRM agents and enterprise automation",
-    signal: "Company agent system tracking",
-    href: "/rankings/ai-agent-products"
-  },
-  {
-    company: "Zapier",
-    focus: "Workflow agents and automation operations",
-    signal: "Automation signal tracking",
-    href: "/rankings/ai-agent-products"
-  }
+  "Product updates",
+  "Enterprise launches",
+  "Partnership signals",
+  "Funding signals",
+  "Developer platform moves",
+  "Regulation watch"
 ];
 
 export default function WorldPage() {
@@ -128,31 +81,35 @@ export default function WorldPage() {
 
       <section className="relative overflow-hidden px-5 pb-20 pt-36 md:px-8 md:pb-28 md:pt-44">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,8,11,0.3),rgba(7,8,11,0.94)_66%,rgba(7,8,11,1))]" />
-          <div className="absolute left-[-12%] top-[6%] h-[38rem] w-[38rem] rounded-full bg-[radial-gradient(circle,rgba(102,119,170,0.18),transparent_64%)] blur-[150px]" />
-          <div className="absolute right-[-10%] top-[4%] h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(120,94,76,0.16),transparent_64%)] blur-[150px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,8,11,0.34),rgba(7,8,11,0.9)_62%,rgba(7,8,11,1))]" />
+          <div className="absolute left-[-8%] top-[8%] h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(89,112,162,0.2),transparent_64%)] blur-[150px]" />
+          <div className="absolute right-[-8%] top-[4%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(120,94,76,0.16),transparent_64%)] blur-[150px]" />
           <div className="absolute inset-0 opacity-[0.045] mix-blend-soft-light [background-image:radial-gradient(rgba(255,255,255,0.9)_0.6px,transparent_0.6px)] [background-size:7px_7px]" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-[1440px]">
+        <div className="relative z-10 mx-auto max-w-[1280px]">
           <div className="mx-auto max-w-5xl text-center">
             <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/44">
-              AIAA AI World
+              AIAA AI World Preview
             </div>
-            <h1 className="mt-5 text-[clamp(3.4rem,8vw,7.1rem)] font-semibold leading-[0.94] tracking-[-0.075em] text-white">
-              AI Agent intelligence index.
+            <h1 className="mt-5 text-[clamp(3.1rem,7vw,6.6rem)] font-semibold leading-[0.94] tracking-[-0.075em] text-white">
+              Intelligence layer for the AI Agent world.
             </h1>
             <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-white/64 md:text-xl md:leading-9">
-              AIAA World tracks AI Agent news, GitHub signals, research movement, company activity, and public market signals.
+              AIAA is preparing a public intelligence layer for AI Agent news, GitHub signals, research movement, company activity, and market data.
             </p>
           </div>
 
-          <div className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-2">
+          <div className="mx-auto mt-9 max-w-4xl rounded-[1.5rem] border border-amber-200/16 bg-amber-200/[0.06] px-5 py-4 text-center text-sm leading-7 text-amber-50/74">
+            This page is a public preview. News, GitHub signals, research watchlists, and company activity will be published after source review and editorial verification.
+          </div>
+
+          <div className="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-3">
             {worldNav.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-white/68 transition-colors duration-300 hover:border-white/28 hover:text-white"
+                className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-white/64 transition-colors duration-300 hover:text-white"
               >
                 {item.label}
               </a>
@@ -162,7 +119,7 @@ export default function WorldPage() {
           <div className="mt-14 grid gap-3 md:grid-cols-4">
             {intelligenceStats.map((item) => (
               <div key={item.label} className="glass-panel rounded-[1.8rem] p-5 text-center">
-                <div className="text-3xl font-semibold tracking-[-0.05em] text-white md:text-4xl">
+                <div className="text-2xl font-semibold tracking-[-0.05em] text-white md:text-3xl">
                   {item.value}
                 </div>
                 <div className="mt-2 text-[0.72rem] uppercase tracking-[0.22em] text-white/42">
@@ -174,43 +131,36 @@ export default function WorldPage() {
         </div>
       </section>
 
-      <section id="news" className="relative px-5 pb-10 md:px-8">
-        <div className="mx-auto max-w-[1440px]">
-          <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <section id="news" className="relative px-5 pb-16 md:px-8 md:pb-24">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="text-[0.72rem] uppercase tracking-[0.3em] text-white/42">
-                Latest AI Agent News
+              <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/38">
+                AI Agent News
               </div>
-              <h2 className="mt-3 text-[clamp(2rem,4vw,4.5rem)] font-semibold leading-[0.95] tracking-[-0.065em] text-white">
-                Product launches and agent platform updates.
+              <h2 className="mt-3 text-[clamp(2.3rem,5vw,4.4rem)] font-semibold leading-[0.95] tracking-[-0.07em] text-white">
+                Editorial tracking preview.
               </h2>
             </div>
-            <a
-              href="/rankings/ai-agent-products"
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/12 bg-white px-5 text-sm font-medium text-black"
-            >
-              View product ranking
+            <a href="/rankings" className="inline-flex w-fit rounded-full bg-white px-5 py-3 text-sm font-semibold text-black">
+              View Rankings
             </a>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-3">
             {newsCards.map((item) => (
-              <a
-                key={item.title}
-                href={item.href}
-                className="glass-panel group rounded-[2rem] p-6 transition-transform duration-300 hover:scale-[1.015]"
-              >
-                <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs uppercase tracking-[0.22em] text-white/48">
-                  {item.tag}
+              <a key={item.title} href={item.href} className="glass-panel block rounded-[2rem] p-6 transition-transform duration-300 hover:scale-[1.015]">
+                <div className="text-xs uppercase tracking-[0.26em] text-white/36">
+                  {item.label}
                 </div>
-                <h3 className="mt-6 text-2xl font-semibold leading-tight tracking-[-0.04em] text-white">
+                <h3 className="mt-4 text-2xl font-semibold tracking-[-0.05em] text-white">
                   {item.title}
                 </h3>
                 <p className="mt-4 text-sm leading-7 text-white/58">
-                  {item.summary}
+                  {item.copy}
                 </p>
-                <div className="mt-7 text-sm text-white/72 group-hover:text-white">
-                  Open signal →
+                <div className="mt-6 text-sm font-medium text-white/78">
+                  Open preview →
                 </div>
               </a>
             ))}
@@ -218,40 +168,30 @@ export default function WorldPage() {
         </div>
       </section>
 
-      <section id="github" className="relative px-5 py-10 md:px-8">
-        <div className="mx-auto max-w-[1440px] rounded-[2.6rem] border border-white/8 bg-white/[0.035] p-6 md:p-8">
-          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+      <section id="github" className="relative px-5 pb-16 md:px-8 md:pb-24">
+        <div className="mx-auto max-w-[1280px] glass-panel rounded-[2.5rem] p-6 md:p-8">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-              <div className="text-[0.72rem] uppercase tracking-[0.3em] text-white/42">
+              <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/38">
                 GitHub Signal Board
               </div>
-              <h2 className="mt-4 text-[clamp(2.4rem,5vw,5.4rem)] font-semibold leading-[0.92] tracking-[-0.075em] text-white">
-                Open source projects gaining developer attention.
+              <h2 className="mt-3 text-[clamp(2.2rem,4.6vw,4rem)] font-semibold leading-[0.95] tracking-[-0.07em] text-white">
+                Public repository signal pipeline.
               </h2>
-              <p className="mt-6 max-w-xl text-base leading-8 text-white/58">
-                Repository momentum, star growth, contributor activity, release cadence, and framework adoption signals are prepared for GitHub API integration.
+              <p className="mt-5 text-sm leading-7 text-white/58 md:text-base md:leading-8">
+                GitHub data will power open source ranking views after repository matching, source validation, and ingestion logic are complete.
               </p>
             </div>
 
             <div className="grid gap-3">
               {githubSignals.map((item) => (
-                <a
-                  key={item.title}
-                  href={item.href}
-                  className="rounded-[1.8rem] border border-white/8 bg-black/20 p-5 transition-colors duration-300 hover:border-white/24"
-                >
-                  <div className="text-xs uppercase tracking-[0.24em] text-white/38">
-                    {item.label}
+                <a key={item.title} href={item.href} className="rounded-[1.5rem] border border-white/8 bg-white/[0.035] p-5 transition-colors duration-300 hover:bg-white/[0.055]">
+                  <div className="text-lg font-medium text-white">
+                    {item.title}
                   </div>
-                  <div className="mt-3 flex items-center justify-between gap-4">
-                    <h3 className="text-2xl font-semibold tracking-[-0.04em] text-white">
-                      {item.title}
-                    </h3>
-                    <span className="text-white/50">→</span>
+                  <div className="mt-2 text-sm leading-6 text-white/54">
+                    {item.copy}
                   </div>
-                  <p className="mt-3 text-sm leading-7 text-white/54">
-                    {item.summary}
-                  </p>
                 </a>
               ))}
             </div>
@@ -259,81 +199,36 @@ export default function WorldPage() {
         </div>
       </section>
 
-      <section id="research" className="relative px-5 py-10 md:px-8">
-        <div className="mx-auto max-w-[1440px]">
-          <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <div>
-              <div className="text-[0.72rem] uppercase tracking-[0.3em] text-white/42">
-                Research Watch
-              </div>
-              <h2 className="mt-3 text-[clamp(2rem,4vw,4.5rem)] font-semibold leading-[0.95] tracking-[-0.065em] text-white">
-                Agent papers, evaluation methods, and benchmark movement.
-              </h2>
-            </div>
-            <a
-              href="/standards"
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/12 bg-white px-5 text-sm font-medium text-black"
-            >
-              View standards
-            </a>
+      <section className="relative grid gap-6 px-5 pb-24 md:px-8 md:pb-36 lg:grid-cols-2" id="research">
+        <div className="mx-auto w-full max-w-[630px] glass-panel rounded-[2.4rem] p-6 md:p-8 lg:mr-0">
+          <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/38">
+            Research Watch
           </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <h2 className="mt-3 text-[clamp(2.1rem,4.2vw,3.8rem)] font-semibold leading-[0.96] tracking-[-0.07em] text-white">
+            Research topics under review.
+          </h2>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
             {researchCards.map((item) => (
-              <a
-                key={item.title}
-                href={item.href}
-                className="glass-panel rounded-[2rem] p-6 transition-transform duration-300 hover:scale-[1.015]"
-              >
-                <h3 className="text-2xl font-semibold tracking-[-0.045em] text-white">
-                  {item.title}
-                </h3>
-                <p className="mt-4 text-sm leading-7 text-white/56">
-                  {item.summary}
-                </p>
-              </a>
+              <div key={item} className="rounded-[1.3rem] border border-white/8 bg-white/[0.035] p-4 text-sm text-white/66">
+                {item}
+              </div>
             ))}
           </div>
         </div>
-      </section>
 
-      <section id="companies" className="relative px-5 py-10 pb-28 md:px-8 md:pb-40">
-        <div className="mx-auto max-w-[1440px] rounded-[2.6rem] border border-white/8 bg-white/[0.035] p-6 md:p-8">
-          <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr]">
-            <div>
-              <div className="text-[0.72rem] uppercase tracking-[0.3em] text-white/42">
-                Company Moves
+        <div className="mx-auto w-full max-w-[630px] glass-panel rounded-[2.4rem] p-6 md:p-8 lg:ml-0" id="companies">
+          <div className="text-[0.72rem] uppercase tracking-[0.34em] text-white/38">
+            Company Moves
+          </div>
+          <h2 className="mt-3 text-[clamp(2.1rem,4.2vw,3.8rem)] font-semibold leading-[0.96] tracking-[-0.07em] text-white">
+            Market activity watchlist.
+          </h2>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            {companyCards.map((item) => (
+              <div key={item} className="rounded-[1.3rem] border border-white/8 bg-white/[0.035] p-4 text-sm text-white/66">
+                {item}
               </div>
-              <h2 className="mt-4 text-[clamp(2.4rem,5vw,5.4rem)] font-semibold leading-[0.92] tracking-[-0.075em] text-white">
-                Companies building, funding, or deploying agent systems.
-              </h2>
-              <p className="mt-6 max-w-xl text-base leading-8 text-white/58">
-                This track monitors AI Agent companies, enterprise deployments, funding signals, partnerships, and public product positioning.
-              </p>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              {companyCards.map((item) => (
-                <a
-                  key={item.company}
-                  href={item.href}
-                  className="rounded-[1.8rem] border border-white/8 bg-black/20 p-5 transition-colors duration-300 hover:border-white/24"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <h3 className="text-2xl font-semibold tracking-[-0.04em] text-white">
-                      {item.company}
-                    </h3>
-                    <span className="text-white/50">→</span>
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-white/58">
-                    {item.focus}
-                  </p>
-                  <div className="mt-4 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 text-xs text-white/52">
-                    {item.signal}
-                  </div>
-                </a>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       </section>
