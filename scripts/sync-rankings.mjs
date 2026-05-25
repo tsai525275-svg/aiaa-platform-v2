@@ -1,3 +1,44 @@
+function decodeHtmlEntities(value = "") {
+  return String(value ?? "")
+    .replace(/&(?:nbsp|ensp|emsp|thinsp);/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, num) => String.fromCodePoint(Number.parseInt(num, 10)));
+}
+
+function cleanRepositoryText(value = "", max = 180) {
+  const cleaned = decodeHtmlEntities(value)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/~~~[\s\S]*?~~~/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<picture[\s\S]*?<\/picture>/gi, " ")
+    .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<img[^>]*>/gi, " ")
+    .replace(/<a\s+[^>]*>(.*?)<\/a>/gi, "$1")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/p>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/[#*_`>|~{}\[\]();=]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!max) return cleaned;
+  return cleaned.slice(0, max).replace(/\s+\S*$/, "").trim();
+}
+
+function cleanReadmeSummary(value = "") {
+  return cleanRepositoryText(value, 180);
+}
 const repos = [
   "Significant-Gravitas/AutoGPT",
   "langchain-ai/langgraph",
@@ -80,15 +121,7 @@ async function githubText(path) {
 }
 
 function cleanMarkdown(text) {
-  return text
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[#>*_~|]/g, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return cleanRepositoryText(text, 0);
 }
 
 function shortText(text, max = 320) {
@@ -99,9 +132,12 @@ function shortText(text, max = 320) {
 }
 
 function makeSummary(repo, readme) {
-  const readmeSummary = shortText(readme, 280);
+  const repoDescription = cleanReadmeSummary(repo.description);
+  if (repoDescription) return repoDescription;
+
+  const readmeSummary = cleanReadmeSummary(shortText(readme, 280));
   if (readmeSummary) return readmeSummary;
-  if (repo.description) return repo.description;
+
   return `${repo.name} is a tracked public repository in the AI Agent ecosystem.`;
 }
 
@@ -248,7 +284,7 @@ function repoSnapshotRow(item, rankingKey, rank, score) {
     owner_login: item.ownerLogin,
     owner_avatar_url: item.ownerAvatarUrl,
     scope: item.scope,
-    summary: item.summary,
+    summary: cleanReadmeSummary(item.summary),
     why_included: item.whyIncluded,
     stars: item.stars,
     forks: item.forks,
@@ -271,7 +307,7 @@ function profileRow(item, rankingKey, rank, score) {
     external_url: item.url,
     avatar_url: item.ownerAvatarUrl,
     rank: String(rank).padStart(2, "0"),
-    summary: item.summary,
+    summary: cleanReadmeSummary(item.summary),
     what_it_does: item.whatItDoes,
     why_ranked: item.whyIncluded,
     capabilities: item.capabilities,
@@ -367,7 +403,7 @@ function builderProfileRow(item) {
     external_url: item.profileUrl,
     avatar_url: item.avatarUrl,
     rank: item.rank,
-    summary: `${item.login} is ranked by public GitHub contribution signals across tracked AI Agent repositories.`,
+    summary: cleanReadmeSummary(`${item.login} is ranked by public GitHub contribution signals across tracked AI Agent repositories.`),
     what_it_does: `${item.login} contributes to repositories that AIAA tracks in the AI Agent software ecosystem.`,
     why_ranked: "Included because this GitHub account appears in contributor data for tracked AI Agent repositories.",
     capabilities: ["AI Agent repository contribution", "Open source activity", "Public builder signal", "GitHub ecosystem presence"],
@@ -423,3 +459,4 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+

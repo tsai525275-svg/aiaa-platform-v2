@@ -87,6 +87,46 @@ type RankingBlueprint = {
   tags: string[]
 }
 
+
+function decodeHtmlEntities(value: string) {
+  return value
+    .replace(/&(?:nbsp|ensp|emsp|thinsp);/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, num: string) => String.fromCodePoint(Number.parseInt(num, 10)))
+}
+
+function cleanVisibleSummary(value: string | null | undefined) {
+  if (!value) return null
+
+  const cleaned = decodeHtmlEntities(value)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/~~~[\s\S]*?~~~/g, " ")
+    .replace(/<!--[\s\S]*?(-->|$)/g, " ")
+    .replace(/<(script|style|picture|svg)\b[\s\S]*?(<\/\1>|$)/gi, " ")
+    .replace(/<img\b[^>]*(>|$)/gi, " ")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<a\b[^>]*>([\s\S]*?)(<\/a>|$)/gi, "$1")
+    .replace(/<[^>]*(>|$)/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/[#*_`>|~{}\[\]();=]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180)
+    .replace(/\s+\S*$/, "")
+    .trim()
+
+  if (!cleaned) return null
+  if (/[<>]|&(?:nbsp|ensp|emsp|lt|gt|amp);/i.test(cleaned)) return null
+  return cleaned
+}
+
 const productPreviewRows: ProductPreviewRow[] = [
   { rank: "01", name: "Product Candidate 01", scope: "Agent product", status: "Pending", review: "Review pending" },
   { rank: "02", name: "Product Candidate 02", scope: "Agent product", status: "Pending", review: "Review pending" },
@@ -374,7 +414,10 @@ function RepoMiniTable({ rows, metric }: { rows: RepoHistoryItem[]; metric: "sta
             <div className="min-w-0">
               <div className="truncate text-lg font-semibold text-white">{row.repo_name}</div>
               <div className="truncate text-sm text-white/45">{row.repo_full_name}</div>
-              {row.summary ? <div className="mt-1 truncate text-xs text-white/42">{row.summary}</div> : null}
+              {(() => {
+                const summary = cleanVisibleSummary(row.summary)
+                return summary ? <div className="mt-1 truncate text-xs text-white/42">{summary}</div> : null
+              })()}
             </div>
           </div>
           <div className="text-lg font-semibold text-white">{formatNumber(metric === "stars" ? row.stars : row.score)}</div>

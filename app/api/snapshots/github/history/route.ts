@@ -71,6 +71,50 @@ function getStartDate(days: number) {
   return date.toISOString().slice(0, 10)
 }
 
+function decodeHtmlEntities(value: string) {
+  return value
+    .replace(/&(?:nbsp|ensp|emsp|thinsp);/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, num: string) => String.fromCodePoint(Number.parseInt(num, 10)))
+}
+
+function cleanDisplaySummary(value: string | null) {
+  if (!value) return null
+
+  const cleaned = decodeHtmlEntities(value)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/~~~[\s\S]*?~~~/g, " ")
+    .replace(/<!--[\s\S]*?(-->|$)/g, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<picture\b[\s\S]*?(<\/picture>|$)/gi, " ")
+    .replace(/<svg\b[\s\S]*?(<\/svg>|$)/gi, " ")
+    .replace(/<img\b[^>]*(>|$)/gi, " ")
+    .replace(/<a\b[^>]*>([\s\S]*?)(<\/a>|$)/gi, "$1")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/p>/gi, " ")
+    .replace(/<[^>]*(>|$)/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/[#*_`>|~{}\[\]();=]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180)
+    .replace(/\s+\S*$/, "")
+    .trim()
+
+  if (!cleaned) return null
+  if (/[<>]|&(?:nbsp|ensp|emsp|lt|gt|amp);/i.test(cleaned)) return null
+  return cleaned
+}
+
+
 async function supabaseGet<T>(table: string, query: string) {
   const { supabaseUrl, serviceRoleKey } = getSupabaseConfig()
 
@@ -92,11 +136,16 @@ async function supabaseGet<T>(table: string, query: string) {
 }
 
 function indexPreviousRepoRows(rows: RepoSnapshotRow[]) {
-  const latestDate = rows[0]?.snapshot_date ?? null
-  const previousDate = rows.find((row) => row.snapshot_date !== latestDate)?.snapshot_date ?? null
+  const cleanedRows = rows.map((row) => ({
+    ...row,
+    summary: cleanDisplaySummary(row.summary)
+  }))
 
-  const latestRows = rows.filter((row) => row.snapshot_date === latestDate)
-  const previousRows = rows.filter((row) => row.snapshot_date === previousDate)
+  const latestDate = cleanedRows[0]?.snapshot_date ?? null
+  const previousDate = cleanedRows.find((row) => row.snapshot_date !== latestDate)?.snapshot_date ?? null
+
+  const latestRows = cleanedRows.filter((row) => row.snapshot_date === latestDate)
+  const previousRows = cleanedRows.filter((row) => row.snapshot_date === previousDate)
 
   const previousByRepo = new Map(previousRows.map((row) => [row.repo_full_name, row]))
 
