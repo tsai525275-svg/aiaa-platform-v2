@@ -42,24 +42,24 @@ export const rankingCategories: RankingCategory[] = [
     eyebrow: "Ranking 01",
     title: "AI Agent Product Ranking",
     description:
-      "A public preview of the AIAA ranking framework for AI Agent products, automation platforms, coding agents, browser agents, and enterprise agent systems.",
-    updateFrequency: "Preview",
-    lastUpdated: "Data collection in progress",
+      "A certification-based AIAA ranking for AI Agent products, automation platforms, coding agents, browser agents, and enterprise agent systems that pass AIAA review.",
+    updateFrequency: "After certification review",
+    lastUpdated: "Certification data pending",
     dataSource: [
-      "Public product pages",
-      "Company announcements",
-      "Public usage signals",
-      "AIAA manual review queue"
+      "AIAA certification applications",
+      "Exam and assessment records",
+      "Product evidence files",
+      "Issued certificate records"
     ],
     methodology: [
-      "Product maturity review",
-      "Public usage signal review",
-      "Automation capability review",
-      "Safety and control review",
-      "Final ranking pending AIAA verification"
+      "Application intake",
+      "Identity and ownership verification",
+      "Capability assessment",
+      "Safety and reliability review",
+      "Certificate issuance before ranking"
     ],
-    criteria: ["Product maturity", "Real usage", "Automation depth", "Safety control"],
-    entries: makePreviewEntries("Agent Product", "Product Candidate", "Product review")
+    criteria: ["Certification level", "Capability assessment", "Safety review", "Certificate status"],
+    entries: makePreviewEntries("Certification", "Agent Product", "AIAA certification")
   },
   {
     slug: "github-stars",

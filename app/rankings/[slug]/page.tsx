@@ -10,12 +10,12 @@ const rankingConfigs = {
   "ai-agent-products": {
     eyebrow: "AIAA Ranking",
     title: "AI Agent Product Ranking",
-    subtitle: "Product ranking is reserved for verified AIAA certification data.",
-    description: "This ranking will use product review, certification level, benchmark score, revenue tier, and verification status. It is not connected to GitHub snapshots yet.",
+    subtitle: "Certification-based ranking for AI Agent products that pass AIAA review.",
+    description: "Products enter this ranking after application, exam or assessment, identity verification, product evidence review, and certificate issuance. This is intentionally review-based, not an automated GitHub or popularity ranking.",
     mode: "preview",
-    signal: "Certification Review",
-    source: "AIAA Registry",
-    metricLabel: "Score"
+    signal: "AIAA Certification",
+    source: "AIAA Certification Review",
+    metricLabel: "Trust Score"
   },
   "github-stars": {
     eyebrow: "Public GitHub Signal",
@@ -152,47 +152,47 @@ type HistoryResponse<T> = {
 const previewRows = [
   {
     rank: "01",
-    name: "Verified Agent Product",
-    slug: "verified-agent-product",
+    name: "Certification Candidate 01",
+    slug: "certification-candidate-01",
     level: "Pending",
-    category: "Certification Review",
-    signal: "Review pending",
+    category: "AIAA Certification",
+    signal: "Awaiting certificate",
     score: "Pending"
   },
   {
     rank: "02",
-    name: "Production Agent Platform",
-    slug: "production-agent-platform",
+    name: "Certification Candidate 02",
+    slug: "certification-candidate-02",
     level: "Pending",
-    category: "Product Review",
-    signal: "Review pending",
+    category: "AIAA Certification",
+    signal: "Awaiting certificate",
     score: "Pending"
   },
   {
     rank: "03",
-    name: "Autonomous Workflow System",
-    slug: "autonomous-workflow-system",
+    name: "Certification Candidate 03",
+    slug: "certification-candidate-03",
     level: "Pending",
-    category: "Benchmark Review",
-    signal: "Review pending",
+    category: "AIAA Certification",
+    signal: "Awaiting certificate",
     score: "Pending"
   },
   {
     rank: "04",
-    name: "Enterprise Agent Stack",
-    slug: "enterprise-agent-stack",
+    name: "Certification Candidate 04",
+    slug: "certification-candidate-04",
     level: "Pending",
-    category: "Company Review",
-    signal: "Review pending",
+    category: "AIAA Certification",
+    signal: "Awaiting certificate",
     score: "Pending"
   },
   {
     rank: "05",
-    name: "Agent Infrastructure Product",
-    slug: "agent-infrastructure-product",
+    name: "Certification Candidate 05",
+    slug: "certification-candidate-05",
     level: "Pending",
-    category: "Registry Review",
-    signal: "Review pending",
+    category: "AIAA Certification",
+    signal: "Awaiting certificate",
     score: "Pending"
   }
 ]
@@ -545,6 +545,10 @@ export default async function RankingDetailPage({ params }: { params: Promise<{ 
   const latestDate = repoHistory?.latestDate ?? builderHistory?.latestDate ?? "Pending"
   const previousDate = repoHistory?.previousDate ?? builderHistory?.previousDate ?? "Pending"
   const historyTotal = repoHistory?.total ?? builderHistory?.total ?? 0
+  const statusTitle = config.mode === "preview" ? "Certification Status" : "Snapshot Status"
+  const latestLabel = config.mode === "preview" ? "Latest Certificate" : "Latest Snapshot"
+  const previousLabel = config.mode === "preview" ? "Previous Certificate" : "Previous Snapshot"
+  const totalLabel = config.mode === "preview" ? "Certified Products" : "History Rows"
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#06070a] text-white">
@@ -566,12 +570,12 @@ export default async function RankingDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="rounded-[1.6rem] border border-white/8 bg-white/[0.035] p-5 md:p-6">
-            <div className="text-sm uppercase tracking-[0.24em] text-white/40">Snapshot Status</div>
+            <div className="text-sm uppercase tracking-[0.24em] text-white/40">{statusTitle}</div>
             <p className="mt-3 text-lg leading-8 text-white/72">{config.subtitle}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <MetricCard label="Latest Snapshot" value={latestDate} />
-              <MetricCard label="Previous Snapshot" value={previousDate} />
-              <MetricCard label="History Rows" value={formatNumber(historyTotal)} />
+              <MetricCard label={latestLabel} value={latestDate} />
+              <MetricCard label={previousLabel} value={previousDate} />
+              <MetricCard label={totalLabel} value={formatNumber(historyTotal)} />
               <MetricCard label="Source" value={config.source} />
             </div>
           </div>

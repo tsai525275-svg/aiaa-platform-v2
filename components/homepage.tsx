@@ -728,7 +728,7 @@ export function Homepage() {
         <div className="mx-auto max-w-5xl text-center">
           <span className="eyebrow">Section 10 / Access</span>
           <h2 className="section-title">
-            Enter the institutional layer of the AI Agent economy.
+            Enter the trusted gateway to the AI Agent economy.
           </h2>
           <p className="section-copy mx-auto mt-6 max-w-3xl">
             AIAA should close like a world-scale brand: simple, calm, cinematic, and

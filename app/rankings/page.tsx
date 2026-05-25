@@ -128,27 +128,27 @@ function cleanVisibleSummary(value: string | null | undefined) {
 }
 
 const productPreviewRows: ProductPreviewRow[] = [
-  { rank: "01", name: "Product Candidate 01", scope: "Agent product", status: "Pending", review: "Review pending" },
-  { rank: "02", name: "Product Candidate 02", scope: "Agent product", status: "Pending", review: "Review pending" },
-  { rank: "03", name: "Product Candidate 03", scope: "Agent product", status: "Pending", review: "Review pending" },
-  { rank: "04", name: "Product Candidate 04", scope: "Agent product", status: "Pending", review: "Review pending" },
-  { rank: "05", name: "Product Candidate 05", scope: "Agent product", status: "Pending", review: "Review pending" }
+  { rank: "01", name: "Certification Candidate 01", scope: "Agent product", status: "Awaiting certificate", review: "Exam and review required" },
+  { rank: "02", name: "Certification Candidate 02", scope: "Agent product", status: "Awaiting certificate", review: "Exam and review required" },
+  { rank: "03", name: "Certification Candidate 03", scope: "Agent product", status: "Awaiting certificate", review: "Exam and review required" },
+  { rank: "04", name: "Certification Candidate 04", scope: "Agent product", status: "Awaiting certificate", review: "Exam and review required" },
+  { rank: "05", name: "Certification Candidate 05", scope: "Agent product", status: "Awaiting certificate", review: "Exam and review required" }
 ]
 
 const rankingBlueprints = {
   products: {
     label: "Ranking 01",
     title: "AI Agent Product Ranking",
-    description: "AIAA product ranking is the reviewed layer for commercial AI Agent products, enterprise agent systems, and production automation platforms.",
+    description: "Certification-based ranking for AI Agent products reviewed by AIAA. Products are listed after application, assessment, verification, and certificate issuance.",
     href: "/rankings/ai-agent-products",
-    status: "Preview framework",
-    updateFrequency: "Manual review first, daily data later",
-    rankedSubject: "AI Agent products, enterprise systems, public launches, submitted products, and verified commercial platforms.",
-    dataSource: "AIAA registry submissions, product evidence, public websites, launch records, customer proof, and certification review.",
-    scoringModel: ["Product maturity", "Real usage", "Automation depth", "Safety control", "Enterprise readiness", "Verification status"],
-    relevanceModel: ["Must be an AI Agent product", "Must execute or coordinate tasks", "Must show product evidence", "Marketing pages alone do not count"],
-    bestFor: "Companies, buyers, operators, and founders looking for trusted AI Agent products.",
-    tags: ["Product maturity", "Real usage", "Automation depth", "Safety control"]
+    status: "Certification-based",
+    updateFrequency: "Updated after AIAA review and certificate issuance",
+    rankedSubject: "AI Agent products, enterprise systems, and automation platforms that apply for AIAA certification and pass review.",
+    dataSource: "AIAA certification applications, exam results, assessment records, product evidence, verification files, and issued certificate data.",
+    scoringModel: ["Certification level", "Identity verification", "Capability assessment", "Safety review", "Reliability evidence", "Certificate status"],
+    relevanceModel: ["Must be an AI Agent product", "Must submit for AIAA review", "Must pass assessment before ranking", "Public popularity alone does not count"],
+    bestFor: "Companies, buyers, operators, and founders checking certified AI Agent products.",
+    tags: ["Certification", "AIAA review", "Issued certificate", "Verified product"]
   },
   stars: {
     label: "Ranking 02",
