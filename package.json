@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "sync:rankings": "node --env-file=.env.local scripts/sync-rankings.mjs"
   },
   "dependencies": {
     "eslint-config-next": "^16.2.6",
@@ -25,3 +26,4 @@
     "typescript": "^5.9.3"
   }
 }
+

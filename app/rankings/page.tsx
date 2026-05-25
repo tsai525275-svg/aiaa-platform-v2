@@ -71,6 +71,22 @@ type ProductPreviewRow = {
   review: string
 }
 
+type RankingBlueprint = {
+  label: string
+  title: string
+  description: string
+  href: string
+  trendHref?: string
+  status: string
+  updateFrequency: string
+  rankedSubject: string
+  dataSource: string
+  scoringModel: string[]
+  relevanceModel: string[]
+  bestFor: string
+  tags: string[]
+}
+
 const productPreviewRows: ProductPreviewRow[] = [
   { rank: "01", name: "Product Candidate 01", scope: "Agent product", status: "Pending", review: "Review pending" },
   { rank: "02", name: "Product Candidate 02", scope: "Agent product", status: "Pending", review: "Review pending" },
@@ -78,6 +94,83 @@ const productPreviewRows: ProductPreviewRow[] = [
   { rank: "04", name: "Product Candidate 04", scope: "Agent product", status: "Pending", review: "Review pending" },
   { rank: "05", name: "Product Candidate 05", scope: "Agent product", status: "Pending", review: "Review pending" }
 ]
+
+const rankingBlueprints = {
+  products: {
+    label: "Ranking 01",
+    title: "AI Agent Product Ranking",
+    description: "AIAA product ranking is the reviewed layer for commercial AI Agent products, enterprise agent systems, and production automation platforms.",
+    href: "/rankings/ai-agent-products",
+    status: "Preview framework",
+    updateFrequency: "Manual review first, daily data later",
+    rankedSubject: "AI Agent products, enterprise systems, public launches, submitted products, and verified commercial platforms.",
+    dataSource: "AIAA registry submissions, product evidence, public websites, launch records, customer proof, and certification review.",
+    scoringModel: ["Product maturity", "Real usage", "Automation depth", "Safety control", "Enterprise readiness", "Verification status"],
+    relevanceModel: ["Must be an AI Agent product", "Must execute or coordinate tasks", "Must show product evidence", "Marketing pages alone do not count"],
+    bestFor: "Companies, buyers, operators, and founders looking for trusted AI Agent products.",
+    tags: ["Product maturity", "Real usage", "Automation depth", "Safety control"]
+  },
+  stars: {
+    label: "Ranking 02",
+    title: "GitHub Stars Ranking",
+    description: "A public open source attention ranking based on GitHub star counts across tracked AI Agent repositories.",
+    href: "/rankings/github-stars",
+    trendHref: "/rankings/trends#github-stars",
+    status: "Snapshot-backed",
+    updateFrequency: "Daily snapshot on Vercel Cron after production deployment",
+    rankedSubject: "AI Agent repositories, open source agent apps, frameworks, tools, and infrastructure projects.",
+    dataSource: "GitHub public repository metadata and AIAA Supabase daily snapshots.",
+    scoringModel: ["Stars", "Forks", "Open issues", "Language", "Last update", "Repository freshness"],
+    relevanceModel: ["Must connect to AI Agent use cases", "General AI tools require review", "UI libraries and unrelated repos should be excluded"],
+    bestFor: "Readers who want to see the most watched open source AI Agent projects.",
+    tags: ["Stars", "Rank change", "Daily snapshot", "Public GitHub"]
+  },
+  trending: {
+    label: "Ranking 03",
+    title: "GitHub Trending Ranking",
+    description: "A growth and momentum ranking for AI Agent repositories gaining developer attention across daily snapshots.",
+    href: "/rankings/github-trending",
+    trendHref: "/rankings/trends#github-trending",
+    status: "Snapshot-backed",
+    updateFrequency: "Daily snapshot on Vercel Cron after production deployment",
+    rankedSubject: "Tracked AI Agent repositories with recent public signal movement.",
+    dataSource: "GitHub public metadata, star movement, repository activity, and AIAA daily snapshot history.",
+    scoringModel: ["Score change", "Rank change", "Recent star growth", "Commit activity", "Release cadence", "Contributor movement"],
+    relevanceModel: ["Must have recent agent ecosystem movement", "Growth signal must come from relevant repositories", "Temporary hype needs history check"],
+    bestFor: "Readers who want to know which AI Agent projects are rising now.",
+    tags: ["Momentum", "Score change", "Rank change", "Daily snapshot"]
+  },
+  builders: {
+    label: "Ranking 04",
+    title: "GitHub Builders Ranking",
+    description: "A public builder signal ranking for maintainers, contributors, and engineers shaping the AI Agent ecosystem.",
+    href: "/rankings/github-builders",
+    trendHref: "/rankings/trends#github-builders",
+    status: "Snapshot-backed",
+    updateFrequency: "Daily snapshot on Vercel Cron after production deployment",
+    rankedSubject: "GitHub users contributing to tracked AI Agent repositories.",
+    dataSource: "Public GitHub contributor metadata and AIAA builder daily snapshots.",
+    scoringModel: ["Contribution volume", "Repository count", "Tracked repo impact", "Recent activity", "Builder score"],
+    relevanceModel: ["Must contribute to AI Agent repositories", "General GitHub popularity is not enough", "Representative projects should be visible"],
+    bestFor: "Talent discovery, contributor discovery, and future AIAA expert invitation lists.",
+    tags: ["Contributions", "Builder score", "Rank change", "Daily snapshot"]
+  },
+  frameworks: {
+    label: "Ranking 05",
+    title: "Agent Framework Ranking",
+    description: "A reviewed framework ranking for agent orchestration, workflow design, memory, tool calling, and agent infrastructure.",
+    href: "/rankings/agent-frameworks",
+    trendHref: "/rankings/trends#agent-frameworks",
+    status: "Snapshot-backed with review layer",
+    updateFrequency: "Daily GitHub snapshot plus AIAA relevance review",
+    rankedSubject: "Agent frameworks, multi-agent frameworks, workflow builders, browser agents, memory layers, and tool calling infrastructure.",
+    dataSource: "GitHub public metadata, framework documentation, adoption signals, and AIAA technical review.",
+    scoringModel: ["Framework score", "Documentation", "Tool calling", "Multi-agent support", "Deployment fit", "Developer adoption"],
+    relevanceModel: ["Must support agent behavior", "Plain LLM libraries need review", "Workflow tools need agent relevance evidence"],
+    bestFor: "Developers, founders, and enterprises choosing an AI Agent build stack.",
+    tags: ["Framework score", "Agent architecture", "Rank change", "Daily snapshot"]
+  }
+} satisfies Record<string, RankingBlueprint>
 
 async function getBaseUrl() {
   const requestHeaders = await headers()
@@ -210,6 +303,58 @@ function DeltaBadge({ value, kind = "metric" }: { value?: number | null; kind?: 
   )
 }
 
+function FieldBlock({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-[1.45rem] border border-white/12 bg-white/[0.03] p-5">
+      <div className="text-[10px] uppercase tracking-[0.28em] text-white/42">{label}</div>
+      <div className="mt-3 text-sm leading-6 text-white/72">{children}</div>
+    </div>
+  )
+}
+
+function BlueprintGrid({ blueprint }: { blueprint: RankingBlueprint }) {
+  return (
+    <div className="mt-8 grid gap-3 lg:grid-cols-4">
+      <FieldBlock label="Ranked subject">{blueprint.rankedSubject}</FieldBlock>
+      <FieldBlock label="Data source">{blueprint.dataSource}</FieldBlock>
+      <FieldBlock label="Update frequency">{blueprint.updateFrequency}</FieldBlock>
+      <FieldBlock label="Best for">{blueprint.bestFor}</FieldBlock>
+    </div>
+  )
+}
+
+function MethodologyGrid({ blueprint }: { blueprint: RankingBlueprint }) {
+  return (
+    <div className="mt-4 grid gap-3 lg:grid-cols-2">
+      <div className="rounded-[1.45rem] border border-white/12 bg-white/[0.025] p-5">
+        <div className="text-[10px] uppercase tracking-[0.28em] text-white/42">Scoring fields</div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {blueprint.scoringModel.map((item) => (
+            <span key={item} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-white/74">{item}</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-[1.45rem] border border-white/12 bg-white/[0.025] p-5">
+        <div className="text-[10px] uppercase tracking-[0.28em] text-white/42">Relevance filter</div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {blueprint.relevanceModel.map((item) => (
+            <span key={item} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-white/74">{item}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EmptyTableState({ label }: { label: string }) {
+  return (
+    <div className="rounded-b-[2rem] border-t border-white/10 px-6 py-8 text-sm text-white/52">
+      No {label} snapshot rows are available yet. Run the GitHub snapshot route after Supabase and production Cron are configured.
+    </div>
+  )
+}
+
 function RepoMiniTable({ rows, metric }: { rows: RepoHistoryItem[]; metric: "stars" | "score" }) {
   return (
     <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/20">
@@ -221,7 +366,7 @@ function RepoMiniTable({ rows, metric }: { rows: RepoHistoryItem[]; metric: "sta
         <div className="max-lg:hidden">{metric === "stars" ? "Stars Δ" : "Score Δ"}</div>
       </div>
 
-      {rows.slice(0, 5).map((row) => (
+      {rows.length ? rows.slice(0, 5).map((row) => (
         <div key={`${row.ranking_key}-${row.repo_full_name}`} className="grid grid-cols-[70px_1fr_130px_130px_140px] items-center border-b border-white/10 px-6 py-5 last:border-b-0 max-lg:grid-cols-[52px_1fr_110px]">
           <div className="text-2xl font-semibold text-white">{row.rank}</div>
           <div className="flex min-w-0 items-center gap-4">
@@ -229,13 +374,14 @@ function RepoMiniTable({ rows, metric }: { rows: RepoHistoryItem[]; metric: "sta
             <div className="min-w-0">
               <div className="truncate text-lg font-semibold text-white">{row.repo_name}</div>
               <div className="truncate text-sm text-white/45">{row.repo_full_name}</div>
+              {row.summary ? <div className="mt-1 truncate text-xs text-white/42">{row.summary}</div> : null}
             </div>
           </div>
           <div className="text-lg font-semibold text-white">{formatNumber(metric === "stars" ? row.stars : row.score)}</div>
           <div className="max-lg:hidden"><DeltaBadge value={row.rank_change} kind="rank" /></div>
           <div className="max-lg:hidden"><DeltaBadge value={metric === "stars" ? row.stars_change : row.score_change} /></div>
         </div>
-      ))}
+      )) : <EmptyTableState label="repository" />}
     </div>
   )
 }
@@ -251,7 +397,7 @@ function BuilderMiniTable({ rows }: { rows: BuilderHistoryItem[] }) {
         <div className="max-lg:hidden">Score Δ</div>
       </div>
 
-      {rows.slice(0, 5).map((row) => (
+      {rows.length ? rows.slice(0, 5).map((row) => (
         <div key={row.login} className="grid grid-cols-[70px_1fr_130px_130px_140px] items-center border-b border-white/10 px-6 py-5 last:border-b-0 max-lg:grid-cols-[52px_1fr_110px]">
           <div className="text-2xl font-semibold text-white">{row.rank}</div>
           <div className="flex min-w-0 items-center gap-4">
@@ -265,7 +411,7 @@ function BuilderMiniTable({ rows }: { rows: BuilderHistoryItem[] }) {
           <div className="max-lg:hidden"><DeltaBadge value={row.rank_change} kind="rank" /></div>
           <div className="max-lg:hidden"><DeltaBadge value={row.builder_score_change} /></div>
         </div>
-      ))}
+      )) : <EmptyTableState label="builder" />}
     </div>
   )
 }
@@ -295,59 +441,67 @@ function ProductMiniTable() {
   )
 }
 
+function HubCard({ blueprint }: { blueprint: RankingBlueprint }) {
+  return (
+    <Link href={blueprint.href} className="group flex min-h-[292px] flex-col rounded-[2rem] border border-white/14 bg-white/[0.025] p-6 transition hover:border-white/32 hover:bg-white/[0.045]">
+      <div className="flex flex-col items-start gap-3">
+        <div className="text-[11px] uppercase tracking-[0.34em] text-white/45">{blueprint.label}</div>
+        <div className="rounded-full border border-white/10 px-3 py-1 text-[11px] text-white/52">{blueprint.status}</div>
+      </div>
+      <div className="mt-7 text-2xl font-semibold leading-tight tracking-[-0.04em] text-white">{blueprint.title}</div>
+      <p className="mt-4 line-clamp-4 text-sm leading-6 text-white/60">{blueprint.rankedSubject}</p>
+      <div className="mt-auto pt-7 text-sm font-semibold text-white/72 transition group-hover:text-white">Open ranking →</div>
+    </Link>
+  )
+}
+
 function RankingPanel({
-  label,
-  title,
-  description,
-  tags,
-  href,
-  trendHref,
+  blueprint,
   meta,
   children
 }: {
-  label: string
-  title: string
-  description: string
-  tags: string[]
-  href: string
-  trendHref?: string
+  blueprint: RankingBlueprint
   meta?: SnapshotMeta
   children: React.ReactNode
 }) {
   return (
-    <section className="scroll-mt-36 rounded-[2.3rem] border border-white/25 bg-white/[0.025] p-8 shadow-[0_28px_100px_rgba(0,0,0,0.3)] lg:p-12">
+    <section id={blueprint.href.split("/").pop()} className="scroll-mt-52 rounded-[2.3rem] border border-white/25 bg-white/[0.025] px-8 pb-8 pt-14 shadow-[0_28px_100px_rgba(0,0,0,0.3)] lg:px-12 lg:pb-12 lg:pt-16">
       <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
         <div className="max-w-4xl">
-          <div className="text-[12px] uppercase tracking-[0.36em] text-white/70">{label}</div>
-          <h2 className="mt-6 max-w-4xl text-5xl font-semibold leading-[0.92] tracking-[-0.07em] text-white md:text-6xl">{title}</h2>
-          <p className="mt-7 max-w-3xl text-xl leading-8 text-white/78">{description}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-[12px] uppercase tracking-[0.36em] text-white/70">{blueprint.label}</div>
+            <div className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/52">{blueprint.status}</div>
+          </div>
+          <h2 className="mt-6 max-w-4xl text-5xl font-semibold leading-[0.92] tracking-[-0.07em] text-white md:text-6xl">{blueprint.title}</h2>
+          <p className="mt-7 max-w-3xl text-xl leading-8 text-white/78">{blueprint.description}</p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            {tags.map((tag) => (
+            {blueprint.tags.map((tag) => (
               <span key={tag} className="rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 text-sm text-white/80">{tag}</span>
             ))}
           </div>
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-3">
-          <Link href={href} className="rounded-full bg-white px-7 py-4 text-base font-semibold text-black transition hover:bg-white/82">
+          <Link href={blueprint.href} className="rounded-full bg-white px-7 py-4 text-base font-semibold text-black transition hover:bg-white/82">
             View Full Ranking
           </Link>
-          {trendHref ? (
-            <Link href={trendHref} className="rounded-full border border-white/30 bg-white/[0.04] px-7 py-4 text-base font-semibold text-white transition hover:bg-white/10">
+          {blueprint.trendHref ? (
+            <Link href={blueprint.trendHref} className="rounded-full border border-white/30 bg-white/[0.04] px-7 py-4 text-base font-semibold text-white transition hover:bg-white/10">
               View Trends
             </Link>
           ) : null}
         </div>
       </div>
 
+      <BlueprintGrid blueprint={blueprint} />
+      <MethodologyGrid blueprint={blueprint} />
       {meta ? <SnapshotStats meta={meta} /> : null}
 
-      <div className="mt-10">{children}</div>
+      <div className="mt-12">{children}</div>
     </section>
   )
 }
-
 
 export default async function RankingsPage() {
   const baseUrl = await getBaseUrl()
@@ -360,81 +514,87 @@ export default async function RankingsPage() {
   ])
 
   return (
-    <main className="min-h-screen bg-[#030406] text-white">
+    <main data-rankings-page className="min-h-screen bg-[#030406] text-white">
+      <style>{`
+        main[data-rankings-page] > header {
+          position: sticky !important;
+          top: 1rem !important;
+        }
+        main[data-rankings-page] section[id] {
+          scroll-margin-top: 180px;
+        }
+      `}</style>
       <SiteHeader />
 
-      <section className="mx-auto max-w-[1840px] px-5 pb-24 pt-36 md:px-12">
+      <section className="mx-auto max-w-[1840px] px-5 pb-28 pt-10 md:px-12 md:pt-12">
         <div className="rounded-[2.6rem] border border-white/20 bg-[radial-gradient(circle_at_25%_0%,rgba(255,255,255,0.13),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.012))] p-8 md:p-14">
-          <div className="text-[12px] uppercase tracking-[0.38em] text-white/58">AIAA ranking system</div>
+          <div className="text-[12px] uppercase tracking-[0.38em] text-white/58">AIAA ranking hub</div>
           <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <h1 className="max-w-5xl text-6xl font-semibold leading-[0.9] tracking-[-0.08em] text-white md:text-8xl">
-                Live rankings for the AI Agent economy.
+                The index layer for the AI Agent economy.
               </h1>
               <p className="mt-8 max-w-3xl text-xl leading-8 text-white/72">
-                AIAA tracks agent products, open source repositories, GitHub builders, and agent frameworks with daily snapshot history.
+                AIAA tracks products, repositories, builders, frameworks, and public signal history so the AI Agent ecosystem has a visible ranking surface.
               </p>
             </div>
             <Link href="/rankings/trends" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-5 text-lg font-semibold text-black transition hover:bg-white/82">
               View Trend Charts
             </Link>
           </div>
+
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            <Stat label="Rankings live" value="5" />
+            <Stat label="Snapshot source" value="GitHub" />
+            <Stat label="Trust layer" value="AIAA review" />
+          </div>
         </div>
 
-        <div className="mt-12 grid gap-8">
-          <RankingPanel
-            label="Ranking 01"
-            title="AI Agent Product Ranking"
-            description="A public preview framework for AI Agent products. Full product scoring will open after reviewed submissions begin."
-            tags={["Product maturity", "Real usage", "Automation depth", "Safety control"]}
-            href="/rankings/ai-agent-products"
-          >
+        <div className="mt-20 scroll-mt-56 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <HubCard blueprint={rankingBlueprints.products} />
+          <HubCard blueprint={rankingBlueprints.stars} />
+          <HubCard blueprint={rankingBlueprints.trending} />
+          <HubCard blueprint={rankingBlueprints.builders} />
+          <HubCard blueprint={rankingBlueprints.frameworks} />
+        </div>
+
+        <div className="mt-20 scroll-mt-56 rounded-[2.2rem] border border-white/14 bg-white/[0.02] p-7 md:p-9">
+          <div className="text-[11px] uppercase tracking-[0.36em] text-white/42">Ranking doctrine</div>
+          <div className="mt-5 grid gap-5 text-sm leading-7 text-white/65 lg:grid-cols-3">
+            <p>Public popularity is only one signal. AIAA separates stars, growth, builders, frameworks, and product review so each ranking has a clear purpose.</p>
+            <p>Every ranking needs a relevance layer. Agent tools, general AI libraries, workflow products, and commercial products should not be mixed into one list.</p>
+            <p>The private AIAA certified ranking will become the strongest asset after registry, certification, benchmark, and review data accumulate.</p>
+          </div>
+        </div>
+
+        <div className="mt-20 grid gap-20">
+          <RankingPanel blueprint={rankingBlueprints.products}>
             <ProductMiniTable />
           </RankingPanel>
 
           <RankingPanel
-            label="Ranking 02"
-            title="GitHub Stars Ranking"
-            description="A repository ranking based on public GitHub star counts and AIAA daily snapshots."
-            tags={["Stars", "Rank change", "Daily snapshot", "Public GitHub"]}
-            href="/rankings/github-stars"
-            trendHref="/rankings/trends#github-stars"
+            blueprint={rankingBlueprints.stars}
             meta={{ latestDate: starsHistory.latestDate, previousDate: starsHistory.previousDate, total: starsHistory.total }}
           >
             <RepoMiniTable rows={starsHistory.latest ?? []} metric="stars" />
           </RankingPanel>
 
           <RankingPanel
-            label="Ranking 03"
-            title="GitHub Trending Ranking"
-            description="A momentum ranking based on daily snapshot score changes across tracked AI Agent repositories."
-            tags={["Momentum", "Score change", "Rank change", "Daily snapshot"]}
-            href="/rankings/github-trending"
-            trendHref="/rankings/trends#github-trending"
+            blueprint={rankingBlueprints.trending}
             meta={{ latestDate: trendingHistory.latestDate, previousDate: trendingHistory.previousDate, total: trendingHistory.total }}
           >
             <RepoMiniTable rows={trendingHistory.latest ?? []} metric="score" />
           </RankingPanel>
 
           <RankingPanel
-            label="Ranking 04"
-            title="GitHub Builders Ranking"
-            description="A builder ranking based on public GitHub contributor metadata and daily contribution snapshots."
-            tags={["Contributions", "Builder score", "Rank change", "Daily snapshot"]}
-            href="/rankings/github-builders"
-            trendHref="/rankings/trends#github-builders"
+            blueprint={rankingBlueprints.builders}
             meta={{ latestDate: builderHistory.latestDate, previousDate: builderHistory.previousDate, total: builderHistory.total }}
           >
             <BuilderMiniTable rows={builderHistory.latest ?? []} />
           </RankingPanel>
 
           <RankingPanel
-            label="Ranking 05"
-            title="Agent Framework Ranking"
-            description="A reviewed framework ranking based on agent architecture, developer tooling, public GitHub signal, and daily snapshots."
-            tags={["Framework score", "Agent architecture", "Rank change", "Daily snapshot"]}
-            href="/rankings/agent-frameworks"
-            trendHref="/rankings/trends#agent-frameworks"
+            blueprint={rankingBlueprints.frameworks}
             meta={{ latestDate: frameworkHistory.latestDate, previousDate: frameworkHistory.previousDate, total: frameworkHistory.total }}
           >
             <RepoMiniTable rows={frameworkHistory.latest ?? []} metric="score" />

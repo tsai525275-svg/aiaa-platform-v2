@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { headers } from "next/headers"
 import { notFound } from "next/navigation"
@@ -152,6 +153,7 @@ const previewRows = [
   {
     rank: "01",
     name: "Verified Agent Product",
+    slug: "verified-agent-product",
     level: "Pending",
     category: "Certification Review",
     signal: "Review pending",
@@ -160,6 +162,7 @@ const previewRows = [
   {
     rank: "02",
     name: "Production Agent Platform",
+    slug: "production-agent-platform",
     level: "Pending",
     category: "Product Review",
     signal: "Review pending",
@@ -168,6 +171,7 @@ const previewRows = [
   {
     rank: "03",
     name: "Autonomous Workflow System",
+    slug: "autonomous-workflow-system",
     level: "Pending",
     category: "Benchmark Review",
     signal: "Review pending",
@@ -176,6 +180,7 @@ const previewRows = [
   {
     rank: "04",
     name: "Enterprise Agent Stack",
+    slug: "enterprise-agent-stack",
     level: "Pending",
     category: "Company Review",
     signal: "Review pending",
@@ -184,6 +189,7 @@ const previewRows = [
   {
     rank: "05",
     name: "Agent Infrastructure Product",
+    slug: "agent-infrastructure-product",
     level: "Pending",
     category: "Registry Review",
     signal: "Review pending",
@@ -233,6 +239,13 @@ async function safeFetchJson<T>(path: string, fallback: T) {
 
 function formatNumber(value: number | null | undefined) {
   return new Intl.NumberFormat("en-US").format(value ?? 0)
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
 }
 
 function historyByRepo(rows: RepoHistoryRow[]) {
@@ -323,22 +336,28 @@ function EmptyHistoryNote() {
 function PreviewTable() {
   return (
     <section className="mt-6 rounded-[1.6rem] border border-white/8 bg-white/[0.025] p-3 md:p-4">
-      <div className="grid grid-cols-[0.38fr_1.55fr_0.85fr_1fr_0.95fr_0.65fr] gap-3 border-b border-white/12 px-3 py-3 text-[0.68rem] uppercase tracking-[0.2em] text-white/42">
+      <div className="grid grid-cols-[0.38fr_1.05fr_0.78fr_1.0fr_0.88fr_0.66fr_0.78fr] items-center gap-3 border-b border-white/12 px-3 py-3 text-[0.68rem] uppercase tracking-[0.2em] text-white/42">
         <div>Rank</div>
         <div>Name</div>
-        <div>Level</div>
+        <div className="text-center">Level</div>
         <div>Category</div>
         <div>Signal</div>
         <div>Score</div>
+        <div>Details</div>
       </div>
       {previewRows.map((entry) => (
-        <div key={`${entry.rank}-${entry.name}`} className="grid grid-cols-[0.38fr_1.55fr_0.85fr_1fr_0.95fr_0.65fr] gap-3 border-b border-white/8 px-3 py-3.5 last:border-b-0">
+        <div key={`${entry.rank}-${entry.name}`} className="grid grid-cols-[0.38fr_1.05fr_0.78fr_1.0fr_0.88fr_0.66fr_0.78fr] items-center gap-3 border-b border-white/8 px-3 py-3.5 last:border-b-0">
           <div className="text-[1.55rem] font-semibold leading-none tracking-[-0.08em] text-white">{entry.rank}</div>
           <div className="text-base font-medium text-white">{entry.name}</div>
-          <div><ScopeBadge label={entry.level} /></div>
+          <div className="flex h-full w-full items-center justify-center"><ScopeBadge label={entry.level} /></div>
           <div className="text-base text-white/76">{entry.category}</div>
           <div className="text-base text-white/76">{entry.signal}</div>
           <div className="text-base font-semibold text-white">{entry.score}</div>
+          <div>
+            <Link href={`/rankings/ai-agent-products/${entry.slug}`} className="inline-flex whitespace-nowrap rounded-full border border-white/14 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white hover:bg-white/10">
+              View Details
+            </Link>
+          </div>
         </div>
       ))}
     </section>
@@ -363,7 +382,7 @@ function RepoHistoryTable({
 
   return (
     <section className="mt-6 rounded-[1.6rem] border border-white/8 bg-white/[0.025] p-3 md:p-4">
-      <div className="grid grid-cols-[0.32fr_1.65fr_0.82fr_0.75fr_0.54fr_0.52fr_0.54fr_0.52fr] gap-3 border-b border-white/12 px-3 py-3 text-[0.64rem] uppercase tracking-[0.18em] text-white/42">
+      <div className="grid grid-cols-[0.3fr_1.44fr_0.74fr_0.68fr_0.5fr_0.48fr_0.5fr_0.48fr_0.62fr] items-center gap-3 border-b border-white/12 px-3 py-3 text-[0.64rem] uppercase tracking-[0.18em] text-white/42">
         <div>Rank</div>
         <div>Repository</div>
         <div>Scope</div>
@@ -372,6 +391,7 @@ function RepoHistoryTable({
         <div>Rank Δ</div>
         <div>{deltaLabel}</div>
         <div>Lang.</div>
+        <div>Details</div>
       </div>
 
       {items.map((item) => {
@@ -380,7 +400,7 @@ function RepoHistoryTable({
         const summary = item.summary ?? history?.summary ?? item.description ?? "Tracked AI Agent repository."
 
         return (
-          <div key={`${mode}-${item.fullName}`} className="grid grid-cols-[0.32fr_1.65fr_0.82fr_0.75fr_0.54fr_0.52fr_0.54fr_0.52fr] gap-3 border-b border-white/8 px-3 py-3.5 last:border-b-0">
+          <div key={`${mode}-${item.fullName}`} className="grid min-h-[8.75rem] grid-cols-[0.3fr_1.44fr_0.74fr_0.68fr_0.5fr_0.48fr_0.5fr_0.48fr_0.62fr] items-center gap-3 border-b border-white/8 px-3 py-3.5 last:border-b-0">
             <div className="text-[1.45rem] font-semibold leading-none tracking-[-0.08em] text-white">{item.rank}</div>
             <div className="flex min-w-0 gap-3">
               <img src={item.ownerAvatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-white/12 bg-white/[0.04] object-cover" />
@@ -389,7 +409,7 @@ function RepoHistoryTable({
                   {item.name}
                 </a>
                 <div className="mt-0.5 break-words text-xs text-white/44">{item.fullName}</div>
-                <p className="mt-1.5 text-xs leading-5 text-white/62">{summary}</p>
+                <p className="mt-1.5 h-10 overflow-hidden text-xs leading-5 text-white/62">{summary}</p>
               </div>
             </div>
             <div><ScopeBadge label={scope} /></div>
@@ -398,6 +418,11 @@ function RepoHistoryTable({
             <div className="text-base font-semibold"><RankDeltaBadge value={history?.rank_change} /></div>
             <div className="text-base font-semibold"><DeltaBadge value={getRepoHistoryMetricChange(history, mode)} /></div>
             <div className="break-words text-base font-semibold text-white">{item.language ?? "Public"}</div>
+            <div>
+              <Link href={`/rankings/${mode === "repo-stars" ? "github-stars" : mode === "repo-trending" ? "github-trending" : "agent-frameworks"}/${slugify(item.name)}`} className="inline-flex whitespace-nowrap rounded-full border border-white/14 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white hover:bg-white/10">
+                View Details
+              </Link>
+            </div>
           </div>
         )
       })}
@@ -410,7 +435,7 @@ function BuilderHistoryTable({ items, historyRows }: { items: BuilderRow[]; hist
 
   return (
     <section className="mt-6 rounded-[1.6rem] border border-white/8 bg-white/[0.025] p-3 md:p-4">
-      <div className="grid grid-cols-[0.32fr_1.65fr_0.8fr_0.72fr_0.56fr_0.55fr_0.55fr] gap-3 border-b border-white/12 px-3 py-3 text-[0.64rem] uppercase tracking-[0.18em] text-white/42">
+      <div className="grid grid-cols-[0.3fr_1.42fr_0.72fr_0.62fr_0.5fr_0.48fr_0.48fr_0.62fr] items-center gap-3 border-b border-white/12 px-3 py-3 text-[0.64rem] uppercase tracking-[0.18em] text-white/42">
         <div>Rank</div>
         <div>Builder</div>
         <div>Signal</div>
@@ -418,13 +443,14 @@ function BuilderHistoryTable({ items, historyRows }: { items: BuilderRow[]; hist
         <div>Score</div>
         <div>Rank Δ</div>
         <div>Score Δ</div>
+        <div>Details</div>
       </div>
 
       {items.map((item) => {
         const history = historyMap.get(item.login)
 
         return (
-          <div key={item.login} className="grid grid-cols-[0.32fr_1.65fr_0.8fr_0.72fr_0.56fr_0.55fr_0.55fr] gap-3 border-b border-white/8 px-3 py-3.5 last:border-b-0">
+          <div key={item.login} className="grid min-h-[8.75rem] grid-cols-[0.3fr_1.42fr_0.72fr_0.62fr_0.5fr_0.48fr_0.48fr_0.62fr] items-center gap-3 border-b border-white/8 px-3 py-3.5 last:border-b-0">
             <div className="text-[1.45rem] font-semibold leading-none tracking-[-0.08em] text-white">{item.rank}</div>
             <div className="flex min-w-0 gap-3">
               <img src={item.avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-white/12 bg-white/[0.04] object-cover" />
@@ -432,7 +458,7 @@ function BuilderHistoryTable({ items, historyRows }: { items: BuilderRow[]; hist
                 <a href={item.profileUrl} target="_blank" rel="noreferrer" className="break-words text-base font-medium text-white hover:text-white/70">
                   {item.login}
                 </a>
-                <p className="mt-1.5 text-xs leading-5 text-white/62">Public contributor across tracked AI Agent repositories.</p>
+                <p className="mt-1.5 h-10 overflow-hidden text-xs leading-5 text-white/62">Public contributor across tracked AI Agent repositories.</p>
                 <div className="mt-0.5 break-words text-[0.72rem] leading-5 text-white/42">Repos: {item.repositories.slice(0, 2).join(", ")}{item.repositories.length > 2 ? "..." : ""}</div>
               </div>
             </div>
@@ -441,6 +467,11 @@ function BuilderHistoryTable({ items, historyRows }: { items: BuilderRow[]; hist
             <div className="text-base font-semibold text-white">{formatNumber(item.builderScore)}</div>
             <div className="text-base font-semibold"><RankDeltaBadge value={history?.rank_change} /></div>
             <div className="text-base font-semibold"><DeltaBadge value={history?.builder_score_change} /></div>
+            <div>
+              <Link href={`/rankings/github-builders/${slugify(item.login)}`} className="inline-flex whitespace-nowrap rounded-full border border-white/14 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white hover:bg-white/10">
+                View Details
+              </Link>
+            </div>
           </div>
         )
       })}
