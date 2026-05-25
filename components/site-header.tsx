@@ -3,7 +3,7 @@ const navItems = [
   { label: "Standards", href: "/#standards" },
   { label: "Rankings", href: "/rankings" },
   { label: "Registry", href: "/#registry" },
-  { label: "Access", href: "/#access" }
+  { label: "Access", href: "/access" }
 ];
 
 export function SiteHeader() {
@@ -49,11 +49,11 @@ export function SiteHeader() {
             Public Registry
           </a>
           <a
-            href="/#access"
+            href="/access"
             className="notranslate inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white px-5 text-sm font-medium text-black"
             translate="no"
           >
-            Enter AIAA
+            Access AIAA
           </a>
         </div>
       </div>

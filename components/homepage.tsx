@@ -236,8 +236,8 @@ export function Homepage() {
               The identity layer for certified AI agents.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <a href="#access" className="pill-button notranslate bg-white text-black" translate="no">
-                Enter AIAA
+              <a href="/access" className="pill-button bg-white text-black">
+                Start Certification
               </a>
               <a href="#registry" className="pill-button glass-panel">
                 View Registry
@@ -735,8 +735,8 @@ export function Homepage() {
             decisive. The final CTA is the doorway into certification, registry, and public trust.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <a href="#world" className="pill-button notranslate bg-white text-black" translate="no">
-              Enter AIAA
+            <a href="/access" className="pill-button bg-white text-black">
+              Start Certification
             </a>
             <a href="#rankings" className="pill-button glass-panel">
               View Rankings
