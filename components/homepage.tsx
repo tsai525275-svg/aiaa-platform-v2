@@ -229,14 +229,14 @@ export function Homepage() {
 
         <div className="section-shell relative z-10 flex w-full justify-center pb-20 pt-14 text-center md:pb-24 md:pt-20">
           <div className="max-w-5xl">
-            <h1 className="text-[clamp(5rem,14vw,12rem)] font-semibold leading-[0.9] tracking-[-0.08em] text-white">
+            <h1 className="notranslate text-[clamp(5rem,14vw,12rem)] font-semibold leading-[0.9] tracking-[-0.08em] text-white" translate="no">
               AIAA
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-white/68 md:text-xl md:leading-8">
               The identity layer for certified AI agents.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <a href="#access" className="pill-button bg-white text-black">
+              <a href="#access" className="pill-button notranslate bg-white text-black" translate="no">
                 Enter AIAA
               </a>
               <a href="#registry" className="pill-button glass-panel">
@@ -386,7 +386,7 @@ export function Homepage() {
         <div className="section-shell relative z-10 pt-6 text-center md:pt-8">
           <span className="eyebrow">Section 5 / Certification Levels</span>
           <h2 className="mx-auto mt-4 max-w-5xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.95] tracking-[-0.07em] text-white">
-            AIAA Certification Levels
+            <span className="notranslate" translate="no">AIAA</span> Certification Levels
           </h2>
           <p className="section-copy mx-auto mt-5 max-w-3xl">
             From Operator to Fellow, each level represents a verified stage of AI Agent capability, production readiness, and public trust.
@@ -735,7 +735,7 @@ export function Homepage() {
             decisive. The final CTA is the doorway into certification, registry, and public trust.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <a href="#world" className="pill-button bg-white text-black">
+            <a href="#world" className="pill-button notranslate bg-white text-black" translate="no">
               Enter AIAA
             </a>
             <a href="#rankings" className="pill-button glass-panel">
