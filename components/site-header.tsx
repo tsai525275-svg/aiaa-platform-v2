@@ -40,7 +40,7 @@ function AuthStatusToast() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    let hideTimer: number | undefined;
 
     function showQueuedToast() {
       const toast = consumeAuthToast();
