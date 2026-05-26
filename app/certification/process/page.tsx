@@ -1,106 +1,60 @@
-const pageShell = "mx-auto w-full max-w-[1440px]";
+import Link from "next/link";
+import { AIAAFrame, CTASection, DotMatrix, IndexList, PageHero, Section, StatusPill, ThinTable } from "@/components/aiaa-page-kit";
 
-const phases = [
-  {
-    title: "1. Application Intake",
-    content: "The applicant submits identity, agent profile, workflow evidence, technical documents, security notes, and public links."
-  },
-  {
-    title: "2. Eligibility Screening",
-    content: "AIAA validates level eligibility. New applicants can only apply for Level 1. Higher levels require active prior certificates."
-  },
-  {
-    title: "3. Practical Exam",
-    content: "The applicant completes a level specific task. The work must produce logs, execution evidence, and reviewable outputs."
-  },
-  {
-    title: "4. Technical Review",
-    content: "Reviewers inspect architecture, reliability, safety, documentation, monitoring, benchmark evidence, and failure behavior."
-  },
-  {
-    title: "5. Decision",
-    content: "AIAA issues Approved, Need More Information, Rejected, Suspended, or Council Review status depending on evidence quality."
-  },
-  {
-    title: "6. Certificate Issuance",
-    content: "Approved applicants receive a certificate ID, public verification URL, registry profile, badge, and ranking eligibility where applicable."
-  }
-];
-
-const statuses = [
-  "Draft",
-  "Submitted",
-  "Screening",
-  "Exam Assigned",
-  "Under Review",
-  "Need More Information",
-  "Approved",
-  "Rejected",
-  "Certificate Issued",
-  "Expired",
-  "Suspended",
-  "Revoked"
-];
-
-const outputs = [
-  "AIAA Certificate ID",
-  "Verification URL",
-  "Registry profile",
-  "Certification level",
-  "Issued date",
-  "Expiry date",
-  "Public badge",
-  "Ranking eligibility"
+const steps = [
+  ["01", "Application Intake", "Collect owner identity, Agent name, category, country, product URL, and requested level."],
+  ["02", "Identity Screening", "Check owner consistency, public footprint, contact path, and registry eligibility."],
+  ["03", "Evidence Review", "Inspect logs, screenshots, workflow proof, documentation, and repository or deployment context."],
+  ["04", "Capability Assessment", "Review task claims, scope limits, outcome examples, and evaluator notes."],
+  ["05", "Decision", "Issue approval, request information, reject, mark watchlist, or route to higher review."],
+  ["06", "Publication", "Create certificate page, registry row, status field, issue date, expiry date, and review summary."]
 ];
 
 export default function CertificationProcessPage() {
   return (
-    <main className="min-h-screen overflow-x-hidden px-4 pb-28 pt-32 text-white sm:px-6 lg:px-8">
-      <section className={pageShell}>
-        <div className="glass-panel overflow-hidden rounded-[2rem] p-6 md:p-10">
-          <span className="eyebrow notranslate" translate="no">AIAA Certification Process</span>
-          <h1 className="max-w-5xl break-words text-[clamp(2.75rem,5.5vw,5.8rem)] font-semibold leading-[0.96] tracking-[-0.055em]">
-            AIAA certification follows exam discipline.
-          </h1>
-          <p className="section-copy mt-7 max-w-3xl">
-            The system is designed like a strict professional exam. Applicants submit proof, complete assessments, pass review, and receive verifiable credentials. Skipping levels is not allowed.
-          </p>
-        </div>
-      </section>
+    <AIAAFrame>
+      <PageHero
+        eyebrow="Certification Process"
+        title="A review flow that ends in public proof."
+        copy="The process turns an application into a decision, then turns the decision into a registry record and certificate page."
+        stats={[["6", "review steps"], ["5", "status states"], ["Evidence", "review base"], ["Registry", "public output"], ["Expiry", "renewal rule"]]}
+        action={<Link href="/apply/agent" className="aiaa-button-dark">Start Application</Link>}
+      />
 
-      <section className={`${pageShell} mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3`}>
-        {phases.map((phase) => (
-          <article key={phase.title} className="glass-panel min-w-0 rounded-[1.75rem] p-6">
-            <h2 className="break-words text-2xl font-semibold tracking-[-0.04em]">{phase.title}</h2>
-            <p className="mt-4 text-sm leading-6 text-white/64">{phase.content}</p>
-          </article>
-        ))}
-      </section>
+      <Section eyebrow="Workflow" title="The review path should feel procedural." copy="AIAA needs a process page that reads like infrastructure, not marketing copy.">
+        <IndexList rows={steps.map(([index, title, copy]) => ({ index, title, copy, meta: "Step" }))} />
+      </Section>
 
-      <section className={`${pageShell} mt-14 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]`}>
-        <div className="glass-panel rounded-[2rem] p-6 md:p-8">
-          <span className="eyebrow">Certificate status</span>
-          <h2 className="text-3xl font-semibold tracking-[-0.045em] md:text-4xl">Every credential has a public state.</h2>
-          <div className="mt-7 flex flex-wrap gap-3">
-            {statuses.map((status) => (
-              <span key={status} className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-white/64">
-                {status}
-              </span>
-            ))}
-          </div>
-        </div>
+      <Section eyebrow="Reviewer Checklist" title="What reviewers inspect." copy="The checklist helps applicants understand what evidence to prepare before review starts.">
+        <ThinTable
+          headers={["Review Area", "Evidence", "Decision Impact"]}
+          rows={[
+            ["Owner Identity", "Company records, owner contact, product URL, public profile.", "Controls whether a registry record is created."],
+            ["Agent Capability", "Task examples, workflow logs, tool calls, supported use cases.", "Controls claimed scope and level eligibility."],
+            ["Safety Boundary", "Permission limits, fallback behavior, human override, prohibited use notes.", "Controls review conditions and warnings."],
+            ["Operational Context", "Deployment notes, monitoring, incident handling, organization proof.", "Controls Level 4 and Level 5 readiness."],
+            ["Public Presentation", "Website claims, docs, labels, user facing promises.", "Controls registry wording and certificate text."]
+          ].map(([area, evidence, impact]) => [<span key="area" className="font-semibold text-neutral-950">{area}</span>, evidence, impact])}
+        />
+      </Section>
 
-        <div className="glass-panel rounded-[2rem] p-6 md:p-8">
-          <span className="eyebrow">Public trust outputs</span>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {outputs.map((item) => (
-              <div key={item} className="rounded-2xl border border-white/[0.08] bg-black/20 p-4 text-sm text-white/66">
-                {item}
-              </div>
-            ))}
-          </div>
+      <Section eyebrow="Decision Map" title="Every decision needs a next action." copy="No applicant should reach a dead end. Each state should route to review, update, renewal, appeal, or public record.">
+        <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
+          <DotMatrix labels={["Pending", "Verified", "Info Needed", "Expired", "Revoked"]} />
+          <ThinTable
+            headers={["State", "Next Action", "Public Output"]}
+            rows={[
+              ["Pending", "Wait for reviewer or submit missing details.", "Pending registry row when enabled."],
+              ["Verified", "Publish certificate and registry record.", "Public record and certificate URL."],
+              ["Information Needed", "Applicant uploads missing proof.", "Private review state."],
+              ["Expired", "Applicant requests renewal.", "Expired status remains visible."],
+              ["Revoked", "Applicant may appeal or submit remediation.", "Revoked status remains visible."]
+            ].map(([state, action, output]) => [<StatusPill key="state">{state}</StatusPill>, action, output])}
+          />
         </div>
-      </section>
-    </main>
+      </Section>
+
+      <CTASection title="Prepare an Agent review file." copy="Start with identity, ownership, product URL, capability claims, and evidence links." primaryHref="/apply/agent" primaryLabel="Submit Agent" secondaryHref="/certification" secondaryLabel="Certification Levels" />
+    </AIAAFrame>
   );
 }
