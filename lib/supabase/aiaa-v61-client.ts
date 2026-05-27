@@ -85,29 +85,54 @@ function decodeJwtPayload(token: string): Record<string, any> | null {
 export function getStoredAiaaSession(): AiaaSession | null {
   if (typeof window === "undefined") return null;
 
-  for (let index = 0; index < window.localStorage.length; index += 1) {
-    const key = window.localStorage.key(index);
-    if (!key || !key.startsWith("sb-") || !key.includes("auth-token")) continue;
+  function fromCandidate(candidate: any): AiaaSession | null {
+    if (!candidate || typeof candidate !== "object") return null;
 
+    const session = candidate.currentSession || candidate.session || candidate;
+    const accessToken = session.access_token || session.accessToken;
+    if (!accessToken || typeof accessToken !== "string") return null;
+
+    const payload = decodeJwtPayload(accessToken);
+    const user = session.user || candidate.user || {};
+    const userId = user.id || payload?.sub || "";
+    const email = user.email || payload?.email || "";
+    const expiresAt = Number(session.expires_at || session.expiresAt || payload?.exp || 0) || undefined;
+
+    if (!userId) return null;
+    if (expiresAt && expiresAt * 1000 < Date.now()) return null;
+
+    return { accessToken, userId, email, expiresAt };
+  }
+
+  const directKeys = ["aiaa-member-session"];
+  for (const key of directKeys) {
     try {
-      const raw = window.localStorage.getItem(key);
+      const raw = window.localStorage.getItem(key) || window.sessionStorage.getItem(key);
       if (!raw) continue;
-      const parsed = JSON.parse(raw);
-      const session = parsed?.currentSession || parsed?.session || parsed;
-      const accessToken = session?.access_token;
-      if (!accessToken) continue;
-
-      const payload = decodeJwtPayload(accessToken);
-      const userId = session?.user?.id || payload?.sub || "";
-      const email = session?.user?.email || payload?.email || "";
-      const expiresAt = session?.expires_at || payload?.exp;
-
-      if (!userId) continue;
-      if (expiresAt && Number(expiresAt) * 1000 < Date.now()) return null;
-
-      return { accessToken, userId, email, expiresAt };
+      const session = fromCandidate(JSON.parse(raw));
+      if (session) return session;
     } catch {
-      continue;
+      // Continue scanning other stored sessions.
+    }
+  }
+
+  const storages = [window.localStorage, window.sessionStorage];
+  for (const storage of storages) {
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (!key) continue;
+      const searchable = key.toLowerCase();
+      if (!searchable.includes("auth") && !searchable.includes("session") && !searchable.includes("token") && !searchable.includes("aiaa") && !searchable.startsWith("sb-")) continue;
+
+      try {
+        const raw = storage.getItem(key);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        const session = fromCandidate(parsed);
+        if (session) return session;
+      } catch {
+        continue;
+      }
     }
   }
 
