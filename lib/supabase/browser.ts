@@ -60,18 +60,17 @@ export function isTurnstileConfigured() {
 }
 
 export function getAuthRedirectUrl(path = "/auth/callback") {
-  const fallbackOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-  if (typeof window !== "undefined") {
-    const origin = window.location.origin;
-    const next = new URLSearchParams(window.location.search).get("next");
-    if (next && path === "/auth/callback") {
-      return `${origin}${path}?next=${encodeURIComponent(next)}`;
-    }
-    return `${origin}${path}`;
+  if (typeof window === "undefined") {
+    return path;
   }
 
-  return `${fallbackOrigin}${path}`;
+  const url = new URL(path, window.location.origin);
+
+  if (path === "/auth/callback") {
+    url.searchParams.set("next", "/");
+  }
+
+  return url.toString();
 }
 
 export function getCurrentPath() {
