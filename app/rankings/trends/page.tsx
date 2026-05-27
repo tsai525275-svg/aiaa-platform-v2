@@ -132,7 +132,7 @@ export default async function RankingTrendsPage() {
         <SplitLedger
           left={
             <div className="space-y-6">
-              <DataPanel label="Snapshot Rule" title="Latest vs previous" copy="Movement becomes stronger after daily jobs run for more days. The UI already supports rank and signal deltas." />
+              <DataPanel label="Snapshot Rule" title="Latest vs previous" copy="Movement becomes stronger  after  daily jobs run for more days. The UI already supports rank and signal deltas." />
               <DataPanel label="Data Source" title="Existing API only" copy="This page does not change app/api. It reads snapshot history from the current endpoint." />
             </div>
           }

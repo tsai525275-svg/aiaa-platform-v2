@@ -19,7 +19,7 @@ export function LanguageSwitcher() {
         onClick={() => setLanguage("zh")}
         className={`rounded-full px-3 py-2 transition ${language === "zh" ? "bg-slate-950 text-white shadow-sm" : "hover:text-[var(--aiaa-blue)]"}`}
       >
-        繁中
+        ZH
       </button>
     </div>
   );

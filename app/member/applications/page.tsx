@@ -8,7 +8,7 @@ export default function MemberApplicationsPage() {
         eyebrow="Applications"
         title="Track your certification path."
         copy="This page reads your real application system application records. It does not show fake approvals. New members start with no certificate."
-        stats={[["Profile", "member"], ["Level 1", "first"], ["Exam", "required"], ["Review", "manual"], ["Certificate", "after approval"]]}
+        stats={[["Profile", "member"], ["Level 1", "first"], ["Exam", "required"], ["Review", "manual"], ["Certificate", " after  approval"]]}
       />
       <MemberApplicationsTracker />
     </AIAAFrame>

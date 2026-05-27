@@ -5,7 +5,7 @@ export const rankingConfigs = {
     eyebrow: "AIAA Ranking",
     title: "AI Agent Product Ranking",
     subtitle: "Certification based ranking for AI Agent products that pass AIAA review.",
-    description: "Products enter this ranking after application, assessment, identity verification, product evidence review, and certificate issuance. This is review based, not an automated GitHub popularity ranking.",
+    description: "Products enter this ranking  after  application, assessment, identity verification, product evidence review, and certificate issuance. This is review based, not an automated GitHub popularity ranking.",
     mode: "preview",
     signal: "AIAA Certification",
     source: "AIAA Certification Review",

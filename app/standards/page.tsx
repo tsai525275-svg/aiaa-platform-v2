@@ -54,7 +54,7 @@ export default function StandardsPage() {
         </div>
       </Section>
 
-      <Section eyebrow="Clauses" title="The first clauses are practical." copy="These clauses can expand into full policy pages after the UI structure is accepted.">
+      <Section eyebrow="Clauses" title="The first clauses are practical." copy="These clauses can expand into full policy pages  after  the UI structure is accepted.">
         <ThinTable
           headers={["Clause", "Requirement", "Public effect"]}
           rows={clauses.map(([clause, requirement, effect]) => [<span key="clause" className="font-mono text-neutral-950">{clause}</span>, requirement, effect])}

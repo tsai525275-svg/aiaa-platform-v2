@@ -79,7 +79,7 @@ const faqRows = [
   ["What does AIAA rank?", "AIAA ranks agent products, open source projects, builders, and frameworks. Each ranking uses a separate scope so unrelated tools do not mix together."],
   ["Why does AIAA need certification?", "Rankings show market signals. Certification adds identity, evidence, and review status so public trust does not depend on popularity alone."],
   ["How does the registry work?", "The registry turns certificates into searchable public records. Each record shows status, level, and validity."],
-  ["What comes after this version?", "The next layer connects live data, item pages, trend charts, and certification application flows to the same visual system."]
+  ["What comes  after  this version?", "The next layer connects live data, item pages, trend charts, and certification application flows to the same visual system."]
 ];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {

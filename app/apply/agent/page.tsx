@@ -3,14 +3,14 @@ import { AIAAFrame, PageHero, Section, ThinTable } from "@/components/aiaa-page-
 import { CertificationApplicationForm } from "@/components/certification-application-flow";
 
 const reviewChecklist = [
-  ["Identity", "Agent name、Product website、Category、Country或地區"],
+  ["Identity", "Agent name, product website, category, and country or region"],
   ["Owner", "Responsible owner、Company、Contact email"],
-  ["能力", "代理人處理哪些任務、服務哪些使用者、目前Status"],
-  ["證據", "GitHub Repo、README、Demo、影片、執行截圖、流程紀錄"],
-  ["安全", "權限、資料處理、限制、人工審核點、錯誤處理"]
+  ["Capability", "Tasks handled, users served, and current operating status"],
+  ["Evidence", "GitHub repo, README, demo, video, execution screenshots, and workflow records"],
+  ["Safety", "Permissions, data handling, limits, human review points, and error handling"]
 ];
 
-export default function ApplyAgentPage() {
+export default function ApplicationAgentPage() {
   return (
     <AIAAFrame>
       <PageHero
@@ -21,17 +21,17 @@ export default function ApplyAgentPage() {
           ["Level 1", "first"],
           ["Owner", "required"],
           ["Evidence", "required"],
-          ["Exam", "after submit"],
-          ["Certificate", "after approval"]
+          ["Exam", " after  submit"],
+          ["Certificate", " after  approval"]
         ]}
         action={<Link href="/member/applications" className="aiaa-button-light">View applications</Link>}
       />
 
       <CertificationApplicationForm />
 
-      <Section compact eyebrow="Review checklist" title="審核員會檢查哪些內容？" copy="Apply頁只處理真實Apply流程。未Sign in者會先導向Sign in，Signed in者會直接看到提交Apply表。">
+      <Section compact eyebrow="Review checklist" title="What reviewers check" copy="This page handles the real application flow. Signed out users are sent to sign in first. Signed in users see the submission form directly.">
         <ThinTable
-          headers={["Area", "所需資料"]}
+          headers={["Area", "Required information"]}
           rows={reviewChecklist.map(([area, info]) => [
             <span key="area" className="font-semibold text-neutral-950">{area}</span>,
             info

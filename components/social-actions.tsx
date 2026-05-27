@@ -61,14 +61,14 @@ function getAuthState() {
 }
 
 async function readCount(table: string, targetType: SocialTargetType, targetKey: string) {
-  if (!isapplication systemAuthConfigured()) return 0;
+  if (!isSupabaseAuthConfigured()) return 0;
 
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${table}?select=id&target_type=eq.${filterValue(targetType)}&target_key=eq.${filterValue(targetKey)}`,
+    `${getSupabaseUrl()}/rest/v1/${table}?select=id&target_type=eq.${filterValue(targetType)}&target_key=eq.${filterValue(targetKey)}`,
     {
       headers: {
-        apikey: getapplication systemAnonKey(),
-        Authorization: `Bearer ${getapplication systemAnonKey()}`,
+        apikey: getSupabaseAnonKey(),
+        Authorization: `Bearer ${getSupabaseAnonKey()}`,
         Prefer: "count=exact"
       },
       cache: "no-store"
@@ -81,14 +81,14 @@ async function readCount(table: string, targetType: SocialTargetType, targetKey:
 }
 
 async function readMine(table: string, targetType: SocialTargetType, targetKey: string, userId?: string) {
-  if (!isapplication systemAuthConfigured() || !userId) return false;
+  if (!isSupabaseAuthConfigured() || !userId) return false;
 
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${table}?select=id&user_id=eq.${filterValue(userId)}&target_type=eq.${filterValue(targetType)}&target_key=eq.${filterValue(targetKey)}&limit=1`,
+    `${getSupabaseUrl()}/rest/v1/${table}?select=id&user_id=eq.${filterValue(userId)}&target_type=eq.${filterValue(targetType)}&target_key=eq.${filterValue(targetKey)}&limit=1`,
     {
       headers: {
-        apikey: getapplication systemAnonKey(),
-        Authorization: `Bearer ${getapplication systemAnonKey()}`
+        apikey: getSupabaseAnonKey(),
+        Authorization: `Bearer ${getSupabaseAnonKey()}`
       },
       cache: "no-store"
     }
@@ -102,17 +102,17 @@ async function readMine(table: string, targetType: SocialTargetType, targetKey: 
 async function createAction(table: string, targetType: SocialTargetType, targetKey: string, targetName: string) {
   const { accessToken, userId } = getAuthState();
 
-  if (!isapplication systemAuthConfigured() || !accessToken || !userId) {
+  if (!isSupabaseAuthConfigured() || !accessToken || !userId) {
     throw new Error("SIGN_IN_REQUIRED");
   }
 
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${table}?on_conflict=user_id,target_type,target_key`,
+    `${getSupabaseUrl()}/rest/v1/${table}?on_conflict=user_id,target_type,target_key`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: getapplication systemAnonKey(),
+        apikey: getSupabaseAnonKey(),
         Authorization: `Bearer ${accessToken}`,
         Prefer: "resolution=ignore-duplicates,return=minimal"
       },
@@ -134,16 +134,16 @@ async function createAction(table: string, targetType: SocialTargetType, targetK
 async function removeAction(table: string, targetType: SocialTargetType, targetKey: string) {
   const { accessToken, userId } = getAuthState();
 
-  if (!isapplication systemAuthConfigured() || !accessToken || !userId) {
+  if (!isSupabaseAuthConfigured() || !accessToken || !userId) {
     throw new Error("SIGN_IN_REQUIRED");
   }
 
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${table}?user_id=eq.${filterValue(userId)}&target_type=eq.${filterValue(targetType)}&target_key=eq.${filterValue(targetKey)}`,
+    `${getSupabaseUrl()}/rest/v1/${table}?user_id=eq.${filterValue(userId)}&target_type=eq.${filterValue(targetType)}&target_key=eq.${filterValue(targetKey)}`,
     {
       method: "DELETE",
       headers: {
-        apikey: getapplication systemAnonKey(),
+        apikey: getSupabaseAnonKey(),
         Authorization: `Bearer ${accessToken}`,
         Prefer: "return=minimal"
       }
@@ -217,7 +217,7 @@ export function SocialActions({
     setMessage("");
     const { accessToken, userId } = getAuthState();
 
-    if (!isapplication systemAuthConfigured() || !accessToken || !userId) {
+    if (!isSupabaseAuthConfigured() || !accessToken || !userId) {
       setMessage("Sign in to follow.");
       sendToLogin();
       return;
@@ -251,7 +251,7 @@ export function SocialActions({
     setMessage("");
     const { accessToken, userId } = getAuthState();
 
-    if (!isapplication systemAuthConfigured() || !accessToken || !userId) {
+    if (!isSupabaseAuthConfigured() || !accessToken || !userId) {
       setMessage("Sign in to like.");
       sendToLogin();
       return;

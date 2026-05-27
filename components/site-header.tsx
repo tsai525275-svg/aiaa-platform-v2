@@ -129,7 +129,7 @@ export function SiteHeader() {
               </a>
             )}
             <a href="/apply" className="aiaa-button-dark">
-              Apply
+              Application
             </a>
           </div>
         </div>

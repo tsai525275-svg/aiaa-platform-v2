@@ -114,7 +114,7 @@ export function queueAuthToast(message: string, tone: AIAAAuthToast["tone"] = "s
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(authToastKey, JSON.stringify({ message, tone }));
 
-  // Defer the event. If the caller redirects immediately after queuing the toast,
+  // Defer the event. If the caller redirects immediately  after  queuing the toast,
   // this timer is cancelled by navigation and the next page consumes the queued toast.
   window.setTimeout(() => {
     window.setTimeout(() => {
@@ -139,12 +139,12 @@ export async function signOutCurrentUser() {
   const session = getStoredSession();
   const accessToken = session?.access_token;
 
-  if (accessToken && isapplication systemAuthConfigured()) {
+  if (accessToken && isSupabaseAuthConfigured()) {
     try {
-      await fetch(`${getapplication systemUrl()}/auth/v1/logout`, {
+      await fetch(`${getSupabaseUrl()}/auth/v1/logout`, {
         method: "POST",
         headers: {
-          apikey: getapplication systemAnonKey(),
+          apikey: getSupabaseAnonKey(),
           Authorization: `Bearer ${accessToken}`
         }
       });
@@ -163,7 +163,7 @@ export function startOAuth(provider: AIAAProvider) {
 }
 
 function extractSeconds(value: string) {
-  const match = value.match(/after\s+(\d+)\s+seconds?/i);
+  const match = value.match(/ after \s+(\d+)\s+seconds?/i);
   return match?.[1] ?? "a moment";
 }
 
@@ -180,7 +180,7 @@ export function friendlyAuthErrorMessage(error: unknown) {
   const code = parsed?.error_code || "";
   const message = parsed?.msg || parsed?.message || raw;
 
-  if (code === "over_email_send_rate_limit" || message.toLowerCase().includes("only request this after")) {
+  if (code === "over_email_send_rate_limit" || message.toLowerCase().includes("only request this  after ")) {
     return `For security, please wait ${extractSeconds(message)} before requesting another email verification code.`;
   }
 
@@ -306,7 +306,7 @@ export async function updateAuthUserMetadata(accessToken: string, data: Record<s
 }
 
 function restHeaders(accessToken?: string) {
-  const anonKey = getapplication systemAnonKey();
+  const anonKey = getSupabaseAnonKey();
   return {
     "Content-Type": "application/json",
     apikey: anonKey,
@@ -363,7 +363,7 @@ export function defaultProfileForUser(user: AIAAMemberUser): AIAAMemberProfileIn
 
 export async function readOwnMemberProfile(accessToken: string, userId: string) {
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${profileTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+    `${getSupabaseUrl()}/rest/v1/${profileTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
     {
       headers: restHeaders(accessToken),
       cache: "no-store"
@@ -386,7 +386,7 @@ export async function upsertMemberProfile(accessToken: string, profile: AIAAMemb
     updated_at: new Date().toISOString()
   };
 
-  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${profileTable}?on_conflict=user_id`, {
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${profileTable}?on_conflict=user_id`, {
     method: "POST",
     headers: {
       ...restHeaders(accessToken),
@@ -414,11 +414,11 @@ export async function ensureMemberProfile(accessToken: string, user: AIAAMemberU
 }
 
 export async function readPublicMemberProfile(username: string) {
-  if (!isapplication systemAuthConfigured()) return null;
+  if (!isSupabaseAuthConfigured()) return null;
 
   const clean = normalizeUsername(username);
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${profileTable}?select=*&username=eq.${encodeURIComponent(clean)}&is_public=eq.true&limit=1`,
+    `${getSupabaseUrl()}/rest/v1/${profileTable}?select=*&username=eq.${encodeURIComponent(clean)}&is_public=eq.true&limit=1`,
     {
       headers: restHeaders(),
       cache: "no-store"
@@ -505,7 +505,7 @@ export function statusLabel(status?: string) {
 
 export async function readOwnCertificationApplications(accessToken: string, userId: string) {
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${certificationApplicationsTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
+    `${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
     {
       headers: restHeaders(accessToken),
       cache: "no-store"
@@ -553,7 +553,7 @@ export async function createCertificationApplication(accessToken: string, input:
     updated_at: new Date().toISOString()
   };
 
-  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${certificationApplicationsTable}`, {
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}`, {
     method: "POST",
     headers: {
       ...restHeaders(accessToken),
@@ -576,7 +576,7 @@ export async function updateCertificationApplication(
   id: string,
   updates: Partial<AIAACertificationApplication>
 ) {
-  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${certificationApplicationsTable}?id=eq.${encodeURIComponent(id)}`, {
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: {
       ...restHeaders(accessToken),

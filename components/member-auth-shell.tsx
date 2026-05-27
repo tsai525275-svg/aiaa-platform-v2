@@ -29,7 +29,7 @@ const COPY = {
 const steps = [
   ["01", "Member profile", "Identity, avatar, name, and contact record."],
   ["02", "Level file", "Application, exam, review, and certificate status."],
-  ["03", "Public record", "Passed levels and ranking eligibility after approval."],
+  ["03", "Public record", "Passed levels and ranking eligibility  after  approval."],
 ];
 
 export function MemberAuthShell({ mode }: { mode: "signup" | "signin" }) {

@@ -8,7 +8,7 @@ export default function MemberExamPage() {
         eyebrow="Exam"
         title="Complete the active level exam."
         copy="The exam belongs to your active application. Submitting the exam moves the file to reviewer review. It does not issue a certificate automatically."
-        stats={[["Application", "required"], ["Exam", "answers"], ["Review", "manual"], ["Certificate", "not automatic"], ["Ranking", "after approval"]]}
+        stats={[["Application", "required"], ["Exam", "answers"], ["Review", "manual"], ["Certificate", "not automatic"], ["Ranking", " after  approval"]]}
       />
       <MemberExamWorkspace />
     </AIAAFrame>

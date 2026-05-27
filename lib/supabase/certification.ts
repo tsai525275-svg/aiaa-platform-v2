@@ -50,7 +50,7 @@ export type AIAAExamAnswers = {
 const table = "aiaa_certification_applications";
 
 function restHeaders(accessToken: string) {
-  const anonKey = getapplication systemAnonKey();
+  const anonKey = getSupabaseAnonKey();
   return {
     "Content-Type": "application/json",
     apikey: anonKey,
@@ -65,7 +65,7 @@ function cleanText(value: unknown) {
 async function readError(response: Response, fallback: string) {
   const text = await response.text().catch(() => "");
   if (text.includes("JWT") || text.includes("expired") || text.includes("PGRST303")) {
-    return "Sign in已過期，請重新Sign in後再提交。";
+    return "Your sign in session has expired. Sign in again before submitting.";
   }
   return text || fallback;
 }
@@ -84,23 +84,23 @@ export function levelName(level: number) {
 export function statusLabel(status?: string) {
   const labels: Record<string, string> = {
     submitted: "Submitted",
-    exam: "Exam中",
-    under_review: "審核中",
-    approved: "已Approved",
-    rejected: "未Approved"
+    exam: "Exam in progress",
+    under_review: "Under review",
+    approved: "Approved",
+    rejected: "notApproved"
   };
-  return labels[status || ""] ?? "未提交";
+  return labels[status || ""] ?? "Not submitted";
 }
 
 export function stageLabel(stage?: string) {
   const labels: Record<string, string> = {
-    Application: "Apply",
+    Application: "Application",
     Exam: "Exam",
-    Review: "審核",
+    Review: "Review",
     Certificate: "Certificate",
     Ranking: "Rankings"
   };
-  return labels[stage || ""] ?? "Apply";
+  return labels[stage || ""] ?? "Application";
 }
 
 export function stageIndex(stage?: string) {
@@ -128,7 +128,7 @@ export function getNextCertificationLevel(applications: AIAACertificationApplica
 
 export async function readOwnCertificationApplications(accessToken: string, userId: string) {
   const response = await fetch(
-    `${getapplication systemUrl()}/rest/v1/${table}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
+    `${getSupabaseUrl()}/rest/v1/${table}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
     {
       headers: restHeaders(accessToken),
       cache: "no-store"
@@ -136,7 +136,7 @@ export async function readOwnCertificationApplications(accessToken: string, user
   );
 
   if (!response.ok) {
-    throw new Error(await readError(response, "無法讀取Apply紀錄。"));
+    throw new Error(await readError(response, "Unable to load application records."));
   }
 
   return (await response.json().catch(() => [])) as AIAACertificationApplication[];
@@ -166,7 +166,7 @@ export async function createCertificationApplication(accessToken: string, input:
     updated_at: new Date().toISOString()
   };
 
-  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${table}`, {
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${table}`, {
     method: "POST",
     headers: {
       ...restHeaders(accessToken),
@@ -176,7 +176,7 @@ export async function createCertificationApplication(accessToken: string, input:
   });
 
   if (!response.ok) {
-    throw new Error(await readError(response, "提交Apply失敗。"));
+    throw new Error(await readError(response, "Application submission failed."));
   }
 
   const rows = (await response.json().catch(() => [])) as AIAACertificationApplication[];
@@ -184,7 +184,7 @@ export async function createCertificationApplication(accessToken: string, input:
 }
 
 export async function updateCertificationApplication(accessToken: string, id: string, updates: Partial<AIAACertificationApplication>) {
-  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: {
       ...restHeaders(accessToken),
@@ -194,7 +194,7 @@ export async function updateCertificationApplication(accessToken: string, id: st
   });
 
   if (!response.ok) {
-    throw new Error(await readError(response, "更新ApplyStatus失敗。"));
+    throw new Error(await readError(response, "Unable to update application status."));
   }
 
   const rows = (await response.json().catch(() => [])) as AIAACertificationApplication[];

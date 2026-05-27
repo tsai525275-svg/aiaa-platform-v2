@@ -47,7 +47,7 @@ export default async function RankingItemPage({ params }: { params: Promise<{ sl
         <PageHero
           eyebrow="Ranking Record"
           title={record.name}
-          copy={`This preview record belongs to ${config.title}. Product ranking rows will connect to certified AIAA registry records after review data exists.`}
+          copy={`This preview record belongs to ${config.title}. Product ranking rows will connect to certified AIAA registry records  after  review data exists.`}
           stats={[[record.rank, "rank"], [record.level, "level"], [record.category, "category"], [record.signal, "signal"], [record.score, "score"]]}
           action={
             <div className="flex flex-wrap items-center gap-3">

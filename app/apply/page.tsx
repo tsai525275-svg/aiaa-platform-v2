@@ -4,78 +4,78 @@ import { AIAAFrame, IndexList, PageHero, Section, StatusPill } from "@/component
 const paths = [
   {
     index: "01",
-    title: "提交Apply",
-    copy: "進入Apply頁。未Sign in者先Sign in，Signed in者直接提交 Level 1 Apply資料。",
-    meta: "開始",
+    title: "Submit application",
+    copy: "Enter the application page. Signed out users sign in first. Signed in users submit Level 1 application data directly.",
+    meta: "Start",
     href: "/apply/agent"
   },
   {
     index: "02",
     title: "Complete exam",
-    copy: "Apply建立後，會員才能進入 Level 1 Exam工作區。",
-    meta: "Apply後",
+    copy: "After the application is created, the member can enter the Level 1 exam workspace.",
+    meta: "After application",
     href: "/member/exam"
   },
   {
     index: "03",
     title: "Awaiting review",
-    copy: "Exam送出後進入人工審核，不會自動Approved。",
-    meta: "Exam後",
+    copy: "After exam submission, the application enters manual review. It is not approved automatically.",
+    meta: "After exam",
     href: "/member/applications"
   },
   {
     index: "04",
-    title: "核發Certificate",
-    copy: "審核Approved且有Certificate ID 後，會員頁才會顯示Approved級別。",
-    meta: "Approved後",
+    title: "Issue certificate",
+    copy: "The member page shows an approved level only  after  review approval and certificate issuance.",
+    meta: "Approved after ",
     href: "/member"
   },
   {
     index: "05",
-    title: "解鎖下一級",
-    copy: "Level 1 Approved後才會解鎖 Level 2。以此類推。",
-    meta: "升級",
+    title: "Unlock next level",
+    copy: "Level 2 unlocks only  after  Level 1 approval. The same rule applies to each next level.",
+    meta: "Upgrade",
     href: "/certification"
   }
 ];
 
-export default function ApplyPage() {
+export default function ApplicationPage() {
   return (
     <AIAAFrame>
       <PageHero
-        eyebrow="Apply"
-        title="Apply through a member record."
+        eyebrow="Application"
+        title="Application through a member record."
         copy="AIAA certification is attached to one member account. New members do not receive Level 1 automatically."
         stats={[
           ["Account", "required"],
           ["Level 1", "first"],
           ["Exam", "required"],
           ["Review", "manual"],
-          ["Certificate", "after approval"]
+          ["Certificate", " after  approval"]
         ]}
-        action={<Link href="/apply/agent" className="aiaa-button-dark">提交Apply</Link>}
+        action={<Link href="/apply/agent" className="aiaa-button-dark">Submit application</Link>}
       />
 
-      <Section compact eyebrow="Flow" title="完整Apply流程。" copy="同一套流程處理未Sign in、Signed in、Apply、Exam、審核和CertificateStatus。">
+      <Section compact eyebrow="Flow" title="Complete application flow。" copy="One flow handles signed out users, signed in members, applications, exams, review, and certificate status.">
         <IndexList rows={paths} />
       </Section>
 
-      <Section compact eyebrow="Status rules" title="會員看到的Status。" copy="Status全部來自 application system Apply資料表，不顯示假的ApprovedStatus。">
+      <Section compact eyebrow="Status rules" title="What members see" copy="All status data comes from the application record. The site does not show fake approval states.">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="border border-slate-200 bg-white p-5 shadow-[0_12px_44px_rgba(15,23,42,0.05)]">
-            <StatusPill>新會員</StatusPill>
-            <h3 className="mt-4 text-xl font-semibold text-neutral-950">沒有Certification。</h3>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">註冊會員只Create account，不會自動變 Level 1。</p>
+            <StatusPill>New member</StatusPill>
+            <h3 className="mt-4 text-xl font-semibold text-neutral-950">No certification yet.</h3>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">Creating an account does not grant Level 1 automatically.</p>
           </div>
           <div className="border border-slate-200 bg-white p-5 shadow-[0_12px_44px_rgba(15,23,42,0.05)]">
-            <StatusPill tone="warn">Apply中</StatusPill>
-            <h3 className="mt-4 text-xl font-semibold text-neutral-950">需要Exam和審核。</h3>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">Apply提交後，會員頁會顯示Exam、審核和Certificate階段。</p>
+            <StatusPill tone="warn">Application in progress</StatusPill>
+            <h3 className="mt-4 text-xl font-semibold text-neutral-950">Exam and review required.</h3>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">After submission, the member page shows exam, review, and certificate stages.</p>
           </div>
           <div className="border border-slate-200 bg-white p-5 shadow-[0_12px_44px_rgba(15,23,42,0.05)]">
-            <StatusPill tone="good">已Approved</StatusPill>
-            <h3 className="mt-4 text-xl font-semibold text-neutral-950">Certificate才會出現。</h3>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">只有審核Approved且有Certificate ID 的紀錄，才顯示為CertificationApproved。</p>
+            <StatusPill tone="good">Approved</StatusPill>
+            <h3 className="mt-4 text-xl font-semibold text-neutral-950">Certificate appears  after  issuance.</h3>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">Only review approved records with a certificate ID display as certified.</p>
           </div>
         </div>
       </Section>

@@ -111,7 +111,7 @@ const levelMap: Record<string, LevelRecord> = {
       "Demo screen only submissions are not accepted",
       "PPT only submissions are not accepted",
     ],
-    nextAction: "Apply for Level 1",
+    nextAction: "Application for Level 1",
     certificateImage: "/certificates/level-1.png",
   },
   "level-2": {

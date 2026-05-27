@@ -1,0 +1,7 @@
+app\api\snapshots\github\route.ts:103: throw new Error(`${table} application system fetch failed: ${error instanceof Error ? error.message : "Unknown fetch error"}`);
+components\certification-application-flow.tsx:154: setState({ ...emptyState, loading: false, error: "application system 尚未設定。" });
+components\certification-application-flow.tsx:279: <Section compact eyebrow="Application form" title={`提交 ${levelName(nextLevel)} Apply。`} copy="This form starts application system Apply資料表。提交後只代表進入Apply流程，It does not approve the application and it does not issue a certificate automatically.">
+components\member-auth-panel.tsx:61: setMessage("Authentication is not ready yet. Add the application system URL and publishable key first.");
+components\member-auth-panel.tsx:75: setMessage("Authentication is not ready yet. Add the application system URL and publishable key first.");
+components\member-auth-panel.tsx:111: setMessage("Authentication is not ready yet. Add the application system URL and publishable key first.");
+components\member-dashboard.tsx:557: setError("application system is not configured.");

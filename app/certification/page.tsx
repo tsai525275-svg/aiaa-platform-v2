@@ -11,7 +11,7 @@ const levels = [
     scarcity: "High volume",
     core: "Workflow",
     entryRule: "Open application",
-    action: "Apply",
+    action: "Application",
     href: "/apply/agent",
     locked: false
   },
@@ -92,7 +92,7 @@ export default function CertificationPage() {
     <AIAAFrame>
       <PageHero
         eyebrow="Certification"
-        title="Start at Level 1. Upgrade after approval."
+        title="Start at Level 1. Upgrade  after  approval."
         copy="AIAA certification reviews AI Agent engineering, production systems, autonomous infrastructure, benchmark capability, commercial execution, and global influence. New applicants create a member account first, then start at Level 1."
         stats={[["Level 1", "Operator"], ["Level 2", "Engineer"], ["Level 3", "Architect"], ["Level 4", "Company"], ["Level 5", "Fellow"]]}
         action={<Link href="/signup" className="aiaa-button-dark">Create Member Account</Link>}
@@ -144,7 +144,7 @@ export default function CertificationPage() {
         />
       </Section>
 
-      <CTASection title="Apply for Level 1 first." copy="Create a member account, then submit Agent identity, owner record, public links, first workflow evidence, and README. Upgrade reviews open after approval." primaryHref="/signup" primaryLabel="Create Account" secondaryHref="/certification/process" secondaryLabel="Review Process" />
+      <CTASection title="Application for Level 1 first." copy="Create a member account, then submit Agent identity, owner record, public links, first workflow evidence, and README. Upgrade reviews open  after  approval." primaryHref="/signup" primaryLabel="Create Account" secondaryHref="/certification/process" secondaryLabel="Review Process" />
     </AIAAFrame>
   );
 }

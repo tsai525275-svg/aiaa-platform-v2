@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { friendlyAuthErrorMessage, isapplication systemAuthConfigured, isTurnstileConfigured, queueAuthToast, sendEmailSignInLink, startOAuth, verifyEmailOtpCode } from "@/lib/supabase/browser";
+import { friendlyAuthErrorMessage, isSupabaseAuthConfigured, isTurnstileConfigured, queueAuthToast, sendEmailSignInLink, startOAuth, verifyEmailOtpCode } from "@/lib/supabase/browser";
 import { TurnstileCheck } from "@/components/turnstile-check";
 
 function GitHubMark() {
@@ -48,7 +48,7 @@ export function MemberAuthPanel({ mode = "signin" }: { mode?: "signin" | "signup
   const [messageType, setMessageType] = useState<"info" | "success" | "error">("info");
   const [captchaToken, setCaptchaToken] = useState("");
   const [busy, setBusy] = useState(false);
-  const configured = isapplication systemAuthConfigured();
+  const configured = isSupabaseAuthConfigured();
   const turnstileEnabled = isTurnstileConfigured();
   const waitingForHumanVerification = turnstileEnabled && !captchaToken;
 
@@ -157,7 +157,7 @@ export function MemberAuthPanel({ mode = "signin" }: { mode?: "signin" | "signup
           </div>
         </div>
         <p className="text-sm leading-7 text-neutral-500">
-          The sign in options appear automatically after verification succeeds.
+          The sign in options appear automatically  after  verification succeeds.
         </p>
       </div>
     );

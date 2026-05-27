@@ -75,7 +75,7 @@ export default function RegistryPage() {
         <ThinTable
           headers={["Field", "Purpose", "Public rule"]}
           rows={[
-            ["AIAA ID", "Stable public identifier", "Never reuse after revocation"],
+            ["AIAA ID", "Stable public identifier", "Never reuse  after  revocation"],
             ["Owner", "Legal or accountable operator", "Show company or individual record owner"],
             ["Certification Level", "Review depth indicator", "Always write Level 1 to Level 5"],
             ["Verification Status", "Current trust state", "Show Verified, Pending, Expired, Revoked, or Watchlist"],
