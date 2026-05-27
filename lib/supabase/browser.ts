@@ -113,7 +113,12 @@ export type AIAAAuthToast = {
 export function queueAuthToast(message: string, tone: AIAAAuthToast["tone"] = "success") {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(authToastKey, JSON.stringify({ message, tone }));
-  window.dispatchEvent(new CustomEvent("aiaa-auth-toast"));
+
+  // Defer the event. If the caller redirects immediately after queuing the toast,
+  // this timer is cancelled by navigation and the next page consumes the queued toast.
+  window.setTimeout(() => {
+    window.dispatchEvent(new CustomEvent("aiaa-auth-toast"));
+  }, 80);
 }
 
 export function consumeAuthToast(): AIAAAuthToast | null {
