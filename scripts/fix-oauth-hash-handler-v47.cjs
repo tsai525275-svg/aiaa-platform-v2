@@ -1,4 +1,12 @@
-"use client";
+const fs = require("fs");
+const path = require("path");
+
+const root = process.cwd();
+const file = path.join(root, "components", "oauth-hash-handler.tsx");
+
+fs.mkdirSync(path.dirname(file), { recursive: true });
+
+const content = `"use client";
 
 import { useEffect } from "react";
 import { parseAuthCallbackFromUrl, queueAuthToast } from "@/lib/supabase/browser";
@@ -54,3 +62,9 @@ export function OAuthHashHandler() {
 
   return null;
 }
+`;
+
+fs.writeFileSync(file, content, "utf8");
+
+console.log("已修正 OAuthHashHandler，不再引用 @supabase/supabase-js");
+console.log("請執行 npm run build");
