@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LenisProvider } from "@/components/lenis-provider";
 import { AIAANoTranslate } from "@/components/aiaa-no-translate";
 import "./globals.css";
+import { OAuthHashHandler } from "@/components/oauth-hash-handler";
 
 export const metadata: Metadata = {
   title: "AIAA Online",
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <OAuthHashHandler />
         <AIAANoTranslate />
         <LenisProvider>{children}</LenisProvider>
       </body>

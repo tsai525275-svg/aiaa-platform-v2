@@ -72,7 +72,6 @@ export function getAuthRedirectUrl(path = "/auth/callback") {
 
   return url.toString();
 }
-
 export function getCurrentPath() {
   if (typeof window === "undefined") return "/member";
   return `${window.location.pathname}${window.location.search}`;
