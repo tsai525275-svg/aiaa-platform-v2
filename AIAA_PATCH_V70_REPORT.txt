@@ -1,0 +1,8 @@
+AIAA V70 official exam workspace installed.
+Level 1 UI: 30 multiple choice questions and 1 practical evidence task.
+Level 2 UI: 40 multiple choice questions and 2 production evidence tasks.
+Level 3 UI: 50 multiple choice questions, 3 practical tasks, and 1 architecture review.
+Level 4 UI: company questionnaire, document evidence, and demo review.
+Level 5 UI: Fellow impact review. No normal multiple choice exam.
+Visible check: exam pages show AIAA Exam Workspace V70 at the top.
+Next: run npm run build, commit, push, and wait for Vercel Ready.
