@@ -221,7 +221,7 @@ function practicalFields(level: number, position: number): EvidenceField[] {
   }
 
   if (level === 4) {
-    const common = [
+    const common: EvidenceField[] = [
       { key: "evidenceUrl", label: "Evidence URL", helper: "Submit the main document, page, dashboard, folder, or reviewer access link.", type: "url", required: true },
       { key: "reviewerAccess", label: "Reviewer access notes", helper: "Explain passwords, access instructions, private repo access, or meeting link if needed.", type: "textarea" },
       { key: "summary", label: "Evidence summary", helper: "Explain what this evidence proves and which reviewer criteria it supports.", type: "textarea", required: true }
