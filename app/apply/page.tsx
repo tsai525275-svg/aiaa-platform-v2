@@ -5,7 +5,7 @@ const paths = [
   {
     index: "01",
     title: "提交申請",
-    copy: "進入申請頁。未登入者先登入，已登入者直接提交 Level 1 申請資料。",
+    copy: "進入申請頁。未登入者先登入，Signed in者直接提交 Level 1 申請資料。",
     meta: "開始",
     href: "/apply/agent"
   },
@@ -56,7 +56,7 @@ export default function ApplyPage() {
         action={<Link href="/apply/agent" className="aiaa-button-dark">提交申請</Link>}
       />
 
-      <Section compact eyebrow="Flow" title="完整申請流程。" copy="同一套流程處理未登入、已登入、申請、考試、審核和證書狀態。">
+      <Section compact eyebrow="Flow" title="完整申請流程。" copy="同一套流程處理未登入、Signed in、申請、考試、審核和證書狀態。">
         <IndexList rows={paths} />
       </Section>
 

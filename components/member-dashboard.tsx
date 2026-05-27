@@ -6,6 +6,7 @@ import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { ensureMemberProfile, getLoginUrl, getStoredSession, isSupabaseAuthConfigured, normalizeUsername, queueAuthToast, readPublicMemberProfile, readUser, saveStoredSession, signOutCurrentUser, updateAuthUserMetadata, upsertMemberProfile, type AIAAMemberProfileRecord, type AIAAMemberUser } from "@/lib/supabase/browser";
 import { StatusPill } from "@/components/aiaa-page-kit";
 import { SocialActions, SocialStats } from "@/components/social-actions";
+import { MemberApplicationSnapshot } from "@/components/certification-application-flow";
 
 type SessionUser = AIAAMemberUser;
 
@@ -342,27 +343,7 @@ export function MemberProfileView() {
               </div>
             </section>
 
-            <section className="border border-slate-200 bg-white p-6 shadow-[0_18px_70px_rgba(15,23,42,0.055)] lg:p-7">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-neutral-500">Certification status</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-neutral-950">No approved certification yet.</h2>
-              <p className="mt-4 text-sm leading-7 text-neutral-600">New members start without certification. Level 1 appears here only after application, exam, review, and certificate issuance.</p>
-              <div className="mt-5">
-                <InfoRow label="Approved level" value="None" />
-                <InfoRow label="Visibility" value={defaultApplication.visibility} />
-                <InfoRow label="Certificate" value="Not issued" />
-                <InfoRow label="Registry output" value="No public certification or ranking eligibility yet" />
-              </div>
-              <Link href="/apply/agent" className="aiaa-button-dark mt-6">Apply for Level 1</Link>
-            </section>
-
-            <section className="border border-slate-200 bg-white p-6 shadow-[0_18px_70px_rgba(15,23,42,0.055)] lg:p-7">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-neutral-500">Current application</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-neutral-950">Level 1 application not submitted.</h2>
-              <p className="mt-4 text-sm leading-7 text-neutral-600">Submit a Level 1 application first. After submission, this section will show application, exam, review, certificate, and ranking stages.</p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                {stageOrder.map((stage, index) => <ProgressStep key={stage} stage={stage} index={index} activeIndex={activeIndex} />)}
-              </div>
-            </section>
+            <MemberApplicationSnapshot />
           </main>
         </div>
       </div>

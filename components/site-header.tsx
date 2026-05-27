@@ -83,7 +83,7 @@ export function SiteHeader() {
 
   async function handleSignOut() {
     await signOutCurrentUser();
-    queueAuthToast("已登出", "success");
+    queueAuthToast("Signed out", "success");
     window.location.href = "/";
   }
 

@@ -34,7 +34,7 @@ export function OAuthHashHandler() {
         window.history.replaceState(null, "", nextPath);
 
         if (session?.access_token) {
-          queueAuthToast("已登入", "success");
+          queueAuthToast("Signed in", "success");
           window.dispatchEvent(new CustomEvent("aiaa-auth-change"));
           window.location.replace(nextPath);
         }

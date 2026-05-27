@@ -430,6 +430,170 @@ export async function readPublicMemberProfile(username: string) {
   return rows[0] ?? null;
 }
 
+
+
+export type AIAACertificationStage = "Application" | "Exam" | "Review" | "Certificate" | "Ranking";
+export type AIAACertificationStatus = "draft" | "submitted" | "exam" | "under_review" | "approved" | "rejected";
+
+export type AIAACertificationApplication = {
+  id: string;
+  user_id: string;
+  target_level: number;
+  status: AIAACertificationStatus;
+  stage: AIAACertificationStage;
+  agent_name: string;
+  agent_category: string;
+  github_repo: string;
+  demo_url: string;
+  video_url: string;
+  readme_url: string;
+  evidence_summary: string;
+  exam_status: string;
+  exam_answers?: Record<string, unknown>;
+  review_notes: string;
+  reviewer_status: string;
+  certificate_id: string;
+  certificate_url: string;
+  ranking_status: string;
+  submitted_at?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type AIAACertificationApplicationInput = {
+  user_id: string;
+  target_level: number;
+  agent_name: string;
+  agent_category: string;
+  github_repo: string;
+  demo_url: string;
+  video_url: string;
+  readme_url: string;
+  evidence_summary: string;
+};
+
+const certificationApplicationsTable = "aiaa_certification_applications";
+
+export function levelName(level: number) {
+  const names: Record<number, string> = {
+    1: "Level 1, AI Agent Operator",
+    2: "Level 2, AI Agent Engineer",
+    3: "Level 3, AI Agent Systems Architect",
+    4: "Level 4, Certified AI Agent Company",
+    5: "Level 5, AIAA Association Fellow"
+  };
+  return names[level] ?? `Level ${level}`;
+}
+
+export function stageIndex(stage?: string) {
+  const stages = ["Application", "Exam", "Review", "Certificate", "Ranking"];
+  const index = stages.indexOf(stage || "");
+  return index >= 0 ? index : 0;
+}
+
+export function statusLabel(status?: string) {
+  const labels: Record<string, string> = {
+    draft: "Draft",
+    submitted: "Submitted",
+    exam: "Exam in progress",
+    under_review: "Under review",
+    approved: "Approved",
+    rejected: "Rejected"
+  };
+  return labels[status || ""] ?? "Not submitted";
+}
+
+export async function readOwnCertificationApplications(accessToken: string, userId: string) {
+  const response = await fetch(
+    `${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
+    {
+      headers: restHeaders(accessToken),
+      cache: "no-store"
+    }
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "Unable to load certification applications.");
+  }
+
+  return (await response.json().catch(() => [])) as AIAACertificationApplication[];
+}
+
+export function getApprovedLevel(applications: AIAACertificationApplication[]) {
+  return applications.reduce((level, application) => {
+    if (application.status === "approved" && application.certificate_id) {
+      return Math.max(level, Number(application.target_level || 0));
+    }
+    return level;
+  }, 0);
+}
+
+export function getActiveCertificationApplication(applications: AIAACertificationApplication[]) {
+  return applications.find((application) => !["approved", "rejected"].includes(application.status)) ?? null;
+}
+
+export function getNextCertificationLevel(applications: AIAACertificationApplication[]) {
+  const approved = getApprovedLevel(applications);
+  return Math.min(approved + 1, 5);
+}
+
+export async function createCertificationApplication(accessToken: string, input: AIAACertificationApplicationInput) {
+  const payload = {
+    ...input,
+    target_level: Number(input.target_level || 1),
+    status: "submitted" as AIAACertificationStatus,
+    stage: "Application" as AIAACertificationStage,
+    exam_status: "not_started",
+    reviewer_status: "waiting",
+    certificate_id: "",
+    certificate_url: "",
+    ranking_status: "not_eligible",
+    submitted_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}`, {
+    method: "POST",
+    headers: {
+      ...restHeaders(accessToken),
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "Unable to submit certification application.");
+  }
+
+  const rows = (await response.json().catch(() => [])) as AIAACertificationApplication[];
+  return rows[0];
+}
+
+export async function updateCertificationApplication(
+  accessToken: string,
+  id: string,
+  updates: Partial<AIAACertificationApplication>
+) {
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      ...restHeaders(accessToken),
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify({ ...updates, updated_at: new Date().toISOString() })
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "Unable to update certification application.");
+  }
+
+  const rows = (await response.json().catch(() => [])) as AIAACertificationApplication[];
+  return rows[0];
+}
+
 export async function parseAuthCallbackFromUrl() {
   if (typeof window === "undefined") return null;
 

@@ -29,7 +29,7 @@ export default function ApplyAgentPage() {
 
       <CertificationApplicationForm />
 
-      <Section compact eyebrow="Review checklist" title="審核員會檢查哪些內容？" copy="申請頁只處理真實申請流程。未登入者會先導向登入，已登入者會直接看到提交申請表。">
+      <Section compact eyebrow="Review checklist" title="審核員會檢查哪些內容？" copy="申請頁只處理真實申請流程。未登入者會先導向登入，Signed in者會直接看到提交申請表。">
         <ThinTable
           headers={["區域", "所需資料"]}
           rows={reviewChecklist.map(([area, info]) => [

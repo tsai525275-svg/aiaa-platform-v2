@@ -130,7 +130,7 @@ export function MemberAuthPanel({ mode = "signin" }: { mode?: "signin" | "signup
       await verifyEmailOtpCode(email.trim(), cleanCode);
       setMessageType("success");
       setMessage("Signed in. Opening home page.");
-      queueAuthToast("已登入", "success");
+      queueAuthToast("Signed in", "success");
       window.location.href = "/";
     } catch (error) {
       setMessageType("error");
