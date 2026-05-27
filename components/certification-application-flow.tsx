@@ -126,6 +126,7 @@ function ApplicationCard({ application }: { application: AIAACertificationApplic
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <Info label="Current stage" value={stageLabel(application.stage)} />
+        <Info label="Contact email" value={application.contact_email || "Not set"} />
         <Info label="ExamStatus" value={application.exam_status || "not_started"} />
         <Info label="ReviewStatus" value={application.reviewer_status || "waiting"} />
         <Info label="Certificate" value={application.certificate_id || "Not issued"} />
@@ -199,6 +200,7 @@ export function CertificationApplicationForm() {
   const [form, setForm] = useState({
     agentName: "",
     category: "Workflow Agent",
+    contactEmail: "",
     githubRepo: "",
     demoUrl: "",
     videoUrl: "",
@@ -213,6 +215,16 @@ export function CertificationApplicationForm() {
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
+
+  useEffect(() => {
+    const email = (user as { email?: string } | null)?.email || "";
+    if (!email) return;
+
+    setForm((current) => {
+      if (current.contactEmail) return current;
+      return { ...current, contactEmail: email };
+    });
+  }, [user]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -233,6 +245,13 @@ export function CertificationApplicationForm() {
       return;
     }
 
+    const contactEmail = form.contactEmail.trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+      setMessage("Enter a valid contact email.");
+      return;
+    }
+
     if (!form.agentName.trim() || !form.githubRepo.trim() || !form.readmeUrl.trim() || !form.evidenceSummary.trim()) {
       setMessage("Agent name, GitHub repo, README URL, and evidence summary are required. Demo and video can be added later.");
       return;
@@ -245,6 +264,7 @@ export function CertificationApplicationForm() {
         target_level: nextLevel,
         agent_name: form.agentName,
         agent_category: form.category,
+        contact_email: form.contactEmail,
         github_repo: form.githubRepo,
         demo_url: form.demoUrl,
         video_url: form.videoUrl,
@@ -303,6 +323,9 @@ export function CertificationApplicationForm() {
             </Field>
             <Field label="Category">
               <input value={form.category} onChange={(event) => update("category", event.target.value)} className={inputClass} placeholder="Workflow Agent, Browser Agent, Coding Agent" />
+            </Field>
+            <Field label="Contact email" hint="Application notices will be sent to this email.">
+              <input type="email" value={form.contactEmail} onChange={(event) => update("contactEmail", event.target.value)} className={inputClass} placeholder="member@example.com" autoComplete="email" />
             </Field>
             <Field label="GitHub Repo" hint="Required. Use a public repository or a reviewer access link.">
               <input value={form.githubRepo} onChange={(event) => update("githubRepo", event.target.value)} className={inputClass} placeholder="https://github.com/account/repo" />

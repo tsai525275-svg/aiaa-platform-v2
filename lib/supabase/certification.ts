@@ -11,6 +11,7 @@ export type AIAACertificationApplication = {
   stage: AIAACertificationStage;
   agent_name: string;
   agent_category: string;
+  contact_email: string;
   github_repo: string;
   demo_url: string;
   video_url: string;
@@ -33,6 +34,7 @@ export type AIAACertificationApplicationInput = {
   target_level: number;
   agent_name: string;
   agent_category: string;
+  contact_email: string;
   github_repo: string;
   demo_url: string;
   video_url: string;
@@ -150,6 +152,7 @@ export async function createCertificationApplication(accessToken: string, input:
     stage: "Application" as AIAACertificationStage,
     agent_name: cleanText(input.agent_name),
     agent_category: cleanText(input.agent_category),
+    contact_email: cleanText(input.contact_email),
     github_repo: cleanText(input.github_repo),
     demo_url: cleanText(input.demo_url),
     video_url: cleanText(input.video_url),
