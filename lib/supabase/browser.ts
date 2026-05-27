@@ -117,7 +117,9 @@ export function queueAuthToast(message: string, tone: AIAAAuthToast["tone"] = "s
   // Defer the event. If the caller redirects immediately after queuing the toast,
   // this timer is cancelled by navigation and the next page consumes the queued toast.
   window.setTimeout(() => {
+    window.setTimeout(() => {
     window.dispatchEvent(new CustomEvent("aiaa-auth-toast"));
+  }, 80);
   }, 80);
 }
 
