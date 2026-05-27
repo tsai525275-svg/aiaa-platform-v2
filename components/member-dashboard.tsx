@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { ensureMemberProfile, getLoginUrl, getStoredSession, isSupabaseAuthConfigured, normalizeUsername, queueAuthToast, readPublicMemberProfile, readUser, saveStoredSession, signOutCurrentUser, updateAuthUserMetadata, upsertMemberProfile, type AIAAMemberProfileRecord, type AIAAMemberUser } from "@/lib/supabase/browser";
+import { ensureMemberProfile, getLoginUrl, getStoredSession, isapplication systemAuthConfigured, normalizeUsername, queueAuthToast, readPublicMemberProfile, readUser, saveStoredSession, signOutCurrentUser, updateAuthUserMetadata, upsertMemberProfile, type AIAAMemberProfileRecord, type AIAAMemberUser } from "@/lib/supabase/browser";
 import { StatusPill } from "@/components/aiaa-page-kit";
 import { SocialActions, SocialStats } from "@/components/social-actions";
 import { MemberApplicationSnapshot } from "@/components/certification-application-flow";
@@ -111,7 +111,7 @@ function useMemberProfile({ requireAuth = false }: { requireAuth?: boolean } = {
     let active = true;
 
     async function loadProfile() {
-      if (!isSupabaseAuthConfigured()) {
+      if (!isapplication systemAuthConfigured()) {
         if (requireAuth) {
           setAuthRequired(true);
           if (typeof window !== "undefined") {
@@ -356,7 +356,7 @@ export function MemberProfileEdit() {
   const { user, setUser, profile, setProfile, loading, authRequired, error } = useMemberProfile({ requireAuth: true });
   const [draft, setDraft] = useState<ProfileState>(defaultProfile);
   const [message, setMessage] = useState("");
-  const [configured] = useState(isSupabaseAuthConfigured());
+  const [configured] = useState(isapplication systemAuthConfigured());
 
   const initials = useMemo(() => {
     const name = draft.displayName || user?.email || "Member";
@@ -552,9 +552,9 @@ export function PublicMemberProfile({ username }: { username: string }) {
     let active = true;
 
     async function loadPublicProfile() {
-      if (!isSupabaseAuthConfigured()) {
+      if (!isapplication systemAuthConfigured()) {
         if (active) {
-          setError("Supabase is not configured.");
+          setError("application system is not configured.");
           setLoading(false);
         }
         return;

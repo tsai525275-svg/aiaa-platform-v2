@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-function hasActiveSupabaseSession() {
+function hasActiveapplication systemSession() {
   if (typeof window === "undefined") return false;
 
   try {
@@ -33,10 +33,10 @@ export default function ApplyAccountCta() {
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
-    setSignedIn(hasActiveSupabaseSession());
+    setSignedIn(hasActiveapplication systemSession());
 
     function onStorage() {
-      setSignedIn(hasActiveSupabaseSession());
+      setSignedIn(hasActiveapplication systemSession());
     }
 
     window.addEventListener("storage", onStorage);
@@ -53,7 +53,7 @@ export default function ApplyAccountCta() {
       href={signedIn ? "/apply/agent" : "/login"}
       className="inline-flex min-h-14 items-center justify-center rounded-full bg-gradient-to-r from-slate-950 to-blue-700 px-8 text-base font-semibold text-white shadow-[0_20px_60px_rgba(37,99,235,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_72px_rgba(37,99,235,0.30)]"
     >
-      {signedIn ? "提交申請" : "登入後申請"}
+      {signedIn ? "提交Apply" : "Sign in後Apply"}
     </a>
   );
 }

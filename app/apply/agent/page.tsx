@@ -3,9 +3,9 @@ import { AIAAFrame, PageHero, Section, ThinTable } from "@/components/aiaa-page-
 import { CertificationApplicationForm } from "@/components/certification-application-flow";
 
 const reviewChecklist = [
-  ["身份", "代理人名稱、產品網站、類別、國家或地區"],
-  ["擁有者", "負責人、公司、聯絡信箱"],
-  ["能力", "代理人處理哪些任務、服務哪些使用者、目前狀態"],
+  ["Identity", "Agent name、Product website、Category、Country或地區"],
+  ["Owner", "Responsible owner、Company、Contact email"],
+  ["能力", "代理人處理哪些任務、服務哪些使用者、目前Status"],
   ["證據", "GitHub Repo、README、Demo、影片、執行截圖、流程紀錄"],
   ["安全", "權限、資料處理、限制、人工審核點、錯誤處理"]
 ];
@@ -29,9 +29,9 @@ export default function ApplyAgentPage() {
 
       <CertificationApplicationForm />
 
-      <Section compact eyebrow="Review checklist" title="審核員會檢查哪些內容？" copy="申請頁只處理真實申請流程。未登入者會先導向登入，Signed in者會直接看到提交申請表。">
+      <Section compact eyebrow="Review checklist" title="審核員會檢查哪些內容？" copy="Apply頁只處理真實Apply流程。未Sign in者會先導向Sign in，Signed in者會直接看到提交Apply表。">
         <ThinTable
-          headers={["區域", "所需資料"]}
+          headers={["Area", "所需資料"]}
           rows={reviewChecklist.map(([area, info]) => [
             <span key="area" className="font-semibold text-neutral-950">{area}</span>,
             info

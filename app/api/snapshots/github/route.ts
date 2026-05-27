@@ -100,7 +100,7 @@ async function upsertRows(table: string, onConflict: string, rows: unknown[]) {
       }
     );
   } catch (error) {
-    throw new Error(`${table} Supabase fetch failed: ${error instanceof Error ? error.message : "Unknown fetch error"}`);
+    throw new Error(`${table} application system fetch failed: ${error instanceof Error ? error.message : "Unknown fetch error"}`);
   }
 
   if (!response.ok) {

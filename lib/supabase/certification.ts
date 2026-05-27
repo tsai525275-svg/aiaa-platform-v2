@@ -50,7 +50,7 @@ export type AIAAExamAnswers = {
 const table = "aiaa_certification_applications";
 
 function restHeaders(accessToken: string) {
-  const anonKey = getSupabaseAnonKey();
+  const anonKey = getapplication systemAnonKey();
   return {
     "Content-Type": "application/json",
     apikey: anonKey,
@@ -65,7 +65,7 @@ function cleanText(value: unknown) {
 async function readError(response: Response, fallback: string) {
   const text = await response.text().catch(() => "");
   if (text.includes("JWT") || text.includes("expired") || text.includes("PGRST303")) {
-    return "登入已過期，請重新登入後再提交。";
+    return "Sign in已過期，請重新Sign in後再提交。";
   }
   return text || fallback;
 }
@@ -83,24 +83,24 @@ export function levelName(level: number) {
 
 export function statusLabel(status?: string) {
   const labels: Record<string, string> = {
-    submitted: "已提交",
-    exam: "考試中",
+    submitted: "Submitted",
+    exam: "Exam中",
     under_review: "審核中",
-    approved: "已通過",
-    rejected: "未通過"
+    approved: "已Approved",
+    rejected: "未Approved"
   };
   return labels[status || ""] ?? "未提交";
 }
 
 export function stageLabel(stage?: string) {
   const labels: Record<string, string> = {
-    Application: "申請",
-    Exam: "考試",
+    Application: "Apply",
+    Exam: "Exam",
     Review: "審核",
-    Certificate: "證書",
-    Ranking: "排名"
+    Certificate: "Certificate",
+    Ranking: "Rankings"
   };
-  return labels[stage || ""] ?? "申請";
+  return labels[stage || ""] ?? "Apply";
 }
 
 export function stageIndex(stage?: string) {
@@ -128,7 +128,7 @@ export function getNextCertificationLevel(applications: AIAACertificationApplica
 
 export async function readOwnCertificationApplications(accessToken: string, userId: string) {
   const response = await fetch(
-    `${getSupabaseUrl()}/rest/v1/${table}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
+    `${getapplication systemUrl()}/rest/v1/${table}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
     {
       headers: restHeaders(accessToken),
       cache: "no-store"
@@ -136,7 +136,7 @@ export async function readOwnCertificationApplications(accessToken: string, user
   );
 
   if (!response.ok) {
-    throw new Error(await readError(response, "無法讀取申請紀錄。"));
+    throw new Error(await readError(response, "無法讀取Apply紀錄。"));
   }
 
   return (await response.json().catch(() => [])) as AIAACertificationApplication[];
@@ -166,7 +166,7 @@ export async function createCertificationApplication(accessToken: string, input:
     updated_at: new Date().toISOString()
   };
 
-  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${table}`, {
+  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${table}`, {
     method: "POST",
     headers: {
       ...restHeaders(accessToken),
@@ -176,7 +176,7 @@ export async function createCertificationApplication(accessToken: string, input:
   });
 
   if (!response.ok) {
-    throw new Error(await readError(response, "提交申請失敗。"));
+    throw new Error(await readError(response, "提交Apply失敗。"));
   }
 
   const rows = (await response.json().catch(() => [])) as AIAACertificationApplication[];
@@ -184,7 +184,7 @@ export async function createCertificationApplication(accessToken: string, input:
 }
 
 export async function updateCertificationApplication(accessToken: string, id: string, updates: Partial<AIAACertificationApplication>) {
-  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
+  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: {
       ...restHeaders(accessToken),
@@ -194,7 +194,7 @@ export async function updateCertificationApplication(accessToken: string, id: st
   });
 
   if (!response.ok) {
-    throw new Error(await readError(response, "更新申請狀態失敗。"));
+    throw new Error(await readError(response, "更新ApplyStatus失敗。"));
   }
 
   const rows = (await response.json().catch(() => [])) as AIAACertificationApplication[];

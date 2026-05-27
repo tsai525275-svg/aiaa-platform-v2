@@ -10,7 +10,7 @@ export default function AuthCallbackPage() {
     let timer: ReturnType<typeof setTimeout>;
 
     async function finish() {
-      if (!isSupabaseAuthConfigured()) {
+      if (!isapplication systemAuthConfigured()) {
         setMessage("Authentication is not configured.");
         return;
       }

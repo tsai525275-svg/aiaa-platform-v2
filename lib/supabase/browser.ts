@@ -139,12 +139,12 @@ export async function signOutCurrentUser() {
   const session = getStoredSession();
   const accessToken = session?.access_token;
 
-  if (accessToken && isSupabaseAuthConfigured()) {
+  if (accessToken && isapplication systemAuthConfigured()) {
     try {
-      await fetch(`${getSupabaseUrl()}/auth/v1/logout`, {
+      await fetch(`${getapplication systemUrl()}/auth/v1/logout`, {
         method: "POST",
         headers: {
-          apikey: getSupabaseAnonKey(),
+          apikey: getapplication systemAnonKey(),
           Authorization: `Bearer ${accessToken}`
         }
       });
@@ -306,7 +306,7 @@ export async function updateAuthUserMetadata(accessToken: string, data: Record<s
 }
 
 function restHeaders(accessToken?: string) {
-  const anonKey = getSupabaseAnonKey();
+  const anonKey = getapplication systemAnonKey();
   return {
     "Content-Type": "application/json",
     apikey: anonKey,
@@ -363,7 +363,7 @@ export function defaultProfileForUser(user: AIAAMemberUser): AIAAMemberProfileIn
 
 export async function readOwnMemberProfile(accessToken: string, userId: string) {
   const response = await fetch(
-    `${getSupabaseUrl()}/rest/v1/${profileTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+    `${getapplication systemUrl()}/rest/v1/${profileTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
     {
       headers: restHeaders(accessToken),
       cache: "no-store"
@@ -386,7 +386,7 @@ export async function upsertMemberProfile(accessToken: string, profile: AIAAMemb
     updated_at: new Date().toISOString()
   };
 
-  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${profileTable}?on_conflict=user_id`, {
+  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${profileTable}?on_conflict=user_id`, {
     method: "POST",
     headers: {
       ...restHeaders(accessToken),
@@ -414,11 +414,11 @@ export async function ensureMemberProfile(accessToken: string, user: AIAAMemberU
 }
 
 export async function readPublicMemberProfile(username: string) {
-  if (!isSupabaseAuthConfigured()) return null;
+  if (!isapplication systemAuthConfigured()) return null;
 
   const clean = normalizeUsername(username);
   const response = await fetch(
-    `${getSupabaseUrl()}/rest/v1/${profileTable}?select=*&username=eq.${encodeURIComponent(clean)}&is_public=eq.true&limit=1`,
+    `${getapplication systemUrl()}/rest/v1/${profileTable}?select=*&username=eq.${encodeURIComponent(clean)}&is_public=eq.true&limit=1`,
     {
       headers: restHeaders(),
       cache: "no-store"
@@ -505,7 +505,7 @@ export function statusLabel(status?: string) {
 
 export async function readOwnCertificationApplications(accessToken: string, userId: string) {
   const response = await fetch(
-    `${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
+    `${getapplication systemUrl()}/rest/v1/${certificationApplicationsTable}?select=*&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc`,
     {
       headers: restHeaders(accessToken),
       cache: "no-store"
@@ -553,7 +553,7 @@ export async function createCertificationApplication(accessToken: string, input:
     updated_at: new Date().toISOString()
   };
 
-  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}`, {
+  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${certificationApplicationsTable}`, {
     method: "POST",
     headers: {
       ...restHeaders(accessToken),
@@ -576,7 +576,7 @@ export async function updateCertificationApplication(
   id: string,
   updates: Partial<AIAACertificationApplication>
 ) {
-  const response = await fetch(`${getSupabaseUrl()}/rest/v1/${certificationApplicationsTable}?id=eq.${encodeURIComponent(id)}`, {
+  const response = await fetch(`${getapplication systemUrl()}/rest/v1/${certificationApplicationsTable}?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: {
       ...restHeaders(accessToken),

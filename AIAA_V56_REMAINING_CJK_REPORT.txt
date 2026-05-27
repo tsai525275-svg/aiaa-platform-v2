@@ -1,0 +1,110 @@
+app\apply\agent\page.tsx:6: ["Identity", "Agent name、Product website、Category、Country或地區"],
+app\apply\agent\page.tsx:8: ["能力", "代理人處理哪些任務、服務哪些使用者、目前Status"],
+app\apply\agent\page.tsx:9: ["證據", "GitHub Repo、README、Demo、影片、執行截圖、流程紀錄"],
+app\apply\agent\page.tsx:10: ["安全", "權限、資料處理、限制、人工審核點、錯誤處理"]
+app\apply\agent\page.tsx:32: <Section compact eyebrow="Review checklist" title="審核員會檢查哪些內容？" copy="Apply頁只處理真實Apply流程。未Sign in者會先導向Sign in，Signed in者會直接看到提交Apply表。">
+app\apply\agent\page.tsx:34: headers={["Area", "所需資料"]}
+app\apply\page.tsx:7: title: "提交Apply",
+app\apply\page.tsx:8: copy: "進入Apply頁。未Sign in者先Sign in，Signed in者直接提交 Level 1 Apply資料。",
+app\apply\page.tsx:9: meta: "開始",
+app\apply\page.tsx:15: copy: "Apply建立後，會員才能進入 Level 1 Exam工作區。",
+app\apply\page.tsx:16: meta: "Apply後",
+app\apply\page.tsx:22: copy: "Exam送出後進入人工審核，不會自動Approved。",
+app\apply\page.tsx:23: meta: "Exam後",
+app\apply\page.tsx:28: title: "核發Certificate",
+app\apply\page.tsx:29: copy: "審核Approved且有Certificate ID 後，會員頁才會顯示Approved級別。",
+app\apply\page.tsx:30: meta: "Approved後",
+app\apply\page.tsx:35: title: "解鎖下一級",
+app\apply\page.tsx:36: copy: "Level 1 Approved後才會解鎖 Level 2。以此類推。",
+app\apply\page.tsx:37: meta: "升級",
+app\apply\page.tsx:56: action={<Link href="/apply/agent" className="aiaa-button-dark">提交Apply</Link>}
+app\apply\page.tsx:59: <Section compact eyebrow="Flow" title="完整Apply流程。" copy="同一套流程處理未Sign in、Signed in、Apply、Exam、審核和CertificateStatus。">
+app\apply\page.tsx:63: <Section compact eyebrow="Status rules" title="會員看到的Status。" copy="Status全部來自 application system Apply資料表，不顯示假的ApprovedStatus。">
+app\apply\page.tsx:66: <StatusPill>新會員</StatusPill>
+app\apply\page.tsx:67: <h3 className="mt-4 text-xl font-semibold text-neutral-950">沒有Certification。</h3>
+app\apply\page.tsx:68: <p className="mt-2 text-sm leading-6 text-neutral-600">註冊會員只Create account，不會自動變 Level 1。</p>
+app\apply\page.tsx:71: <StatusPill tone="warn">Apply中</StatusPill>
+app\apply\page.tsx:72: <h3 className="mt-4 text-xl font-semibold text-neutral-950">需要Exam和審核。</h3>
+app\apply\page.tsx:73: <p className="mt-2 text-sm leading-6 text-neutral-600">Apply提交後，會員頁會顯示Exam、審核和Certificate階段。</p>
+app\apply\page.tsx:76: <StatusPill tone="good">已Approved</StatusPill>
+app\apply\page.tsx:77: <h3 className="mt-4 text-xl font-semibold text-neutral-950">Certificate才會出現。</h3>
+app\apply\page.tsx:78: <p className="mt-2 text-sm leading-6 text-neutral-600">只有審核Approved且有Certificate ID 的紀錄，才顯示為CertificationApproved。</p>
+components\apply-account-cta.tsx:56: {signedIn ? "提交Apply" : "Sign in後Apply"}
+components\certification-application-flow.tsx:88: const label = approved || index < activeIndex ? "完成" : index === activeIndex ? "目前" : "Waiting";
+components\certification-application-flow.tsx:105: <div className="mt-1 break-words font-semibold text-neutral-950">{value || "未設定"}</div>
+components\certification-application-flow.tsx:120: <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-600">{application.evidence_summary || "尚未填寫Evidence summary。"}</p>
+components\certification-application-flow.tsx:128: <Info label="目前階段" value={stageLabel(application.stage)} />
+components\certification-application-flow.tsx:130: <Info label="審核Status" value={application.reviewer_status || "waiting"} />
+components\certification-application-flow.tsx:137: function AuthGate({ copy = "Sign in後才能提交和追蹤 AIAA CertificationApply。" }: { copy?: string }) {
+components\certification-application-flow.tsx:140: <Section compact eyebrow="Member gate" title="請先Sign in會員。" copy={copy}>
+components\certification-application-flow.tsx:142: <Link href={loginUrl} className="aiaa-button-dark">Sign in後Apply</Link>
+components\certification-application-flow.tsx:143: <Link href="/signup" className="aiaa-button-light">註冊會員</Link>
+components\certification-application-flow.tsx:154: setState({ ...emptyState, loading: false, error: "application system 尚未設定。" });
+components\certification-application-flow.tsx:177: const message = error instanceof Error ? error.message : "無法讀取Apply流程。";
+components\certification-application-flow.tsx:178: if (message.includes("過期") || message.includes("JWT")) {
+components\certification-application-flow.tsx:232: setMessage(`你必須先Approved ${levelName(nextLevel - 1)}，才能Apply ${levelName(nextLevel)}。`);
+components\certification-application-flow.tsx:237: setMessage("Agent name、GitHub Repo、README URL、Evidence summary都要填。Demo 和影片可先空著。");
+components\certification-application-flow.tsx:256: setMessage(error instanceof Error ? error.message : "提交Apply失敗。請重新Sign in後再試一次。");
+components\certification-application-flow.tsx:262: if (loading) return <Section compact><p className="text-sm text-neutral-600">正在讀取會員Status。</p></Section>;
+components\certification-application-flow.tsx:263: if (authRequired) return <AuthGate copy="Sign in後，這裡會直接顯示提交Apply表，不會再顯示Create account流程。" />;
+components\certification-application-flow.tsx:268: <Section compact eyebrow="Active application" title="你已有一個In progress的Apply。" copy="完成目前的Apply、Exam、審核、Certificate和Rankings流程後，才能開下一級。">
+components\certification-application-flow.tsx:271: <Link href="/member/applications" className="aiaa-button-dark">查看Apply進度</Link>
+components\certification-application-flow.tsx:272: <Link href="/member/exam" className="aiaa-button-light">進入Exam</Link>
+components\certification-application-flow.tsx:279: <Section compact eyebrow="Application form" title={`提交 ${levelName(nextLevel)} Apply。`} copy="This form starts application system Apply資料表。提交後只代表進入Apply流程，It does not approve the application and it does not issue a certificate automatically.">
+components\certification-application-flow.tsx:284: <h3 className="mt-4 text-2xl font-semibold tracking-[-0.05em] text-neutral-950">目前要提交的Apply。</h3>
+components\certification-application-flow.tsx:285: <p className="mt-3 text-sm leading-7 text-neutral-600">新會員從 Level 1 開始。Approved前，不會顯示已Certification，也不會解鎖下一級。</p>
+components\certification-application-flow.tsx:290: ["01", "提交Apply"],
+components\certification-application-flow.tsx:294: ["05", "Approved後才進入Rankings資格"]
+components\certification-application-flow.tsx:326: <button type="submit" disabled={submitting} className="aiaa-button-dark disabled:cursor-not-allowed disabled:opacity-50">{submitting ? "提交中" : "提交Apply"}</button>
+components\certification-application-flow.tsx:327: <Link href="/member/applications" className="aiaa-button-light">查看Apply進度</Link>
+components\certification-application-flow.tsx:341: if (loading) return <Section compact><p className="text-sm text-neutral-600">正在讀取Apply紀錄。</p></Section>;
+components\certification-application-flow.tsx:342: if (authRequired) return <AuthGate copy="Sign in後才能查看自己的Apply、Exam、審核和CertificateStatus。" />;
+components\certification-application-flow.tsx:347: <Section compact eyebrow="Application tracker" title="尚未提交 Level 1 Apply。" copy="新會員不會自動獲得 Level 1。先提交Apply，再Complete exam，然後Awaiting review。">
+components\certification-application-flow.tsx:348: <Link href="/apply/agent" className="aiaa-button-dark">提交 Level 1 Apply</Link>
+components\certification-application-flow.tsx:355: <Section compact eyebrow="Certification status" title={approvedLevel ? `${levelName(approvedLevel)} 已Approved。` : "尚未有Approved的Certification。"} copy="只有審核Approved且有Certificate ID 的紀錄，才會顯示為已Certification。">
+components\certification-application-flow.tsx:357: <Info label="已Approved級別" value={approvedLevel ? levelName(approvedLevel) : "None"} />
+components\certification-application-flow.tsx:358: <Info label="目前Apply" value={activeApplication ? levelName(activeApplication.target_level) : "沒有In progress的Apply"} />
+components\certification-application-flow.tsx:359: <Info label="下一步" value={activeApplication ? stageLabel(activeApplication.stage) : "提交下一級Apply"} />
+components\certification-application-flow.tsx:362: <Section compact eyebrow="Applications" title="你的Apply紀錄。" copy="這裡讀取 application system 真實資料，不顯示假的ApprovedStatus。">
+components\certification-application-flow.tsx:399: setMessage("Exam已開始。完成所有回答後送出審核。");
+components\certification-application-flow.tsx:401: setMessage(error instanceof Error ? error.message : "無法開始Exam。");
+components\certification-application-flow.tsx:413: setMessage("送出前要填完所有Exam回答。");
+components\certification-application-flow.tsx:427: setMessage("Exam已送出。現在進入審核，不會自動核發Certificate。");
+components\certification-application-flow.tsx:429: setMessage(error instanceof Error ? error.message : "送出Exam失敗。");
+components\certification-application-flow.tsx:435: if (loading) return <Section compact><p className="text-sm text-neutral-600">正在讀取Exam資料。</p></Section>;
+components\certification-application-flow.tsx:436: if (authRequired) return <AuthGate copy="Sign in後才能進入你的Exam工作區。" />;
+components\certification-application-flow.tsx:441: <Section compact eyebrow="Exam" title="目前沒有Exam。" copy="先提交 Level 1 Apply，Apply紀錄建立後才會出現Exam。">
+components\certification-application-flow.tsx:442: <Link href="/apply/agent" className="aiaa-button-dark">提交 Level 1 Apply</Link>
+components\certification-application-flow.tsx:449: <Section compact eyebrow="Exam submitted" title="已送出，Awaiting review。" copy="審核員必須檢查Exam和證據後，才會核發Certificate。">
+components\certification-application-flow.tsx:456: <Section compact eyebrow="Exam workspace" title={`${levelName(activeApplication.target_level)} Exam。`} copy="Exam送出後，Apply會進入審核。這It does not approve the application and it does not issue a certificate automatically.">
+components\certification-application-flow.tsx:460: {activeApplication.stage === "Application" ? <button type="button" onClick={startExam} disabled={saving} className="aiaa-button-dark disabled:cursor-not-allowed disabled:opacity-50">開始Exam</button> : null}
+components\certification-application-flow.tsx:464: <Field label="架構說明">
+components\certification-application-flow.tsx:465: <textarea value={answers.architecture} onChange={(event) => update("architecture", event.target.value)} className={textareaClass} placeholder="說明 Agent 的工作流、執行環境、Status管理和輸入輸出。" />
+components\certification-application-flow.tsx:467: <Field label="工具呼叫證明">
+components\certification-application-flow.tsx:468: <textarea value={answers.toolCalling} onChange={(event) => update("toolCalling", event.target.value)} className={textareaClass} placeholder="說明呼叫哪些 API 或工具，輸入是什麼，輸出是什麼。" />
+components\certification-application-flow.tsx:470: <Field label="錯誤處理和重試邏輯">
+components\certification-application-flow.tsx:471: <textarea value={answers.errorHandling} onChange={(event) => update("errorHandling", event.target.value)} className={textareaClass} placeholder="說明錯誤訊息、重試、Records、回復規則和人工介入點。" />
+components\certification-application-flow.tsx:473: <Field label="審核執行說明">
+components\certification-application-flow.tsx:474: <textarea value={answers.runbook} onChange={(event) => update("runbook", event.target.value)} className={textareaClass} placeholder="說明審核員如何安裝、執行、測試和驗證你的 Agent。" />
+components\certification-application-flow.tsx:478: <button type="submit" disabled={saving || activeApplication.stage === "Application"} className="aiaa-button-dark disabled:cursor-not-allowed disabled:opacity-50">送出Exam並進入審核</button>
+components\certification-application-flow.tsx:479: <Link href="/member/applications" className="aiaa-button-light">查看Apply進度</Link>
+components\certification-application-flow.tsx:494: if (loading) return <section className="border border-slate-200 bg-white p-6 text-sm text-neutral-600 shadow-[0_18px_70px_rgba(15,23,42,0.055)] lg:p-7">正在讀取CertificationStatus。</section>;
+components\certification-application-flow.tsx:495: if (authRequired) return <section className="border border-slate-200 bg-white p-6 text-sm text-neutral-600 shadow-[0_18px_70px_rgba(15,23,42,0.055)] lg:p-7">請重新Sign in以查看CertificationStatus。</section>;
+components\certification-application-flow.tsx:502: <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-neutral-950">{approvedLevel ? `${levelName(approvedLevel)} 已Approved。` : "尚未有Approved的Certification。"}</h2>
+components\certification-application-flow.tsx:503: <p className="mt-4 text-sm leading-7 text-neutral-600">{approvedLevel ? "Approved的Certification會顯示在會員資料、註冊紀錄、Certificate和Rankings資格中。" : "新會員不會自動得到 Level 1。必須提交Apply、Complete exam、Approved審核後才會顯示。"}</p>
+components\certification-application-flow.tsx:505: <Info label="已Approved級別" value={approvedLevel ? levelName(approvedLevel) : "None"} />
+components\certification-application-flow.tsx:507: <Info label="Rankings資格" value={approvedLevel ? "WaitingRankings審核" : "未符合"} />
+components\certification-application-flow.tsx:509: <Link href={activeApplication ? "/member/applications" : "/apply/agent"} className="aiaa-button-dark mt-6">{activeApplication ? "查看Apply進度" : "提交 Level 1 Apply"}</Link>
+components\certification-application-flow.tsx:514: <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-neutral-950">{activeApplication ? `${levelName(activeApplication.target_level)}，${statusLabel(activeApplication.status)}。` : "Level 1 Apply尚未提交。"}</h2>
+components\certification-application-flow.tsx:515: <p className="mt-4 text-sm leading-7 text-neutral-600">{activeApplication ? "此Status來自你的 application system Apply紀錄。" : "先提交 Level 1 Apply。提交後，這裡會顯示Apply、Exam、審核、Certificate和Rankings階段。"}</p>
+components\language-switcher.tsx:22: 繁中
+lib\supabase\certification.ts:68: return "Sign in已過期，請重新Sign in後再提交。";
+lib\supabase\certification.ts:87: exam: "Exam中",
+lib\supabase\certification.ts:88: under_review: "審核中",
+lib\supabase\certification.ts:89: approved: "已Approved",
+lib\supabase\certification.ts:90: rejected: "未Approved"
+lib\supabase\certification.ts:92: return labels[status || ""] ?? "未提交";
+lib\supabase\certification.ts:99: Review: "審核",
+lib\supabase\certification.ts:139: throw new Error(await readError(response, "無法讀取Apply紀錄。"));
+lib\supabase\certification.ts:179: throw new Error(await readError(response, "提交Apply失敗。"));
+lib\supabase\certification.ts:197: throw new Error(await readError(response, "更新ApplyStatus失敗。"));

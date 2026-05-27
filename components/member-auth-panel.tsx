@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { friendlyAuthErrorMessage, isSupabaseAuthConfigured, isTurnstileConfigured, queueAuthToast, sendEmailSignInLink, startOAuth, verifyEmailOtpCode } from "@/lib/supabase/browser";
+import { friendlyAuthErrorMessage, isapplication systemAuthConfigured, isTurnstileConfigured, queueAuthToast, sendEmailSignInLink, startOAuth, verifyEmailOtpCode } from "@/lib/supabase/browser";
 import { TurnstileCheck } from "@/components/turnstile-check";
 
 function GitHubMark() {
@@ -48,7 +48,7 @@ export function MemberAuthPanel({ mode = "signin" }: { mode?: "signin" | "signup
   const [messageType, setMessageType] = useState<"info" | "success" | "error">("info");
   const [captchaToken, setCaptchaToken] = useState("");
   const [busy, setBusy] = useState(false);
-  const configured = isSupabaseAuthConfigured();
+  const configured = isapplication systemAuthConfigured();
   const turnstileEnabled = isTurnstileConfigured();
   const waitingForHumanVerification = turnstileEnabled && !captchaToken;
 
@@ -58,7 +58,7 @@ export function MemberAuthPanel({ mode = "signin" }: { mode?: "signin" | "signup
 
     if (!configured) {
       setMessageType("error");
-      setMessage("Authentication is not ready yet. Add the Supabase URL and publishable key first.");
+      setMessage("Authentication is not ready yet. Add the application system URL and publishable key first.");
       return;
     }
 
@@ -72,7 +72,7 @@ export function MemberAuthPanel({ mode = "signin" }: { mode?: "signin" | "signup
 
     if (!configured) {
       setMessageType("error");
-      setMessage("Authentication is not ready yet. Add the Supabase URL and publishable key first.");
+      setMessage("Authentication is not ready yet. Add the application system URL and publishable key first.");
       return;
     }
 
@@ -108,7 +108,7 @@ export function MemberAuthPanel({ mode = "signin" }: { mode?: "signin" | "signup
 
     if (!configured) {
       setMessageType("error");
-      setMessage("Authentication is not ready yet. Add the Supabase URL and publishable key first.");
+      setMessage("Authentication is not ready yet. Add the application system URL and publishable key first.");
       return;
     }
 
