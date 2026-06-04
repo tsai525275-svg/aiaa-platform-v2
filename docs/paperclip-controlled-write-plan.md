@@ -286,3 +286,101 @@ Paperclip should not enter production controlled write until these gaps are clos
 4. QA risk flag validator is added
 5. payment fields and payment gate checks are designed and implemented
 6. success payload includes normalized `current_state`
+
+## Phase 2A Precheck Controlled Write
+
+Phase 2A is the first controlled write milestone.
+
+It is limited to precheck actions only.
+
+### Allowed Endpoints
+
+- `POST /api/admin/applications/[id]/precheck-approve`
+- `POST /api/admin/applications/[id]/revision-required`
+- `POST /api/admin/applications/[id]/precheck-reject`
+
+### Precheck Approve Rules
+
+Precheck approval must verify:
+
+- `target_level`
+- `status=submitted|pending`
+- `precheck_status!=approved`
+- `exam_access_status!=unlocked`
+- `agent_name`
+- `contact_email`
+- `github_repo`
+- `readme_url|evidence_summary`
+
+Behavior notes:
+
+- Level 1 can pass with baseline evidence
+- Level 2 and above must not be precheck-approved when evidence is incomplete
+- Level 2 and above should fall back to `revision-required`
+
+### Revision Required Rules
+
+`revision-required` must:
+
+- require `revision_reason` or `note`
+- create reviewer action
+- create member notification
+- keep exam access locked
+- leave certificate status unchanged
+- return `current_state`
+
+### Precheck Reject Rules
+
+`precheck-reject` must:
+
+- require `reject_reason` or `note`
+- create reviewer action
+- create member notification
+- keep exam access locked
+- leave certificate status unchanged
+- return `current_state`
+
+### Notification Requirements
+
+All Phase 2A precheck actions must create a notification record.
+
+The response should expose:
+
+- `notification_id`
+- result message
+- application id metadata
+
+### Reviewer Action Requirements
+
+All Phase 2A precheck actions must create a reviewer action record.
+
+The response should expose:
+
+- `reviewer_action_id`
+- `current_state`
+- `application_id`
+
+### Smoke Test Checklist
+
+Do not test on real users.
+
+Required checks:
+
+1. dry run first
+2. verify required environment variables are present
+3. verify failure JSON includes:
+   - `ok`
+   - `error_code`
+   - `required_fields`
+   - `missing_fields`
+   - `current_state`
+4. verify success JSON includes:
+   - `ok`
+   - `action`
+   - `application_id`
+   - `current_state`
+   - `reviewer_action_id`
+   - `notification_id`
+   - `message`
+5. verify reviewer action row exists
+6. verify notification row exists

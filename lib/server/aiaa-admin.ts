@@ -56,6 +56,18 @@ type ReviewerAction = {
   created_at: string;
 };
 
+type MemberNotification = {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  link?: string | null;
+  metadata?: Record<string, unknown> | null;
+  is_read?: boolean | null;
+  created_at?: string | null;
+};
+
 type ExamAnswer = {
   id: string;
   application_id: string;
@@ -187,6 +199,7 @@ export function jsonGuardrailError(input: {
   errorCode: string;
   message: string;
   requiredFields?: string[];
+  missingFields?: string[];
   currentState?: Record<string, unknown>;
 }) {
   return NextResponse.json(
@@ -195,6 +208,7 @@ export function jsonGuardrailError(input: {
       error_code: input.errorCode,
       message: input.message,
       required_fields: input.requiredFields || [],
+      missing_fields: input.missingFields || [],
       current_state: input.currentState || {}
     },
     { status: input.status || 422 }
@@ -304,9 +318,9 @@ export async function createMemberNotification(input: {
   link?: string;
   metadata?: Record<string, unknown>;
 }) {
-  return restRequest("aiaa_notifications", {
+  const rows = await restRequest<MemberNotification[]>("aiaa_notifications", {
     method: "POST",
-    headers: { Prefer: "return=minimal" },
+    headers: { Prefer: "return=representation" },
     body: JSON.stringify({
       user_id: input.userId,
       type: input.type,
@@ -317,6 +331,8 @@ export async function createMemberNotification(input: {
       is_read: false
     })
   });
+
+  return rows?.[0];
 }
 
 async function getAuthUserEmail(userId: string) {
@@ -370,6 +386,8 @@ export function parseActionBody(body: unknown) {
   const reviewerId = cleanText(payload.reviewer_id) || actorId;
   const humanOverride = payload.human_override === true;
   const overrideReason = cleanText(payload.override_reason);
+  const revisionReason = cleanText(payload.revision_reason);
+  const rejectReason = cleanText(payload.reject_reason);
   const metadata = isRecord(payload.metadata) ? payload.metadata : {};
   return {
     note,
@@ -377,6 +395,8 @@ export function parseActionBody(body: unknown) {
     reviewerId,
     humanOverride,
     overrideReason,
+    revisionReason,
+    rejectReason,
     metadata
   };
 }

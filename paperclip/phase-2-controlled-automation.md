@@ -319,3 +319,94 @@ Before enabling Phase 2 controlled write in production:
 3. add QA risk flag validation
 4. add payment field design and gate checks
 5. run controlled write tests on safe non-production or designated test applications only
+
+## Phase 2A Precheck Controlled Write
+
+Phase 2A only covers controlled precheck writes.
+
+Phase 2A does not enable:
+
+- review approve automation
+- review reject automation beyond manual testing readiness
+- issue certificate automation
+- payment automation
+
+### Allowed Endpoints
+
+- `POST /api/admin/applications/[id]/precheck-approve`
+- `POST /api/admin/applications/[id]/revision-required`
+- `POST /api/admin/applications/[id]/precheck-reject`
+
+### Precheck Approve Rules
+
+`precheck-approve` requires:
+
+- `target_level` exists
+- `status` is `submitted` or `pending`
+- `precheck_status != approved`
+- `exam_access_status != unlocked`
+- `agent_name` exists
+- `contact_email` exists
+- `github_repo` exists
+- `readme_url` or `evidence_summary` exists
+
+Additional level rules:
+
+- Level 1 must satisfy baseline evidence
+- Level 2 and above must not be auto-approved if evidence is insufficient
+- if Level 2 and above are missing stronger evidence, Paperclip should use `revision-required`
+
+### Revision Required Rules
+
+`revision-required` requires:
+
+- `revision_reason` or `note`
+- reviewer action creation
+- member notification creation
+- exam access must remain locked
+- certificate status must remain unchanged
+
+### Precheck Reject Rules
+
+`precheck-reject` requires:
+
+- `reject_reason` or `note`
+- reviewer action creation
+- member notification creation
+- exam access must remain locked
+- certificate status must remain unchanged
+
+### Notification Requirements
+
+Every Phase 2A precheck write must create a member notification with:
+
+- notification type
+- application id metadata
+- target level metadata
+- human-readable result message
+
+### Reviewer Action Requirements
+
+Every Phase 2A precheck write must create a reviewer action with:
+
+- action type
+- note or reason
+- actor identity if available
+- metadata including base action and override fields where relevant
+
+### Smoke Test Checklist
+
+Use only designated test applications.
+
+Do not test on real users.
+
+Checklist:
+
+1. dry run the request plan first
+2. confirm the target application is a test record
+3. confirm expected missing-field behavior on invalid payloads
+4. confirm reviewer action is created on success
+5. confirm member notification is created on success
+6. confirm `current_state` is returned
+7. confirm exam access is not unlocked for `revision-required`
+8. confirm exam access remains locked for `precheck-reject`

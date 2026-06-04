@@ -4,6 +4,7 @@ import {
   buildCertificateId,
   certificateExpiryForLevel,
   certificationPassingScore,
+  createMemberNotification,
   createReviewerAction,
   getApplicationExamPackage,
   jsonGuardrailError,
@@ -31,12 +32,23 @@ type ExamPackage = Awaited<ReturnType<typeof getApplicationExamPackage>>;
 type ActionConfig = {
   action: string;
   overrideAction?: string;
+  successMessage?: string;
   apply: (args: {
     parsed: ParsedActionBody;
     now: string;
     certificateId: string;
     certificateExpiresAt: string;
   }) => Record<string, unknown>;
+  notification?: (args: {
+    application: ExamPackage["application"];
+    parsed: ParsedActionBody;
+  }) => {
+    type: string;
+    title: string;
+    message: string;
+    link?: string;
+    metadata?: Record<string, unknown>;
+  };
   validate?: (args: {
     existing: ExamPackage["application"];
     examPackage: ExamPackage;
@@ -50,6 +62,14 @@ function hasText(value: string | null | undefined) {
 
 function hasLevelOnePrecheckEvidence(application: ExamPackage["application"]) {
   return hasText(application.github_repo) && (hasText(application.readme_url) || hasText(application.evidence_summary));
+}
+
+function hasLevelTwoPlusPrecheckEvidence(application: ExamPackage["application"]) {
+  return (
+    hasText(application.github_repo) &&
+    (hasText(application.readme_url) || hasText(application.evidence_summary)) &&
+    (hasText(application.demo_url) || hasText(application.video_url))
+  );
 }
 
 function hasReviewEvidence(application: ExamPackage["application"]) {
@@ -92,11 +112,116 @@ function requireHumanOverride(parsed: ParsedActionBody, application: ExamPackage
 }
 
 function validatePrecheckApprove(existing: ExamPackage["application"]) {
+  const missingFields: string[] = [];
+  const normalizedStatus = String(existing.status || "").trim().toLowerCase();
+  const allowedStatuses = new Set(["submitted", "pending"]);
+
+  if (!existing.target_level || existing.target_level < 1) {
+    missingFields.push("target_level");
+  }
+
+  if (!allowedStatuses.has(normalizedStatus)) {
+    missingFields.push("status=submitted|pending");
+  }
+
+  if (existing.precheck_status === "approved") {
+    missingFields.push("precheck_status!=approved");
+  }
+
+  if (existing.exam_access_status === "unlocked") {
+    missingFields.push("exam_access_status!=unlocked");
+  }
+
+  if (!hasText(existing.agent_name)) {
+    missingFields.push("agent_name");
+  }
+
+  if (!hasText(existing.contact_email)) {
+    missingFields.push("contact_email");
+  }
+
+  if (!hasText(existing.github_repo)) {
+    missingFields.push("github_repo");
+  }
+
+  if (!hasText(existing.readme_url) && !hasText(existing.evidence_summary)) {
+    missingFields.push("readme_url|evidence_summary");
+  }
+
+  if (missingFields.length > 0) {
+    return jsonGuardrailError({
+      errorCode: "PRECHECK_REQUIREMENTS_NOT_MET",
+      message:
+        "Precheck approval requires target level, a pending/submitted application state, contact metadata, and baseline evidence.",
+      requiredFields: [
+        "target_level",
+        "status=submitted|pending",
+        "precheck_status!=approved",
+        "exam_access_status!=unlocked",
+        "agent_name",
+        "contact_email",
+        "github_repo",
+        "readme_url|evidence_summary"
+      ],
+      missingFields,
+      currentState: summarizeApplicationState(existing)
+    });
+  }
+
   if (existing.target_level === 1 && !hasLevelOnePrecheckEvidence(existing)) {
     return jsonGuardrailError({
-      errorCode: "PRECHECK_EVIDENCE_MISSING",
+      errorCode: "PRECHECK_REQUIREMENTS_NOT_MET",
       message: "Level 1 precheck approval requires github_repo and either readme_url or evidence_summary.",
       requiredFields: ["github_repo", "readme_url|evidence_summary"],
+      missingFields: ["github_repo", "readme_url|evidence_summary"].filter((field) => {
+        if (field === "github_repo") return !hasText(existing.github_repo);
+        return !hasText(existing.readme_url) && !hasText(existing.evidence_summary);
+      }),
+      currentState: summarizeApplicationState(existing)
+    });
+  }
+
+  if (existing.target_level >= 2 && !hasLevelTwoPlusPrecheckEvidence(existing)) {
+    return jsonGuardrailError({
+      errorCode: "PRECHECK_REQUIREMENTS_NOT_MET",
+      message:
+        "Level 2 and above cannot be precheck-approved with insufficient evidence. Use revision-required instead.",
+      requiredFields: ["github_repo", "readme_url|evidence_summary", "demo_url|video_url"],
+      missingFields: [
+        !hasText(existing.github_repo) ? "github_repo" : null,
+        !hasText(existing.readme_url) && !hasText(existing.evidence_summary) ? "readme_url|evidence_summary" : null,
+        !hasText(existing.demo_url) && !hasText(existing.video_url) ? "demo_url|video_url" : null
+      ].filter(Boolean) as string[],
+      currentState: summarizeApplicationState(existing)
+    });
+  }
+
+  return null;
+}
+
+function validateRevisionRequired(existing: ExamPackage["application"], parsed: ParsedActionBody) {
+  const revisionNote = parsed.revisionReason || parsed.note;
+  if (!hasText(revisionNote)) {
+    return jsonGuardrailError({
+      errorCode: "REVISION_REASON_REQUIRED",
+      message: "revision-required requires revision_reason or note.",
+      requiredFields: ["revision_reason|note"],
+      missingFields: ["revision_reason|note"],
+      currentState: summarizeApplicationState(existing)
+    });
+  }
+
+  return null;
+}
+
+function validatePrecheckReject(existing: ExamPackage["application"], parsed: ParsedActionBody) {
+  const rejectNote = parsed.rejectReason || parsed.note;
+  if (!hasText(rejectNote)) {
+    return jsonGuardrailError({
+      errorCode: "REJECT_REASON_REQUIRED",
+      message: "precheck-reject requires reject_reason or note.",
+      requiredFields: ["reject_reason|note"],
+      missingFields: ["reject_reason|note"],
       currentState: summarizeApplicationState(existing)
     });
   }
@@ -225,6 +350,7 @@ function validateIssueCertificate(existing: ExamPackage["application"], parsed: 
 const actionConfig: Record<string, ActionConfig> = {
   "precheck-approve": {
     action: "precheck_approved",
+    successMessage: "Precheck approved. Exam access is now unlocked.",
     apply: ({ parsed }) => ({
       precheck_status: "approved",
       precheck_note: parsed.note,
@@ -232,28 +358,61 @@ const actionConfig: Record<string, ActionConfig> = {
       status: "exam",
       stage: "Exam"
     }),
+    notification: ({ application }) => ({
+      type: "precheck_approved",
+      title: "AIAA precheck approved",
+      message: "Your application passed precheck. Your exam access is now unlocked.",
+      link: "/member/applications",
+      metadata: {
+        application_id: application.id,
+        target_level: application.target_level
+      }
+    }),
     validate: ({ existing }) => validatePrecheckApprove(existing)
   },
   "precheck-reject": {
     action: "precheck_rejected",
+    successMessage: "Precheck rejected. Exam access remains locked.",
     apply: ({ parsed }) => ({
       precheck_status: "rejected",
-      precheck_note: parsed.note,
+      precheck_note: parsed.rejectReason || parsed.note,
       exam_access_status: "locked",
       status: "rejected",
       stage: "Application"
-    })
+    }),
+    notification: ({ application, parsed }) => ({
+      type: "precheck_rejected",
+      title: "AIAA precheck rejected",
+      message: parsed.rejectReason || parsed.note || "Your application did not pass precheck.",
+      link: "/member/applications",
+      metadata: {
+        application_id: application.id,
+        target_level: application.target_level
+      }
+    }),
+    validate: ({ existing, parsed }) => validatePrecheckReject(existing, parsed)
   },
   "revision-required": {
     action: "revision_required",
+    successMessage: "Revision requested. Exam access remains locked until the application is updated.",
     apply: ({ parsed }) => ({
       review_status: "revision_required",
-      review_note: parsed.note,
+      review_note: parsed.revisionReason || parsed.note,
       review_decision: "revision_required",
-      certificate_status: "not_issued",
       status: "under_review",
       stage: "Review"
-    })
+    }),
+    notification: ({ application, parsed }) => ({
+      type: "revision_required",
+      title: "AIAA revision required",
+      message: parsed.revisionReason || parsed.note || "Your application needs more evidence before it can proceed.",
+      link: "/member/applications",
+      metadata: {
+        application_id: application.id,
+        target_level: application.target_level
+      }
+    }),
+    validate: ({ existing, parsed }) => validateRevisionRequired(existing, parsed)
   },
   "review-approve": {
     action: "review_approved",
@@ -348,10 +507,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ? config.overrideAction
       : config.action;
 
+    const reviewerActionNote =
+      parsed.overrideReason ||
+      parsed.revisionReason ||
+      parsed.rejectReason ||
+      parsed.note;
+
     const reviewerAction = await createReviewerAction({
       application,
       action: reviewerActionType,
-      note: parsed.overrideReason || parsed.note,
+      note: reviewerActionNote,
       actorId: parsed.reviewerId || parsed.actorId,
       metadata: {
         ...parsed.metadata,
@@ -362,15 +527,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     });
 
+    const notification = config.notification
+      ? await createMemberNotification({
+          userId: application.user_id,
+          ...config.notification({
+            application,
+            parsed
+          })
+        })
+      : null;
+
     if (action === "issue-certificate") {
       await syncIssuedCertificateToProfile(application);
     }
 
+    const currentState = summarizeApplicationState(application);
+
     return NextResponse.json({
       ok: true,
       action: config.action,
+      application_id: application.id,
+      current_state: currentState,
+      reviewer_action_id: reviewerAction?.id || null,
+      notification_id: notification?.id || null,
+      message: config.successMessage || `${config.action} completed.`,
       application,
-      reviewerAction
+      reviewerAction,
+      notification
     });
   } catch (error) {
     return jsonError(500, error instanceof Error ? error.message : "Admin action failed.");
