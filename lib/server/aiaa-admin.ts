@@ -90,7 +90,20 @@ function getServiceRoleKey() {
 }
 
 function getAdminApiKey() {
-  return process.env.PAPERCLIP_ADMIN_API_KEY || process.env.AIAA_ADMIN_API_KEY || process.env.CRON_SECRET || "";
+  const paperclipKey = cleanText(process.env.PAPERCLIP_ADMIN_API_KEY);
+  const legacyKey = cleanText(process.env.AIAA_ADMIN_API_KEY);
+  const cronSecret = cleanText(process.env.CRON_SECRET);
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (paperclipKey) return paperclipKey;
+  if (legacyKey) return legacyKey;
+
+  // Only allow CRON_SECRET as a local/dev fallback. Production admin auth should
+  // use a dedicated admin key so it does not silently authenticate against the
+  // cron secret.
+  if (!isProduction && cronSecret) return cronSecret;
+
+  return "";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -165,11 +178,12 @@ export function jsonError(status: number, error: string, details?: Record<string
 export function assertAdminRequest(request: NextRequest) {
   const adminApiKey = getAdminApiKey();
   if (!adminApiKey) {
-    return jsonError(500, "PAPERCLIP_ADMIN_API_KEY, AIAA_ADMIN_API_KEY, or CRON_SECRET is not configured.");
+    return jsonError(500, "PAPERCLIP_ADMIN_API_KEY or AIAA_ADMIN_API_KEY is not configured.");
   }
 
-  const authHeader = request.headers.get("authorization") || "";
-  const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  const authHeader = cleanText(request.headers.get("authorization"));
+  const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+  const bearerToken = bearerMatch ? cleanText(bearerMatch[1]) : "";
   const headerToken = cleanText(request.headers.get("x-aiaa-admin-key"));
   const provided = bearerToken || headerToken;
 
