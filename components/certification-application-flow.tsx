@@ -110,13 +110,14 @@ function Info({ label, value }: { label: string; value: string }) {
 function ApplicationCard({ application }: { application: AIAACertificationApplication }) {
   const activeIndex = stageIndex(application.stage);
   const approved = application.status === "approved";
+  const reviewStatus = application.review_status || application.reviewer_status || "waiting";
 
   return (
     <div className="border border-slate-200 bg-white p-6 shadow-[0_18px_70px_rgba(15,23,42,0.055)] lg:p-7">
       <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-neutral-500">{levelName(application.target_level)}</p>
-          <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-neutral-950">{application.agent_name || "AIAA CertificationApplication"}</h3>
+          <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-neutral-950">{application.agent_name || "AIAA Certification Application"}</h3>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-600">{application.evidence_summary || "No evidence summary yet."}</p>
         </div>
         <StatusPill tone={toneForStatus(application.status)}>{statusLabel(application.status)}</StatusPill>
@@ -127,8 +128,8 @@ function ApplicationCard({ application }: { application: AIAACertificationApplic
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <Info label="Current stage" value={stageLabel(application.stage)} />
         <Info label="Contact email" value={application.contact_email || "Not set"} />
-        <Info label="ExamStatus" value={application.exam_status || "not_started"} />
-        <Info label="ReviewStatus" value={application.reviewer_status || "waiting"} />
+        <Info label="Exam status" value={application.exam_status || "not_started"} />
+        <Info label="Review status" value={reviewStatus} />
         <Info label="Certificate" value={application.certificate_id || "Not issued"} />
       </div>
     </div>
@@ -140,7 +141,7 @@ function AuthGate({ copy = "Sign in to submit and track your AIAA certification 
   return (
     <Section compact eyebrow="Member gate" title="Sign in first." copy={copy}>
       <div className="flex flex-wrap gap-3">
-        <Link href={loginUrl} className="aiaa-button-dark">After signing inApplication</Link>
+        <Link href={loginUrl} className="aiaa-button-dark">Sign in</Link>
         <Link href="/signup" className="aiaa-button-light">Create member account</Link>
       </div>
     </Section>
@@ -310,8 +311,8 @@ export function CertificationApplicationForm() {
               ["01", "Submit application"],
               ["02", "Complete exam"],
               ["03", "Awaiting review"],
-              ["04", "Certificate issued  after  approval"],
-              ["05", "Ranking eligibility  after  approval"]
+              ["04", "Certificate issued after approval"],
+              ["05", "Ranking eligibility after approval"]
             ]}
           />
         </aside>
@@ -443,6 +444,7 @@ export function MemberExamWorkspace() {
         status: "under_review",
         stage: "Review",
         exam_status: "submitted",
+        review_status: "pending",
         reviewer_status: "waiting",
         exam_answers: answers
       });
@@ -461,7 +463,7 @@ export function MemberExamWorkspace() {
 
   if (!activeApplication) {
     return (
-      <Section compact eyebrow="Exam" title="No exam available yet." copy="Submit a Level 1 application first. The exam appears  after  the application record is created.">
+      <Section compact eyebrow="Exam" title="No exam available yet." copy="Submit a Level 1 application first. The exam appears after the application record is created.">
         <Link href="/apply/agent" className="aiaa-button-dark">Submit Level 1 application</Link>
       </Section>
     );
@@ -480,7 +482,7 @@ export function MemberExamWorkspace() {
       <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
         <div className="space-y-6">
           <ApplicationCard application={activeApplication} />
-          {activeApplication.stage === "Application" ? <button type="button" onClick={startExam} disabled={saving} className="aiaa-button-dark disabled:cursor-not-allowed disabled:opacity-50">StartExam</button> : null}
+          {activeApplication.stage === "Application" ? <button type="button" onClick={startExam} disabled={saving} className="aiaa-button-dark disabled:cursor-not-allowed disabled:opacity-50">Start exam</button> : null}
         </div>
         <form onSubmit={submitExam} className="border border-slate-200 bg-white p-6 shadow-[0_18px_70px_rgba(15,23,42,0.055)] lg:p-7">
           <div className="grid gap-5">

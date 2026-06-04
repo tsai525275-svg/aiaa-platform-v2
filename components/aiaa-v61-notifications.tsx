@@ -65,9 +65,9 @@ export function AiaaV61Notifications() {
     <main className="min-h-screen bg-slate-50 text-neutral-950">
       <section className="border-b border-slate-200 bg-white px-5 py-16 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.38em] text-blue-700">Member notifications</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.38em] text-blue-700">AIAA Notifications</div>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_0.78fr] lg:items-end">
-            <h1 className="text-6xl font-semibold tracking-[-0.07em] md:text-8xl">Your AIAA updates.</h1>
+            <h1 className="text-6xl font-semibold tracking-[-0.07em] md:text-8xl">AIAA Notifications</h1>
             <p className="text-lg leading-8 text-neutral-600">Application, exam, review, certificate, and ranking status updates appear here. Email delivery can be connected later from the control panel.</p>
           </div>
         </div>

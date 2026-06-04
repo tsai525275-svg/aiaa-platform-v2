@@ -358,6 +358,15 @@ export async function fetchAiaaApplications(session: AiaaSession) {
   );
 }
 
+export async function fetchAiaaApplication(session: AiaaSession, applicationId: string) {
+  const rows = await restFetch<AiaaApplication[]>(
+    "/rest/v1/aiaa_certification_applications?select=*&id=eq." + encodeFilter(applicationId) + "&user_id=eq." + encodeFilter(session.userId) + "&limit=1",
+    { method: "GET" },
+    session
+  );
+  return rows[0] || null;
+}
+
 export async function fetchAiaaQuestions(level: number, session: AiaaSession) {
   return restFetch<AiaaExamQuestion[]>(
     "/rest/v1/aiaa_exam_questions?select=*&level=eq." + level + "&is_active=eq.true&order=position.asc",
@@ -376,8 +385,12 @@ export async function fetchAiaaExamAnswer(session: AiaaSession, applicationId: s
 }
 
 export async function saveAiaaExamDraft(session: AiaaSession, applicationId: string, level: number, answers: Record<string, string>) {
-  const existing = await fetchAiaaExamAnswer(session, applicationId, level);
-  if (existing?.status === "submitted") throw new Error("This exam has already been submitted and locked.");
+  const [existing, application] = await Promise.all([
+    fetchAiaaExamAnswer(session, applicationId, level),
+    fetchAiaaApplication(session, applicationId)
+  ]);
+  const revisionRequired = String(application?.review_status || "").toLowerCase() === "revision_required";
+  if (existing?.status === "submitted" && !revisionRequired) throw new Error("This exam has already been submitted and locked.");
 
   if (existing) {
     const rows = await restFetch<AiaaExamAnswer[]>(
@@ -385,7 +398,7 @@ export async function saveAiaaExamDraft(session: AiaaSession, applicationId: str
       {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
-        body: JSON.stringify({ answers, status: "draft" })
+        body: JSON.stringify({ answers, status: "draft", locked_at: revisionRequired ? null : existing.locked_at || null })
       },
       session
     );
@@ -405,12 +418,14 @@ export async function saveAiaaExamDraft(session: AiaaSession, applicationId: str
 }
 
 export async function submitAiaaExam(session: AiaaSession, applicationId: string, level: number, answers: Record<string, string>) {
-  const [existing, questions] = await Promise.all([
+  const [existing, questions, application] = await Promise.all([
     fetchAiaaExamAnswer(session, applicationId, level),
-    fetchAiaaQuestions(level, session)
+    fetchAiaaQuestions(level, session),
+    fetchAiaaApplication(session, applicationId)
   ]);
+  const revisionRequired = String(application?.review_status || "").toLowerCase() === "revision_required";
 
-  if (existing?.status === "submitted") throw new Error("This exam has already been submitted and locked.");
+  if (existing?.status === "submitted" && !revisionRequired) throw new Error("This exam has already been submitted and locked.");
 
   const scoring = scoreAiaaExamAnswers(level, questions || [], answers);
   const summary = {

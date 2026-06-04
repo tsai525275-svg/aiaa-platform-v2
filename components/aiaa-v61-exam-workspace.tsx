@@ -405,6 +405,7 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const revisionRequired = String(application?.review_status || "").toLowerCase() === "revision_required";
 
   useEffect(() => {
     async function load() {
@@ -431,7 +432,14 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
         setQuestions(loadedQuestions || []);
         const existingAnswer = await fetchAiaaExamAnswer(session, current.id, level);
         if (existingAnswer?.answers) setAnswers(existingAnswer.answers);
-        if (existingAnswer?.status === "submitted" || current.exam_status === "submitted") setSubmitted(true);
+        if ((existingAnswer?.status === "submitted" || current.exam_status === "submitted") && String(current.review_status || "").toLowerCase() !== "revision_required") {
+          setSubmitted(true);
+        } else {
+          setSubmitted(false);
+        }
+        if (String(current.review_status || "").toLowerCase() === "revision_required") {
+          setMessage(current.review_note || "Reviewers requested revisions. Update the exam answers or evidence, then submit again.");
+        }
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Unable to load the exam workspace.");
       } finally {
@@ -500,7 +508,7 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
     <main className="min-h-screen bg-slate-50 text-neutral-950">
       <section className="border-b border-slate-200 bg-white px-5 py-16 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.38em] text-blue-700">AIAA Exam Workspace V73</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.38em] text-blue-700">AIAA Exam Workspace</div>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_0.78fr] lg:items-end">
             <h1 className="text-6xl font-semibold tracking-[-0.07em] md:text-8xl">{levelName(level)}.</h1>
             <div className="text-lg leading-8 text-neutral-600">
@@ -550,8 +558,8 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
               <div className="flex flex-col gap-5 border-b border-slate-200 pb-7 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-[0.32em] text-blue-700">Exam workspace</div>
-                  <h2 className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-neutral-950">{submitted ? "Exam submitted." : "Complete the official exam."}</h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-600">{submitted ? "Answers are locked. The knowledge score is stored, and evidence is waiting for reviewer assessment." : "Save a draft as you work. Submit only when every required answer and evidence field is ready for review. Submission locks the exam."}</p>
+                  <h2 className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-neutral-950">{submitted ? "Exam submitted." : revisionRequired ? "Revision required." : "Complete the official exam."}</h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-600">{submitted ? "Answers are locked. The knowledge score is stored, and evidence is waiting for reviewer assessment." : revisionRequired ? "Reviewers requested revisions. Update the answers or evidence fields below, then submit again. Submission locks the updated exam." : "Save a draft as you work. Submit only when every required answer and evidence field is ready for review. Submission locks the exam."}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-neutral-600">
                   <div><span className="font-semibold text-neutral-950">Application:</span> {application.agent_name || "Untitled application"}</div>

@@ -17,13 +17,20 @@ export type AIAACertificationApplication = {
   video_url: string;
   readme_url: string;
   evidence_summary: string;
+  precheck_status?: string;
+  precheck_note?: string;
+  exam_access_status?: string;
   exam_status: string;
   exam_answers?: Record<string, unknown>;
-  review_notes: string;
-  reviewer_status: string;
+  review_notes?: string;
+  review_note?: string;
+  reviewer_status?: string;
+  review_status?: string;
   certificate_id: string;
-  certificate_url: string;
-  ranking_status: string;
+  certificate_status?: string;
+  certificate_url?: string;
+  ranking_status?: string;
+  ranking_eligibility_status?: string;
   submitted_at?: string;
   created_at?: string;
   updated_at?: string;
@@ -89,7 +96,7 @@ export function statusLabel(status?: string) {
     exam: "Exam in progress",
     under_review: "Under review",
     approved: "Approved",
-    rejected: "notApproved"
+    rejected: "Rejected"
   };
   return labels[status || ""] ?? "Not submitted";
 }
@@ -113,7 +120,8 @@ export function stageIndex(stage?: string) {
 
 export function getApprovedLevel(applications: AIAACertificationApplication[]) {
   return applications.reduce((level, application) => {
-    if (application.status === "approved" && application.certificate_id) {
+    const issued = application.certificate_status === "issued";
+    if ((application.status === "approved" || issued) && application.certificate_id) {
       return Math.max(level, Number(application.target_level || 0));
     }
     return level;
@@ -121,7 +129,10 @@ export function getApprovedLevel(applications: AIAACertificationApplication[]) {
 }
 
 export function getActiveCertificationApplication(applications: AIAACertificationApplication[]) {
-  return applications.find((application) => !["approved", "rejected"].includes(application.status)) ?? null;
+  return applications.find((application) => {
+    const issued = application.certificate_status === "issued";
+    return !issued && !["approved", "rejected"].includes(application.status);
+  }) ?? null;
 }
 
 export function getNextCertificationLevel(applications: AIAACertificationApplication[]) {
@@ -161,10 +172,14 @@ export async function createCertificationApplication(accessToken: string, input:
     exam_status: "not_started",
     exam_answers: {},
     review_notes: "",
+    review_note: "",
     reviewer_status: "waiting",
+    review_status: "pending",
     certificate_id: "",
+    certificate_status: "not_issued",
     certificate_url: "",
     ranking_status: "not_eligible",
+    ranking_eligibility_status: "not_eligible",
     submitted_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
