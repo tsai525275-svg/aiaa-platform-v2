@@ -22,14 +22,21 @@ export type AdminApplication = {
   exam_multiple_choice_score?: number | null;
   exam_multiple_choice_total?: number | null;
   exam_score_percent?: number | null;
+  exam_auto_pass?: boolean | null;
   exam_scoring_status?: string | null;
   exam_review_required?: boolean | null;
+  exam_started_at?: string | null;
+  exam_locked_at?: string | null;
   review_status?: string | null;
   review_note?: string | null;
+  review_notes?: string | null;
   review_decision?: string | null;
+  reviewer_id?: string | null;
+  reviewer_status?: string | null;
   reviewed_at?: string | null;
   certificate_status?: string | null;
   certificate_id?: string | null;
+  certificate_url?: string | null;
   certificate_issued_at?: string | null;
   certificate_expires_at?: string | null;
   ranking_eligibility_status?: string | null;
@@ -173,6 +180,25 @@ async function authAdminRequest<T>(path: string, init: RequestInit = {}) {
 
 export function jsonError(status: number, error: string, details?: Record<string, unknown>) {
   return NextResponse.json({ ok: false, error, ...(details || {}) }, { status });
+}
+
+export function jsonGuardrailError(input: {
+  status?: number;
+  errorCode: string;
+  message: string;
+  requiredFields?: string[];
+  currentState?: Record<string, unknown>;
+}) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error_code: input.errorCode,
+      message: input.message,
+      required_fields: input.requiredFields || [],
+      current_state: input.currentState || {}
+    },
+    { status: input.status || 422 }
+  );
 }
 
 export function assertAdminRequest(request: NextRequest) {
@@ -341,11 +367,46 @@ export function parseActionBody(body: unknown) {
   const payload = isRecord(body) ? body : {};
   const note = cleanText(payload.note);
   const actorId = cleanText(payload.actorId);
+  const reviewerId = cleanText(payload.reviewer_id) || actorId;
+  const humanOverride = payload.human_override === true;
+  const overrideReason = cleanText(payload.override_reason);
   const metadata = isRecord(payload.metadata) ? payload.metadata : {};
   return {
     note,
     actorId,
+    reviewerId,
+    humanOverride,
+    overrideReason,
     metadata
+  };
+}
+
+export function certificationPassingScore(level: number) {
+  const thresholds: Record<number, number | null> = {
+    1: 80,
+    2: 85,
+    3: 90,
+    4: null,
+    5: null
+  };
+  return thresholds[level] ?? null;
+}
+
+export function summarizeApplicationState(application: AdminApplication) {
+  return {
+    application_id: application.id,
+    target_level: application.target_level,
+    status: application.status,
+    stage: application.stage,
+    precheck_status: application.precheck_status || null,
+    exam_access_status: application.exam_access_status || null,
+    exam_status: application.exam_status || null,
+    exam_score_percent: application.exam_score_percent ?? null,
+    exam_auto_pass: application.exam_auto_pass ?? null,
+    exam_review_required: application.exam_review_required ?? null,
+    review_status: application.review_status || null,
+    certificate_status: application.certificate_status || null,
+    reviewer_id: application.reviewer_id || null
   };
 }
 
