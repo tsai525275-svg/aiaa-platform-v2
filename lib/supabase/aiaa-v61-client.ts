@@ -72,6 +72,8 @@ export type AiaaExamAnswer = {
   locked_at?: string | null;
 };
 
+export const AIAA_AI_ASSISTANCE_DECLARATION_KEY = "__aiaa_ai_assistance_declaration";
+
 export type AiaaNotification = {
   id: string;
   user_id: string;

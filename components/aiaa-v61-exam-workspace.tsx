@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  AIAA_AI_ASSISTANCE_DECLARATION_KEY,
   AiaaApplication,
   AiaaExamQuestion,
   fetchAiaaApplications,
@@ -39,6 +40,12 @@ type EvidenceField = {
 };
 
 type EvidenceValue = Record<string, string>;
+type AIAssistanceDeclaration = {
+  aiToolsUsed: string;
+  aiHelpedWith: string;
+  personallyVerified: string;
+  canExplainSubmission: string;
+};
 
 const inputClass = "w-full border border-slate-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-blue-600 disabled:bg-slate-50 disabled:text-neutral-500";
 const textareaClass = "min-h-32 w-full border border-slate-200 bg-white px-4 py-3 text-sm leading-7 text-neutral-900 outline-none transition focus:border-blue-600 disabled:bg-slate-50 disabled:text-neutral-500";
@@ -84,6 +91,38 @@ function parseEvidence(value: string): EvidenceValue {
 }
 
 function stringifyEvidence(value: EvidenceValue) {
+  return JSON.stringify(value, null, 2);
+}
+
+function parseAIAssistanceDeclaration(value: string): AIAssistanceDeclaration {
+  try {
+    const parsed = JSON.parse(value || "{}");
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return {
+        aiToolsUsed: String((parsed as Record<string, unknown>).aiToolsUsed || ""),
+        aiHelpedWith: String((parsed as Record<string, unknown>).aiHelpedWith || ""),
+        personallyVerified: String((parsed as Record<string, unknown>).personallyVerified || ""),
+        canExplainSubmission: String((parsed as Record<string, unknown>).canExplainSubmission || "")
+      };
+    }
+  } catch {
+    return {
+      aiToolsUsed: "",
+      aiHelpedWith: "",
+      personallyVerified: "",
+      canExplainSubmission: ""
+    };
+  }
+
+  return {
+    aiToolsUsed: "",
+    aiHelpedWith: "",
+    personallyVerified: "",
+    canExplainSubmission: ""
+  };
+}
+
+function stringifyAIAssistanceDeclaration(value: AIAssistanceDeclaration) {
   return JSON.stringify(value, null, 2);
 }
 
@@ -266,6 +305,126 @@ function passFailText(level: number, position: number) {
   return { pass: "Submit complete evidence for reviewer verification.", fail: "Incomplete or unverifiable evidence can fail review." };
 }
 
+function AIAssistanceDeclarationCard({
+  value,
+  onChange,
+  disabled
+}: {
+  value: AIAssistanceDeclaration;
+  onChange: (value: AIAssistanceDeclaration) => void;
+  disabled: boolean;
+}) {
+  function update(key: keyof AIAssistanceDeclaration, nextValue: string) {
+    onChange({ ...value, [key]: nextValue });
+  }
+
+  return (
+    <div className="border-b border-slate-200 py-7">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.32em] text-blue-700">AI Assistance Declaration</div>
+          <h3 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-neutral-950">AIAA exams are AI assisted.</h3>
+        </div>
+        <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Required before submit</span>
+      </div>
+
+      <div className="mt-5 grid gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-5 lg:p-6">
+        <p className="text-sm leading-7 text-neutral-700">
+          AIAA does not certify memorization. AIAA certifies engineering judgment, system execution, evidence quality,
+          debugging ability, reliability, and production readiness. Candidates may use ChatGPT, Claude, Codex, Cursor,
+          GitHub Copilot, and official documentation, but they must disclose AI assistance and submit reproducible,
+          reviewable engineering evidence.
+        </p>
+        <p className="text-sm leading-7 text-neutral-700">
+          Prompt only, UI only, demo only, or non reproducible submissions will fail. AIAA does not use camera
+          surveillance, browser locking, or invasive proctoring for this exam. Review is evidence based.
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div>
+          <EvidenceInput
+            field={{
+              key: "aiToolsUsed",
+              label: "AI tools used",
+              helper: "List the AI tools, assistants, IDE copilots, and official docs you used while preparing this submission.",
+              type: "textarea",
+              required: true,
+              placeholder: "Example: ChatGPT, Claude, Codex, Cursor, GitHub Copilot, OpenAI docs, framework docs."
+            }}
+            value={value.aiToolsUsed}
+            onChange={(nextValue) => update("aiToolsUsed", nextValue)}
+            disabled={disabled}
+          />
+        </div>
+        <div>
+          <EvidenceInput
+            field={{
+              key: "aiHelpedWith",
+              label: "What AI helped with",
+              helper: "Explain which parts AI assisted with, such as debugging, drafting, architecture options, code suggestions, or docs lookup.",
+              type: "textarea",
+              required: true
+            }}
+            value={value.aiHelpedWith}
+            onChange={(nextValue) => update("aiHelpedWith", nextValue)}
+            disabled={disabled}
+          />
+        </div>
+        <div>
+          <EvidenceInput
+            field={{
+              key: "personallyVerified",
+              label: "What I personally verified",
+              helper: "Explain what you personally tested, checked, or corrected before submission.",
+              type: "textarea",
+              required: true
+            }}
+            value={value.personallyVerified}
+            onChange={(nextValue) => update("personallyVerified", nextValue)}
+            disabled={disabled}
+          />
+        </div>
+        <div>
+          <label className="block">
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+              <span>I can explain this submission</span>
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] tracking-[0.16em] text-blue-700">Required</span>
+            </div>
+            <p className="mb-2 text-xs leading-6 text-neutral-500">
+              Confirm that you can explain the workflow, evidence, implementation decisions, debugging, and reliability claims in your own words.
+            </p>
+            <div className="grid gap-3">
+              <label className={`flex cursor-pointer gap-3 border px-4 py-4 text-sm leading-6 transition ${value.canExplainSubmission === "yes" ? "border-blue-600 bg-blue-50 text-blue-950" : "border-slate-200 bg-white text-neutral-700 hover:border-blue-200"}`}>
+                <input
+                  type="radio"
+                  disabled={disabled}
+                  name="ai-can-explain"
+                  checked={value.canExplainSubmission === "yes"}
+                  onChange={() => update("canExplainSubmission", "yes")}
+                  className="mt-1 h-4 w-4 accent-blue-700 disabled:cursor-not-allowed"
+                />
+                <span>Yes. I can explain this submission and the evidence I provided.</span>
+              </label>
+              <label className={`flex cursor-pointer gap-3 border px-4 py-4 text-sm leading-6 transition ${value.canExplainSubmission === "no" ? "border-red-300 bg-red-50 text-red-900" : "border-slate-200 bg-white text-neutral-700 hover:border-red-200"}`}>
+                <input
+                  type="radio"
+                  disabled={disabled}
+                  name="ai-can-explain"
+                  checked={value.canExplainSubmission === "no"}
+                  onChange={() => update("canExplainSubmission", "no")}
+                  className="mt-1 h-4 w-4 accent-red-700 disabled:cursor-not-allowed"
+                />
+                <span>No. I cannot explain this submission clearly.</span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EvidenceInput({ field, value, onChange, disabled }: { field: EvidenceField; value: string; onChange: (value: string) => void; disabled: boolean }) {
   const control = field.type === "textarea" ? (
     <textarea disabled={disabled} value={value || ""} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder || "Explain your evidence."} className={textareaClass} />
@@ -359,6 +518,11 @@ function EvidenceFieldGroup({ level, question, value, onChange, disabled }: { le
         <div>
           <div className="text-xs font-semibold uppercase tracking-[0.32em] text-blue-700">Instructions</div>
           <p className="mt-3 max-w-5xl text-sm leading-7 text-neutral-700">{intro}</p>
+        </div>
+        <div className="border border-slate-200 bg-white p-4 text-sm leading-7 text-neutral-700">
+          <span className="font-semibold text-neutral-950">AI assistance policy:</span> You may use ChatGPT, Claude, Codex, Cursor,
+          GitHub Copilot, and official documentation, but you must disclose AI assistance, submit verifiable engineering evidence,
+          and be able to explain your own submission.
         </div>
         <div className="grid gap-3 text-sm leading-7 text-neutral-700 lg:grid-cols-2">
           <div className="border border-slate-200 bg-white p-4"><span className="font-semibold text-neutral-950">Pass standard:</span> {passFail.pass}</div>
@@ -459,9 +623,17 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
 
   const multipleChoiceCount = questions.filter((question) => isMultipleChoice(question) && !isEvidenceQuestion(level, question)).length;
   const evidenceCount = questions.filter((question) => isEvidenceQuestion(level, question)).length;
+  const aiDeclaration = parseAIAssistanceDeclaration(answers[AIAA_AI_ASSISTANCE_DECLARATION_KEY] || "");
 
   function updateAnswer(questionId: string, value: string) {
     setAnswers((current) => ({ ...current, [questionId]: value }));
+  }
+
+  function updateAIAssistanceDeclaration(nextValue: AIAssistanceDeclaration) {
+    setAnswers((current) => ({
+      ...current,
+      [AIAA_AI_ASSISTANCE_DECLARATION_KEY]: stringifyAIAssistanceDeclaration(nextValue)
+    }));
   }
 
   async function handleSaveDraft() {
@@ -489,6 +661,16 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
       setMessage(`Complete required fields before submitting: ${missing.slice(0, 8).join(", ")}${missing.length > 8 ? " and more" : ""}.`);
       return;
     }
+    const aiDeclarationMissing = [
+      !String(aiDeclaration.aiToolsUsed || "").trim() ? "AI tools used" : "",
+      !String(aiDeclaration.aiHelpedWith || "").trim() ? "What AI helped with" : "",
+      !String(aiDeclaration.personallyVerified || "").trim() ? "What I personally verified" : "",
+      aiDeclaration.canExplainSubmission !== "yes" ? "I can explain this submission" : ""
+    ].filter(Boolean);
+    if (aiDeclarationMissing.length) {
+      setMessage(`Complete the AI Assistance Declaration before submitting: ${aiDeclarationMissing.join(", ")}.`);
+      return;
+    }
     setSaving(true);
     setMessage("");
     try {
@@ -496,7 +678,7 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
       setSubmitted(true);
       const percent = result.scoring.multipleChoicePercent;
       const scoreLine = percent === null ? "Manual review only." : `Knowledge score: ${percent}% (${result.scoring.multipleChoiceScore}/${result.scoring.multipleChoiceTotal}).`;
-      setMessage(`Exam submitted and locked. ${scoreLine} The application is now awaiting reviewer assessment.`);
+      setMessage(`Exam submitted and locked. ${scoreLine} Your AI Assistance Declaration was recorded in the exam evidence package. The application is now awaiting reviewer assessment.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to submit exam.");
     } finally {
@@ -568,9 +750,38 @@ export function AiaaV61ExamWorkspace({ levelSlug }: { levelSlug: string }) {
                 </div>
               </div>
 
+              <div className="mt-7 grid gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-5 lg:p-6">
+                <div className="text-xs font-semibold uppercase tracking-[0.32em] text-blue-700">AIAA AI Assisted Exam Policy</div>
+                <p className="text-sm leading-7 text-neutral-700">
+                  AIAA exams are AI assisted. AIAA does not certify memorization. AIAA certifies engineering judgment,
+                  system execution, evidence quality, debugging ability, reliability, and production readiness. Candidates
+                  must disclose AI assistance.
+                </p>
+                <p className="text-sm leading-7 text-neutral-700">
+                  Prompt only, UI only, demo only, or non reproducible submissions will fail. AIAA does not use camera
+                  monitoring, browser locking, or invasive proctoring. Review is evidence based.
+                </p>
+              </div>
+
+              <AIAssistanceDeclarationCard
+                value={aiDeclaration}
+                onChange={updateAIAssistanceDeclaration}
+                disabled={submitted || saving}
+              />
+
               {questions.length ? questions.map((question) => (
                 <QuestionField key={question.id} level={level} question={question} value={answers[question.id] || ""} onChange={(value) => updateAnswer(question.id, value)} disabled={submitted || saving} />
               )) : <p className="py-8 text-sm text-neutral-600">No active questions found for this level. Run the official AIAA exam blueprint SQL file in Supabase.</p>}
+
+              {!submitted ? (
+                <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-neutral-700">
+                  <div className="text-xs font-semibold uppercase tracking-[0.32em] text-blue-700">Submit confirmation</div>
+                  <p className="mt-3">
+                    Before submit, confirm that your AI Assistance Declaration is complete, your engineering evidence is reproducible,
+                    and you can explain the workflow, debugging, reliability, and implementation decisions in your own words.
+                  </p>
+                </div>
+              ) : null}
 
               <div className="mt-8 flex flex-wrap gap-3">
                 {!submitted ? <button type="button" onClick={handleSaveDraft} disabled={saving} className="aiaa-button-light disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Saving" : "Save draft"}</button> : null}
