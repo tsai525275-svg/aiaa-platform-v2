@@ -221,7 +221,7 @@ export function Homepage() {
               AIAA connects rankings, certification, registry records, and public signals into one identity layer for the AI Agent economy.
             </p>
             <div className="mt-5 flex justify-center">
-              <span className="aiaa-element-chip rounded-full px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.22em]">Fire and earth balance</span>
+              <span className="aiaa-element-chip rounded-full px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.22em]">Public trust infrastructure</span>
             </div>
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
               <a href="/rankings" className="aiaa-button-dark">Explore rankings</a>
