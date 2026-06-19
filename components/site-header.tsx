@@ -8,6 +8,8 @@ const navItems = [
   { label: "Records", href: "/registry" },
   { label: "Certification", href: "/certification" },
   { label: "Standards", href: "/standards" },
+  { label: "Community", href: "/community" },
+  { label: "Support", href: "/support" },
   { label: "World", href: "/world" }
 ];
 
