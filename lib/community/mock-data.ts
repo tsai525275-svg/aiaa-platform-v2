@@ -11,6 +11,15 @@ export type CommunityCategory = {
   lastActive: string;
 };
 
+export type CommunityAttachment = {
+  id: string;
+  kind: "image";
+  alt: string;
+  tone: string;
+  caption?: string;
+  src?: string;
+};
+
 export type CommunityComment = {
   id: string;
   author: string;
@@ -18,6 +27,8 @@ export type CommunityComment = {
   postedAt: string;
   body: string;
   moderationStatus: "visible" | "flagged";
+  likeCount: number;
+  reportCount: number;
 };
 
 export type CommunityPost = {
@@ -33,27 +44,47 @@ export type CommunityPost = {
   tags: string[];
   replies: number;
   views: number;
+  likeCount: number;
+  shareCount: number;
   reportCount: number;
   certifiedBadge?: string;
   links?: Array<{ label: string; href: string }>;
+  attachments?: CommunityAttachment[];
   comments: CommunityComment[];
 };
 
 export const communityRules = [
   "Do not share API keys, credentials, or private tokens.",
   "Do not impersonate AIAA staff or make fake certification claims.",
+  "Do not use obscene language, personal attacks, or abusive behavior.",
   "Do not harass, spam, or post malicious code.",
   "Reported content enters moderation review; no automatic deletion or banning in this MVP.",
   "Production write moderation remains human-approved."
 ] as const;
 
+export const moderationGuardrails = [
+  "Obscene or insulting text is blocked in the local composer before a draft can be saved.",
+  "Reports use explicit reasons such as abuse, impersonation, fake certification, spam, and malicious links.",
+  "Human moderators remain the only authority for future removal, lock, or ban actions."
+] as const;
+
+export const reportReasonOptions = [
+  "Obscene or abusive language",
+  "Harassment or personal attack",
+  "Fake certification claim",
+  "Impersonating AIAA official",
+  "Spam or low-quality promotion",
+  "Malicious link or unsafe code",
+  "Other moderation concern"
+] as const;
+
 export const communityRoles: Array<{ role: CommunityRole; label: string; capabilities: string[] }> = [
   { role: "guest", label: "Guest", capabilities: ["Read public categories", "Search public discussions"] },
-  { role: "registered user", label: "Registered User", capabilities: ["Create post UI", "Reply UI", "Report content"] },
-  { role: "applicant", label: "Applicant", capabilities: ["Discuss certification preparation", "Share project progress"] },
-  { role: "certified member", label: "Certified Member", capabilities: ["Showcase approved work", "Answer community questions"] },
-  { role: "moderator", label: "Moderator", capabilities: ["Review reports", "Issue moderation notices"] },
-  { role: "admin", label: "Admin", capabilities: ["Audit moderation actions", "Own policy visibility"] }
+  { role: "registered user", label: "Registered User", capabilities: ["Create post UI", "Reply UI", "Like posts", "Report content"] },
+  { role: "applicant", label: "Applicant", capabilities: ["Discuss certification preparation", "Share project progress", "Reply and like"] },
+  { role: "certified member", label: "Certified Member", capabilities: ["Showcase approved work", "Answer community questions", "Role badge display"] },
+  { role: "moderator", label: "Moderator", capabilities: ["Review reports", "Issue moderation notices", "Observe flagged threads"] },
+  { role: "admin", label: "Admin", capabilities: ["Audit moderation actions", "Own policy visibility", "Govern role labels"] }
 ];
 
 export const communityCategories: CommunityCategory[] = [
@@ -110,7 +141,7 @@ export const communityCategories: CommunityCategory[] = [
   {
     slug: "project-showcase",
     name: "AI Agent Project Showcase",
-    description: "Share public agent demos, GitHub repos, and lessons learned.",
+    description: "Share public agent demos, GitHub repos, images, and lessons learned.",
     visibility: "public",
     postingPolicy: "Registered users may share public projects. Fake certification claims are prohibited.",
     moderators: ["Certification Reviewer", "QA and Risk Controller"],
@@ -144,7 +175,7 @@ export const communityPosts: CommunityPost[] = [
     slug: "welcome-to-aiaa-community-mvp",
     categorySlug: "announcements",
     title: "Welcome to the AIAA community MVP",
-    excerpt: "This area is live as a read-safe MVP. Posting, replying, and reporting are UI-ready while moderation remains human-gated.",
+    excerpt: "This area is live as a social-safe MVP. Posting, image attachment concepts, replying, liking, and reporting are UI-ready while moderation remains human-gated.",
     body: [
       "The AIAA community forum MVP is designed to support transparent discussion around certification, evidence quality, and AI Agent project building.",
       "This release is intentionally safe: no automatic moderation, no production write loop, and no fake certification display. Human review remains required for any moderation decision."
@@ -156,7 +187,12 @@ export const communityPosts: CommunityPost[] = [
     tags: ["announcement", "mvp", "policy"],
     replies: 3,
     views: 184,
+    likeCount: 42,
+    shareCount: 9,
     reportCount: 0,
+    attachments: [
+      { id: "att-ann-1", kind: "image", alt: "AIAA community launch card", tone: "from-slate-950 via-blue-700 to-cyan-500", caption: "Read-safe launch concept visual" }
+    ],
     comments: [
       {
         id: "c-announce-1",
@@ -164,7 +200,9 @@ export const communityPosts: CommunityPost[] = [
         role: "moderator",
         postedAt: "Today, 08:24",
         body: "Reminder: recommendations are visible, but all sensitive actions remain blocked until human approval.",
-        moderationStatus: "visible"
+        moderationStatus: "visible",
+        likeCount: 8,
+        reportCount: 0
       }
     ]
   },
@@ -184,10 +222,16 @@ export const communityPosts: CommunityPost[] = [
     tags: ["level-1", "evidence", "faq"],
     replies: 5,
     views: 92,
+    likeCount: 19,
+    shareCount: 4,
     reportCount: 0,
     links: [
       { label: "Certification process", href: "/certification/process" },
       { label: "Level 1 page", href: "/certification/level-1" }
+    ],
+    attachments: [
+      { id: "att-evidence-1", kind: "image", alt: "Evidence checklist mock", tone: "from-blue-50 via-cyan-100 to-white", caption: "Checklist snapshot" },
+      { id: "att-evidence-2", kind: "image", alt: "Demo review panel mock", tone: "from-orange-50 via-amber-100 to-white", caption: "Demo and README review flow" }
     ],
     comments: [
       {
@@ -196,7 +240,9 @@ export const communityPosts: CommunityPost[] = [
         role: "moderator",
         postedAt: "Today, 10:32",
         body: "If the submission is demo-only or missing reproducible evidence, it should not be treated as review-ready.",
-        moderationStatus: "visible"
+        moderationStatus: "visible",
+        likeCount: 12,
+        reportCount: 0
       },
       {
         id: "c-evidence-2",
@@ -204,7 +250,9 @@ export const communityPosts: CommunityPost[] = [
         role: "certified member",
         postedAt: "Today, 10:44",
         body: "A short execution log and a note about what AI helped with made my submission much easier to review.",
-        moderationStatus: "visible"
+        moderationStatus: "visible",
+        likeCount: 7,
+        reportCount: 0
       }
     ]
   },
@@ -212,7 +260,7 @@ export const communityPosts: CommunityPost[] = [
     slug: "share-your-level-1-debugging-habits",
     categorySlug: "level-1-study",
     title: "Share your Level 1 debugging habits",
-    excerpt: "Members are comparing how they show retry logic, failure handling, and test evidence without over-claiming automation.",
+    excerpt: "Members are comparing how they show retry logic, failure handling, image evidence, and test proof without over-claiming automation.",
     body: [
       "Debugging evidence is part of trust. Teams should show how they verified outputs, handled errors, and confirmed that the AI-assisted workflow actually ran.",
       "The goal is not memorization. The goal is engineering judgment, execution quality, and reproducible evidence."
@@ -224,7 +272,12 @@ export const communityPosts: CommunityPost[] = [
     tags: ["study", "debugging", "ai-assisted"],
     replies: 7,
     views: 133,
+    likeCount: 27,
+    shareCount: 6,
     reportCount: 1,
+    attachments: [
+      { id: "att-debug-1", kind: "image", alt: "Debugging board mock", tone: "from-violet-50 via-blue-50 to-white", caption: "Retry and error-handling board" }
+    ],
     comments: [
       {
         id: "c-study-1",
@@ -232,7 +285,9 @@ export const communityPosts: CommunityPost[] = [
         role: "moderator",
         postedAt: "Today, 11:18",
         body: "One reply in this thread was reported and is under moderation review. The thread remains visible while human review is pending.",
-        moderationStatus: "flagged"
+        moderationStatus: "flagged",
+        likeCount: 4,
+        reportCount: 1
       }
     ]
   },
@@ -240,7 +295,7 @@ export const communityPosts: CommunityPost[] = [
     slug: "public-agent-showcase-onboarding",
     categorySlug: "project-showcase",
     title: "Public agent showcase onboarding",
-    excerpt: "How to share a public project without implying an unverified certification result.",
+    excerpt: "How to share a public project with images and demos without implying an unverified certification result.",
     body: [
       "Project showcase posts are encouraged, but they must separate public project quality from AIAA certification status.",
       "Only verified data may claim a passed level. Everything else should be framed as a public build log, demo, or discussion post."
@@ -252,7 +307,14 @@ export const communityPosts: CommunityPost[] = [
     tags: ["showcase", "policy", "trust"],
     replies: 2,
     views: 74,
+    likeCount: 15,
+    shareCount: 3,
     reportCount: 0,
+    attachments: [
+      { id: "att-show-1", kind: "image", alt: "Agent showcase preview", tone: "from-slate-100 via-blue-100 to-cyan-100", caption: "Showcase cover" },
+      { id: "att-show-2", kind: "image", alt: "Workflow screenshot preview", tone: "from-emerald-50 via-cyan-50 to-white", caption: "Workflow preview" },
+      { id: "att-show-3", kind: "image", alt: "Result dashboard preview", tone: "from-amber-50 via-orange-50 to-white", caption: "Result dashboard" }
+    ],
     comments: []
   }
 ];

@@ -1,21 +1,22 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  AIAAFrame,
-  CTASection,
-  DataPanel,
-  PageHero,
-  Section,
-  StatusPill
-} from "@/components/aiaa-page-kit";
+import { AIAAFrame, StatusPill } from "@/components/aiaa-page-kit";
 import {
   communityCategories,
   communityPosts,
-  communityRoles,
   communityRules,
   getCategoryBySlug,
+  moderationGuardrails,
+  type CommunityAttachment,
+  type CommunityComment,
   type CommunityPost
 } from "@/lib/community/mock-data";
-import { CommunityComposer, ReplyAndReportPanel } from "@/components/community/community-interactions";
+import { CommunityThreadInteractions } from "@/components/community/community-interactions";
+import { getStoredSession } from "@/lib/supabase/browser";
+
+const COMMUNITY_STORAGE_KEY = "aiaa-community-local-posts";
 
 function roleTone(role: string): "neutral" | "good" | "warn" | "bad" {
   if (role === "admin" || role === "moderator") return "warn";
@@ -23,296 +24,341 @@ function roleTone(role: string): "neutral" | "good" | "warn" | "bad" {
   return "neutral";
 }
 
+function getDisplayName() {
+  const session = getStoredSession();
+  const metadata = session?.user?.user_metadata ?? {};
+  const name = metadata.full_name || metadata.name || metadata.user_name;
+  if (typeof name === "string" && name.trim()) return name.trim();
+  const email = session?.user?.email ?? "";
+  if (email.includes("@")) return email.split("@")[0];
+  return "Community Member";
+}
+
+function formatCategoryName(slug: string) {
+  return getCategoryBySlug(slug)?.name ?? "General";
+}
+
+function AttachmentGallery({ attachments }: { attachments: CommunityAttachment[] }) {
+  if (!attachments.length) return null;
+
+  return (
+    <div className={`mt-4 grid gap-3 ${attachments.length === 1 ? "grid-cols-1" : attachments.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-3"}`}>
+      {attachments.map((attachment) => (
+        <div key={attachment.id} className="overflow-hidden rounded-[1rem] border border-slate-200 bg-white">
+          <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+            {attachment.src ? (
+              <img src={attachment.src} alt={attachment.alt} className="h-full w-full object-cover" />
+            ) : (
+              <div className={`flex h-full items-end bg-gradient-to-br ${attachment.tone} p-4`}>
+                <div className="rounded-2xl bg-white/85 px-3 py-2 text-sm font-semibold text-slate-700">{attachment.alt}</div>
+              </div>
+            )}
+          </div>
+          {attachment.caption ? <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-600">{attachment.caption}</div> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CompactPanel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-[1rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
+      <h3 className="text-base font-semibold tracking-[-0.03em] text-slate-950">{title}</h3>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function FeedPostCard({ post }: { post: CommunityPost }) {
+  const category = getCategoryBySlug(post.categorySlug);
+  const isLocalPost = post.slug.startsWith("local-");
+
+  const content = (
+    <article className="border-b border-slate-200 bg-white px-5 py-5 transition hover:bg-slate-50/50">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-slate-950 via-blue-700 to-cyan-500 text-sm font-semibold text-white">
+            {post.author.slice(0, 1).toUpperCase()}
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-semibold text-slate-950">{post.author}</span>
+              <StatusPill tone={roleTone(post.role)}>{post.role}</StatusPill>
+              {post.certifiedBadge ? <StatusPill tone="good">{post.certifiedBadge}</StatusPill> : null}
+              {isLocalPost ? <StatusPill tone="good">new</StatusPill> : null}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
+              <span>{post.postedAt}</span>
+              <span>•</span>
+              <span>{formatCategoryName(post.categorySlug)}</span>
+              <span>•</span>
+              <span>{post.views} views</span>
+            </div>
+          </div>
+        </div>
+        <StatusPill tone={post.status === "pinned" ? "good" : post.status === "review-only" ? "warn" : "neutral"}>{post.status}</StatusPill>
+      </div>
+
+      <h3 className="mt-4 text-[1.15rem] font-semibold tracking-[-0.04em] text-slate-950">{post.title}</h3>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{post.excerpt}</p>
+      {post.attachments?.length ? <AttachmentGallery attachments={post.attachments} /> : null}
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {post.tags.map((tag) => (
+          <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-5 flex items-center justify-between gap-4 border-t border-slate-200 pt-4">
+        <div className="flex flex-wrap gap-4 text-sm text-slate-600">
+          <span><strong className="text-slate-950">{post.likeCount}</strong> likes</span>
+          <span><strong className="text-slate-950">{post.replies}</strong> comments</span>
+          <span><strong className="text-slate-950">{post.shareCount}</strong> shares</span>
+        </div>
+        <div className="hidden gap-2 sm:flex">
+          <span className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Like</span>
+          <span className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Comment</span>
+          <span className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Share</span>
+        </div>
+      </div>
+    </article>
+  );
+
+  return isLocalPost ? content : <Link href={`/community/posts/${post.slug}`}>{content}</Link>;
+}
+
 export function CommunityPageShell() {
+  const [localPosts, setLocalPosts] = useState<CommunityPost[]>([]);
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem(COMMUNITY_STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as CommunityPost[];
+      setLocalPosts(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setLocalPosts([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(COMMUNITY_STORAGE_KEY, JSON.stringify(localPosts));
+  }, [localPosts]);
+
+  const feedPosts = useMemo(() => [...localPosts, ...communityPosts], [localPosts]);
+  const openCategories = useMemo(() => communityCategories.filter((category) => category.visibility === "public"), []);
+  const displayName = getDisplayName();
+
   return (
     <AIAAFrame>
-      <PageHero
-        eyebrow="Community Discussion Forum MVP"
-        title="Structured discussion for AIAA members, applicants, and AI Agent builders."
-        copy="This MVP is intentionally safe. It demonstrates category browsing, post detail reading, local drafting, local reply/report flows, moderation notice patterns, and role-based labels without introducing a production write path."
-        stats={[
-          [String(communityCategories.length), "Categories"],
-          [String(communityPosts.length), "Mock posts"],
-          [String(communityRoles.length), "User roles"],
-          ["MVP", "Read-safe mode"]
-        ]}
-        action={
-          <div className="flex flex-wrap gap-3">
-            <StatusPill tone="good">Public-safe MVP</StatusPill>
-            <StatusPill tone="warn">Moderation human review</StatusPill>
-            <StatusPill tone="bad">No auto deletion</StatusPill>
-          </div>
-        }
-      />
-
-      <Section
-        eyebrow="Community rules"
-        title="Trust-first discussion rules are visible before any future write path."
-        copy="The MVP makes its moderation and safety boundary explicit so users are not misled into thinking content actions are already fully automated."
-        compact
-      >
-        <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="aiaa-card grid gap-0 overflow-hidden">
-            {communityRules.map((rule, index) => (
-              <div key={rule} className="border-b border-slate-200 px-5 py-4 last:border-b-0">
-                <div className="flex items-start gap-4">
-                  <span className="font-mono text-sm font-semibold text-[var(--aiaa-blue)]">0{index + 1}</span>
-                  <p className="text-sm leading-6 text-slate-700">{rule}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <DataPanel
-            label="Moderation notice"
-            title="Reported content enters review, not auto-removal."
-            copy="This version intentionally does not auto-delete content, auto-lock users, or imply that moderation is autonomous."
-          >
-            <div className="space-y-3 text-sm leading-6 text-slate-600">
-              <p>Posts can be flagged, but a human moderator remains responsible for any future production moderation action.</p>
-              <StatusPill tone="warn">Human moderation required</StatusPill>
-            </div>
-          </DataPanel>
-        </div>
-      </Section>
-
-      <Section
-        eyebrow="Categories"
-        title="Eight launch categories cover certification, study, showcases, and enterprise context."
-        copy="Public and member-only labels are visible now so future access control can be mapped cleanly to RLS and UI gating."
-      >
-        <div className="grid gap-4 lg:grid-cols-2">
-          {communityCategories.map((category) => (
-            <div key={category.slug} className="aiaa-card p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-xl font-semibold tracking-[-0.04em] text-slate-950">{category.name}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{category.description}</p>
-                </div>
-                <StatusPill tone={category.visibility === "public" ? "good" : "warn"}>{category.visibility}</StatusPill>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                  <div className="font-semibold text-slate-950">{category.postCount}</div>
-                  <div className="mt-1">posts</div>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                  <div className="font-semibold text-slate-950">{category.lastActive}</div>
-                  <div className="mt-1">last active</div>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                  <div className="font-semibold text-slate-950">{category.moderators.join(", ")}</div>
-                  <div className="mt-1">moderation owner</div>
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-6 text-slate-600">
-                <strong className="text-slate-950">Posting policy:</strong> {category.postingPolicy}
+      <div className="mx-auto w-[min(1600px,calc(100vw-24px))] px-2 py-4">
+        <header className="rounded-[1rem] border border-slate-200 bg-white px-4 py-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="eyebrow">AIAA Community</p>
+              <h1 className="text-[clamp(2rem,3vw,3rem)] font-semibold tracking-[-0.06em] text-slate-950">AIAA 社群討論牆</h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                這裡是貼文、圖片、留言、按讚、分享與檢舉都很清楚的社群流。版面採像 Facebook 一樣的整頁自然捲動，左右欄與主貼文會一起跟著頁面流動。
               </p>
             </div>
-          ))}
-        </div>
-      </Section>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/community/create" className="aiaa-button-dark">
+                發文
+              </Link>
+              <StatusPill tone="good">{feedPosts.length} posts</StatusPill>
+              <StatusPill tone="warn">Human moderation</StatusPill>
+            </div>
+          </div>
+        </header>
 
-      <Section
-        eyebrow="Post list"
-        title="Current MVP threads show pinned, active, and review-only states."
-        copy="Each thread keeps status visible and avoids fake certification claims. Public project quality is not presented as certification unless verified data exists."
-      >
-        <div className="grid gap-4">
-          {communityPosts.map((post) => {
-            const category = getCategoryBySlug(post.categorySlug);
-            return (
-              <Link key={post.slug} href={`/community/posts/${post.slug}`} className="aiaa-card block p-5 transition hover:-translate-y-0.5 hover:shadow-[0_22px_80px_rgba(15,23,42,0.08)]">
-                <div className="flex flex-wrap items-center gap-3">
-                  <StatusPill tone={post.status === "pinned" ? "good" : post.status === "review-only" ? "warn" : "neutral"}>{post.status}</StatusPill>
-                  {category ? <StatusPill tone={category.visibility === "public" ? "neutral" : "warn"}>{category.name}</StatusPill> : null}
-                  <StatusPill tone={roleTone(post.role)}>{post.role}</StatusPill>
-                </div>
-                <h3 className="mt-4 text-2xl font-semibold tracking-[-0.05em] text-slate-950">{post.title}</h3>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{post.excerpt}</p>
-                <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  {post.tags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">{tag}</span>
+        <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_300px]">
+          <aside className="pr-1">
+            <div className="space-y-4">
+              <CompactPanel title="社區頻道">
+                <div className="space-y-3">
+                  {communityCategories.map((category) => (
+                    <div key={category.slug} className="rounded-[0.9rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold text-slate-950">{category.name}</div>
+                        <StatusPill tone={category.visibility === "public" ? "good" : "warn"}>{category.visibility}</StatusPill>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{category.description}</p>
+                    </div>
                   ))}
                 </div>
-                <div className="mt-5 grid gap-3 text-sm text-slate-600 sm:grid-cols-4">
-                  <div><strong className="text-slate-950">{post.author}</strong><div className="mt-1">author</div></div>
-                  <div><strong className="text-slate-950">{post.postedAt}</strong><div className="mt-1">posted</div></div>
-                  <div><strong className="text-slate-950">{post.replies}</strong><div className="mt-1">replies</div></div>
-                  <div><strong className="text-slate-950">{post.views}</strong><div className="mt-1">views</div></div>
+              </CompactPanel>
+
+              <CompactPanel title="熱門話題">
+                <div className="flex flex-wrap gap-2">
+                  {["Level 1 evidence", "AI agents", "debugging", "showcase", "support", "certification"].map((tag) => (
+                    <span key={tag} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-              </Link>
-            );
-          })}
-        </div>
-      </Section>
+              </CompactPanel>
 
-      <Section
-        eyebrow="Create post"
-        title="The composer is production-safe and local-only."
-        copy="Users can experience the future post creation UX now, while the system remains honest that no production forum write is available yet."
-        compact
-      >
-        <CommunityComposer categories={communityCategories} />
-      </Section>
-
-      <Section
-        eyebrow="State patterns"
-        title="Loading, empty, and error states are designed before backend integration."
-        copy="These patterns are visible now so later schema and API work can plug into the same UX without implying production completeness."
-        compact
-      >
-        <div className="grid gap-4 lg:grid-cols-3">
-          <DataPanel label="Loading state" title="Refreshing category feed" copy="Use skeleton or shimmer patterns when future backend data is loading.">
-            <div className="space-y-3">
-              <div className="h-3 w-2/3 animate-pulse rounded-full bg-slate-200" />
-              <div className="h-3 w-full animate-pulse rounded-full bg-slate-200" />
-              <div className="h-3 w-4/5 animate-pulse rounded-full bg-slate-200" />
+              <CompactPanel title="社群狀態">
+                <div className="space-y-3 text-sm leading-6 text-slate-600">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>公開分類</span>
+                    <strong className="text-slate-950">{openCategories.length}</strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>目前貼文數</span>
+                    <strong className="text-slate-950">{feedPosts.length}</strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>本機自建貼文</span>
+                    <strong className="text-slate-950">{localPosts.length}</strong>
+                  </div>
+                </div>
+              </CompactPanel>
             </div>
-          </DataPanel>
-          <DataPanel label="Empty state" title="No posts match the current filter" copy="Prompt the user to reset filters, review another category, or start a local draft.">
-            <StatusPill tone="neutral">No matching threads</StatusPill>
-          </DataPanel>
-          <DataPanel label="Error state" title="Forum feed temporarily unavailable" copy="The UI can explain the state clearly without implying data loss or attempting unsafe retries against production write paths.">
-            <StatusPill tone="bad">Safe read retry only</StatusPill>
-          </DataPanel>
-        </div>
-      </Section>
+          </aside>
 
-      <Section
-        eyebrow="Role labels"
-        title="Role-based UI stays descriptive and non-misleading."
-        copy="Certification claims are not invented. These labels describe forum access patterns and trust posture, not a verified certificate outcome unless real data exists."
-        compact
-      >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {communityRoles.map((role) => (
-            <div key={role.role} className="aiaa-card p-5">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-lg font-semibold tracking-[-0.03em] text-slate-950">{role.label}</h3>
-                <StatusPill tone={roleTone(role.role)}>{role.role}</StatusPill>
+          <main className="pr-1">
+            <div className="sticky top-4 z-10 bg-[var(--aiaa-bg)] pb-3">
+              <div className="rounded-[1rem] border border-slate-200 bg-white px-4 py-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-sm font-semibold text-white">
+                    {displayName.slice(0, 1).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-slate-950">{displayName}</div>
+                    <div className="text-xs uppercase tracking-[0.16em] text-slate-500">想發什麼？分享圖片、討論、提問都可以</div>
+                  </div>
+                  <Link href="/community/create" className="aiaa-button-light">
+                    建立貼文
+                  </Link>
+                </div>
               </div>
-              <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-600">
-                {role.capabilities.map((capability) => (
-                  <li key={capability}>• {capability}</li>
-                ))}
-              </ul>
             </div>
-          ))}
-        </div>
-      </Section>
 
-      <CTASection
-        title="Use support and operations surfaces alongside the community MVP."
-        copy="The forum MVP works best when paired with the read-only operations command center and the support knowledge assistant."
-        primaryHref="/community/posts/what-counts-as-level-1-practical-evidence"
-        primaryLabel="Open a sample thread"
-        secondaryHref="/support"
-        secondaryLabel="Open AI support MVP"
-      />
+            <div className="space-y-0 overflow-hidden rounded-[1rem] border border-slate-200 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.05)]">
+              {feedPosts.map((post) => (
+                <FeedPostCard key={post.slug} post={post} />
+              ))}
+            </div>
+          </main>
+
+          <aside className="pl-1">
+            <div className="space-y-4">
+              <CompactPanel title="為什麼這樣更安全">
+                <div className="space-y-3 text-sm leading-6 text-slate-600">
+                  {moderationGuardrails.map((guardrail) => (
+                    <p key={guardrail}>{guardrail}</p>
+                  ))}
+                </div>
+              </CompactPanel>
+
+              <CompactPanel title="使用方式">
+                <div className="space-y-3 text-sm leading-6 text-slate-600">
+                  <p>按右上角「發文」進入獨立發文頁。</p>
+                  <p>發文後貼文會先出現在本機 feed。</p>
+                  <p>點貼文可進入完整討論串頁。</p>
+                </div>
+              </CompactPanel>
+
+              <CompactPanel title="規則">
+                <ul className="space-y-2 text-sm leading-6 text-slate-600">
+                  {communityRules.slice(0, 4).map((rule) => (
+                    <li key={rule}>• {rule}</li>
+                  ))}
+                </ul>
+              </CompactPanel>
+            </div>
+          </aside>
+        </div>
+      </div>
     </AIAAFrame>
   );
 }
 
 export function CommunityPostDetailShell({ post }: { post: CommunityPost }) {
+  const [comments, setComments] = useState<CommunityComment[]>(post.comments);
   const category = getCategoryBySlug(post.categorySlug);
+
+  function handleAddComment(comment: CommunityComment) {
+    setComments((current) => [...current, comment]);
+  }
 
   return (
     <AIAAFrame>
-      <PageHero
-        eyebrow="Community Post Detail"
-        title={post.title}
-        copy={post.excerpt}
-        stats={[
-          [String(post.replies), "Replies"],
-          [String(post.views), "Views"],
-          [String(post.reportCount), "Reports"],
-          [post.status, "State"]
-        ]}
-        action={
-          <div className="flex flex-wrap gap-3">
-            {category ? <StatusPill tone={category.visibility === "public" ? "good" : "warn"}>{category.name}</StatusPill> : null}
-            <StatusPill tone={roleTone(post.role)}>{post.role}</StatusPill>
-            <StatusPill tone={post.status === "pinned" ? "good" : post.status === "review-only" ? "warn" : "neutral"}>{post.status}</StatusPill>
+      <div className="mx-auto w-[min(1400px,calc(100vw-24px))] px-2 py-4">
+        <div className="mb-4 rounded-[1rem] border border-slate-200 bg-white px-4 py-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="eyebrow">Community Thread</p>
+              <h1 className="text-[clamp(1.9rem,2.8vw,2.8rem)] font-semibold tracking-[-0.06em] text-slate-950">{post.title}</h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{post.excerpt}</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/community" className="aiaa-button-light">返回社群</Link>
+              <Link href="/community/create" className="aiaa-button-dark">發文</Link>
+            </div>
           </div>
-        }
-      />
+        </div>
 
-      <Section
-        eyebrow="Thread content"
-        title="Post detail view shows evidence-oriented conversation, not autonomous moderation."
-        copy="This thread detail view demonstrates future forum depth while keeping reply and report flows local-only in this MVP."
-      >
-        <div className="grid gap-5 lg:grid-cols-[1.18fr_0.82fr]">
-          <article className="aiaa-card p-6">
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-              <span><strong className="text-slate-950">{post.author}</strong></span>
-              <span>{post.postedAt}</span>
-              {post.certifiedBadge ? <StatusPill tone="good">{post.certifiedBadge}</StatusPill> : null}
-            </div>
-            <div className="mt-5 space-y-4 text-base leading-8 text-slate-700">
-              {post.body.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
-            {post.links?.length ? (
-              <div className="mt-6 flex flex-wrap gap-3">
-                {post.links.map((link) => (
-                  <Link key={link.href} href={link.href} className="aiaa-button-light">
-                    {link.label}
-                  </Link>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="space-y-4">
+            <article className="rounded-[1rem] border border-slate-200 bg-white p-6 shadow-[0_14px_36px_rgba(15,23,42,0.05)]">
+              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                <strong className="text-slate-950">{post.author}</strong>
+                <StatusPill tone={roleTone(post.role)}>{post.role}</StatusPill>
+                {category ? <StatusPill tone={category.visibility === "public" ? "good" : "warn"}>{category.name}</StatusPill> : null}
+                {post.certifiedBadge ? <StatusPill tone="good">{post.certifiedBadge}</StatusPill> : null}
+              </div>
+              <div className="mt-5 space-y-4 text-base leading-8 text-slate-700">
+                {post.body.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
                 ))}
               </div>
-            ) : null}
-          </article>
-
-          <DataPanel
-            label="Moderation notice"
-            title="No auto-delete or auto-ban path exists"
-            copy="Report actions remain descriptive and local in this MVP. Human moderation is still the only authority for future production decisions."
-          >
-            <div className="space-y-3 text-sm leading-6 text-slate-600">
-              <p>Current reports on this thread: <strong className="text-slate-950">{post.reportCount}</strong></p>
-              <p>Replies and reports may be drafted safely, but they do not mutate a live production forum table in this release.</p>
-            </div>
-          </DataPanel>
-        </div>
-      </Section>
-
-      <Section
-        eyebrow="Comments"
-        title="Visible comments preserve context and moderation status."
-        copy="Flagged content is shown with a clear moderation notice pattern instead of pretending the system has already taken a production action."
-        compact
-      >
-        <div className="grid gap-4">
-          {post.comments.length ? (
-            post.comments.map((comment) => (
-              <div key={comment.id} className="aiaa-card p-5">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-sm font-semibold text-slate-950">{comment.author}</span>
-                  <StatusPill tone={roleTone(comment.role)}>{comment.role}</StatusPill>
-                  <span className="text-sm text-slate-500">{comment.postedAt}</span>
-                  {comment.moderationStatus === "flagged" ? <StatusPill tone="warn">moderation notice</StatusPill> : null}
+              {post.attachments?.length ? <AttachmentGallery attachments={post.attachments} /> : null}
+              {post.links?.length ? (
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {post.links.map((link) => (
+                    <Link key={link.href} href={link.href} className="aiaa-button-light">
+                      {link.label}
+                    </Link>
+                  ))}
                 </div>
-                <p className="mt-4 text-sm leading-7 text-slate-700">{comment.body}</p>
-              </div>
-            ))
-          ) : (
-            <div className="aiaa-card p-6 text-sm leading-6 text-slate-600">
-              No comments yet. This is the empty state pattern for a new or moderation-limited thread.
-            </div>
-          )}
-        </div>
-      </Section>
+              ) : null}
+            </article>
 
-      <Section
-        eyebrow="Local interactions"
-        title="Reply and report flows are UI-complete without production writes."
-        copy="These interactions validate UX, labels, and safety messaging while keeping all live moderation actions blocked."
-        compact
-      >
-        <ReplyAndReportPanel post={post} />
-      </Section>
+            <CompactPanel title="留言與互動">
+              <div className="space-y-4">
+                <p className="text-sm leading-6 text-slate-600">
+                  留言區現在放在貼文底下，和 Facebook 一樣先看內容，再往下看評論、按讚、分享與檢舉。
+                </p>
+                <CommunityThreadInteractions post={post} comments={comments} onAddComment={handleAddComment} />
+              </div>
+            </CompactPanel>
+          </div>
+
+          <div className="space-y-4">
+            <CompactPanel title="Thread summary">
+              <div className="space-y-3 text-sm leading-6 text-slate-600">
+                <div className="flex items-center justify-between gap-3"><span>Likes</span><strong className="text-slate-950">{post.likeCount}</strong></div>
+                <div className="flex items-center justify-between gap-3"><span>Comments</span><strong className="text-slate-950">{comments.length}</strong></div>
+                <div className="flex items-center justify-between gap-3"><span>Shares</span><strong className="text-slate-950">{post.shareCount}</strong></div>
+                <div className="flex items-center justify-between gap-3"><span>Reports</span><strong className="text-slate-950">{post.reportCount}</strong></div>
+              </div>
+            </CompactPanel>
+
+            <CompactPanel title="Why this looks familiar">
+              <div className="space-y-3 text-sm leading-6 text-slate-600">
+                <p>Facebook 也是先放貼文，再把留言區接在內容下面，不會把主要互動放成右側欄位。</p>
+                <p>這個頁面已經改成同樣的閱讀順序，讓使用者往下滑就能自然看到留言。</p>
+                <p>右欄只保留摘要與安全說明，避免搶走主內容焦點。</p>
+              </div>
+            </CompactPanel>
+          </div>
+        </div>
+      </div>
     </AIAAFrame>
   );
 }
