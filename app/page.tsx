@@ -138,12 +138,13 @@ export default function Page() {
           <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.3em] text-blue-700">GROUP FINDER SYSTEM</p>
           <h1 className="text-5xl font-black leading-none tracking-[-0.06em] text-slate-950 md:text-7xl">社團搜尋自動化系統</h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
-            只要輸入關鍵字，就會自動找相關社團；可以一次輸入多個關鍵字，並指定要產出幾個社團結果。
+            這個版本把真正的搜尋流程放到 Chrome 擴充功能裡；網站負責輸入關鍵字、指定數量、整理結果與匯出。
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-sm font-semibold text-slate-700">
             <span className="rounded-full border border-blue-100 bg-white px-4 py-2">多關鍵字搜尋</span>
             <span className="rounded-full border border-blue-100 bg-white px-4 py-2">可指定 1000 筆</span>
             <span className="rounded-full border border-blue-100 bg-white px-4 py-2">可匯出 CSV</span>
+            <span className="rounded-full border border-blue-100 bg-white px-4 py-2">Chrome 擴充功能</span>
           </div>
         </section>
 

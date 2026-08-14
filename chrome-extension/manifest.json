@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "社團搜尋擴充功能",
+  "version": "1.0.0",
+  "description": "透過 Google 搜尋社團網址，並整理成可匯出的結果。",
+  "permissions": ["tabs", "storage", "scripting", "activeTab"],
+  "host_permissions": ["https://www.google.com/*", "https://www.google.com.tw/*"],
+  "action": {
+    "default_title": "社團搜尋擴充功能",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.google.com/search*","https://www.google.com.tw/search*"],
+      "js": ["collector.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
