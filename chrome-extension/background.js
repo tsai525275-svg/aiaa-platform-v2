@@ -1,6 +1,26 @@
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const PAGE_INTERVAL_MS = 12000;
 const MAX_PAGE_RETRIES = 2;
+const control = { active: false, paused: false, sourceTabId: null };
+
+async function waitWhilePaused(sourceTabId) {
+  let announced = false;
+  while (control.paused) {
+    if (!announced) {
+      await notify(sourceTabId, { type: "SEARCH_PAUSED", status: "搜尋已暫停，按「繼續搜尋」會從目前進度接著搜尋。" });
+      announced = true;
+    }
+    await sleep(500);
+  }
+}
+
+async function controlledWait(ms, sourceTabId) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    await waitWhilePaused(sourceTabId);
+    await sleep(Math.min(500, end - Date.now()));
+  }
+}
 
 function buildQuery(keyword) {
   return `site:facebook.com/groups ${keyword.trim()}`;
@@ -75,7 +95,7 @@ async function collectPageWithRetry(tabId, query, start, sourceTabId, pageNumber
         type: "SEARCH_STATUS",
         status: `第 ${pageNumber} 頁暫時失敗，${waitMs / 1000} 秒後重試（${attempt + 1}/${MAX_PAGE_RETRIES}）`
       });
-      await sleep(waitMs);
+      await controlledWait(waitMs, sourceTabId);
     }
   }
   throw lastError;
@@ -86,16 +106,18 @@ async function notify(tabId, message) {
   try { await chrome.tabs.sendMessage(tabId, message); } catch {}
 }
 
-async function runSearch(keywords, count, sourceTabId) {
+async function runSearch(keywords, count, sourceTabId, checkpoint = null) {
   const normalizedKeywords = keywords
     .replace(/\s+(?:或|OR)\s+/gi, "\n")
     .replace(/([\u3400-\u9fff])\s+(?=[A-Za-zÀ-ỹ])/g, "$1\n");
   const tokens = normalizedKeywords.split(/[\n,，、;；|]+/).map((t) => t.trim()).filter(Boolean);
   const queries = (tokens.length ? tokens : [keywords.trim()].filter(Boolean)).map(buildQuery);
-  const seen = new Set();
-  const results = [];
+  const results = Array.isArray(checkpoint?.results) ? checkpoint.results : [];
+  const seen = new Set(results.map((item) => item.url));
+  const resumeQueryIndex = Number(checkpoint?.queryIndex) || 0;
 
   for (const [queryIndex, query] of queries.entries()) {
+    if (queryIndex < resumeQueryIndex) continue;
     const keywordLabel = query.replace(/^site:facebook\.com\/groups\s+/, "");
     const fairTarget = queryIndex === queries.length - 1
       ? count
@@ -103,15 +125,19 @@ async function runSearch(keywords, count, sourceTabId) {
     const searchTab = await chrome.tabs.create({ url: "about:blank", active: false });
     let captcha = false;
     try {
-      for (let start = 0, pageNumber = 1; results.length < fairTarget && start < 1000; start += 10, pageNumber++) {
+      const initialStart = queryIndex === resumeQueryIndex ? (Number(checkpoint?.start) || 0) : 0;
+      const initialPage = queryIndex === resumeQueryIndex ? (Number(checkpoint?.pageNumber) || 1) : 1;
+      for (let start = initialStart, pageNumber = initialPage; results.length < fairTarget && start < 1000; start += 10, pageNumber++) {
+        await waitWhilePaused(sourceTabId);
+        await chrome.storage.local.set({ searchCheckpoint: { keywords, count, queryIndex, start, pageNumber, results, status: "running" } });
         await notify(sourceTabId, { type: "SEARCH_STATUS", status: `正在搜尋關鍵字「${keywordLabel}」第 ${pageNumber} 頁：總共已找到 ${results.length} / ${count}` });
         const page = await collectPageWithRetry(searchTab.id, query, start, sourceTabId, pageNumber);
         if (page.captcha) {
           captcha = true;
-          await chrome.storage.local.set({ lastStatus: "Google 要求真人驗證，搜尋已暫停", lastResults: results });
+          await chrome.storage.local.set({ lastStatus: "Google 要求真人驗證，搜尋已暫停", lastResults: results, searchCheckpoint: { keywords, count, queryIndex, start, pageNumber, results, status: "captcha" } });
           await notify(sourceTabId, {
             type: "SEARCH_BLOCKED",
-            status: "Google 要求真人驗證：請在新分頁勾選「我不是機器人」，完成後回來重新按開始搜尋。",
+            status: "Google 要求真人驗證：請完成驗證，回系統按「繼續搜尋」，會從目前進度接著搜尋。",
             results
           });
           return;
@@ -125,7 +151,7 @@ async function runSearch(keywords, count, sourceTabId) {
         }
         if (results.length < fairTarget) {
           await notify(sourceTabId, { type: "SEARCH_STATUS", status: `關鍵字「${keywordLabel}」第 ${pageNumber} 頁完成，12 秒後翻下一頁` });
-          await sleep(PAGE_INTERVAL_MS);
+          await controlledWait(PAGE_INTERVAL_MS, sourceTabId);
         }
       }
     } finally {
@@ -135,16 +161,52 @@ async function runSearch(keywords, count, sourceTabId) {
 
   await chrome.storage.local.set({
     lastStatus: results.length >= count ? `已抓到設定的 ${results.length} 筆結果` : `Google 已無更多不重複結果，共 ${results.length} 筆`,
-    lastResults: results
+    lastResults: results,
+    searchCheckpoint: null
   });
   await notify(sourceTabId, { type: "SEARCH_RESULTS", results, requested: count, exhausted: results.length < count });
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {
   if (message?.type === "START_SEARCH") {
+    if (control.active) return true;
+    control.active = true;
+    control.paused = false;
+    control.sourceTabId = sender.tab?.id;
     chrome.storage.local.set({ lastStatus: "開始搜尋中..." });
-    runSearch(message.keywords || "", Math.min(1000, Number(message.count) || 1), sender.tab?.id).catch(async (error) => {
-      await notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` });
+    runSearch(message.keywords || "", Math.min(1000, Number(message.count) || 1), sender.tab?.id)
+      .catch(async (error) => notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` }))
+      .finally(() => { control.active = false; });
+    return true;
+  }
+  if (message?.type === "PAUSE_SEARCH") {
+    control.paused = true;
+    chrome.storage.local.get("searchCheckpoint").then(({ searchCheckpoint }) => {
+      if (searchCheckpoint) {
+        chrome.storage.local.set({ searchCheckpoint: { ...searchCheckpoint, status: "paused" } });
+        notify(sender.tab?.id, { type: "SEARCH_PAUSED", status: "搜尋已暫停，進度已保存。", results: searchCheckpoint.results || [] });
+      }
+    });
+    return true;
+  }
+  if (message?.type === "RESUME_SEARCH") {
+    if (control.active) {
+      control.paused = false;
+      notify(sender.tab?.id, { type: "SEARCH_STATUS", status: "已繼續搜尋，正從剛才的進度接著執行。" });
+      return true;
+    }
+    control.active = true;
+    control.paused = false;
+    control.sourceTabId = sender.tab?.id;
+    chrome.storage.local.get("searchCheckpoint").then(({ searchCheckpoint }) => {
+      if (!searchCheckpoint) {
+        notify(sender.tab?.id, { type: "SEARCH_STATUS", status: "沒有可繼續的搜尋進度，請按開始搜尋。" });
+        control.active = false;
+        return;
+      }
+      runSearch(searchCheckpoint.keywords, searchCheckpoint.count, sender.tab?.id, searchCheckpoint)
+        .catch(async (error) => notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` }))
+        .finally(() => { control.active = false; });
     });
     return true;
   }
