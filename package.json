@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/build-dist.mjs",
     "start": "next start",
     "sync:rankings": "node --env-file=.env.local scripts/sync-rankings.mjs"
   },
@@ -26,4 +26,3 @@
     "typescript": "^5.9.3"
   }
 }
-
