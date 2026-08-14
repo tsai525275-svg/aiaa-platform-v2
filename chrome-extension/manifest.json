@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "社團搜尋擴充功能",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "從網站接收關鍵字後，真的打開 Google 搜尋社團網址並回傳結果。",
   "permissions": ["tabs", "storage", "scripting", "activeTab"],
-  "host_permissions": ["https://www.google.com/*", "https://www.google.com.tw/*"],
+  "host_permissions": ["https://www.google.com/*", "https://www.google.com.tw/*", "https://tsai525275-svg.github.io/*"],
   "action": {
     "default_title": "社團搜尋擴充功能",
     "default_popup": "popup.html"
@@ -14,6 +14,11 @@
     "type": "module"
   },
   "content_scripts": [
+    {
+      "matches": ["https://tsai525275-svg.github.io/aiaa-platform-v2/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "js": ["site-bridge.js"],
+      "run_at": "document_start"
+    },
     {
       "matches": ["https://www.google.com/search*", "https://www.google.com.tw/search*"],
       "js": ["collector.js"],

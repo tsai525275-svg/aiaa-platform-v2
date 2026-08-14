@@ -48,7 +48,12 @@ async function openAndCollect(query, start = 0) {
   }
 }
 
-async function runSearch(keywords, count) {
+async function notify(tabId, message) {
+  if (!tabId) return;
+  try { await chrome.tabs.sendMessage(tabId, message); } catch {}
+}
+
+async function runSearch(keywords, count, sourceTabId) {
   const tokens = keywords.split(/[\n,，、;；|]+/).map((t) => t.trim()).filter(Boolean);
   const queries = (tokens.length ? tokens : [keywords.trim()].filter(Boolean)).map(buildQuery);
   const seen = new Set();
@@ -56,6 +61,7 @@ async function runSearch(keywords, count) {
 
   for (const query of queries) {
     for (let start = 0; results.length < count && start < 1000; start += 10) {
+      await notify(sourceTabId, { type: "SEARCH_STATUS", status: `正在 Google 搜尋：已找到 ${results.length} / ${count}` });
       const links = await openAndCollect(query, start);
       if (!links.length) break;
       for (const link of links) {
@@ -77,12 +83,15 @@ async function runSearch(keywords, count) {
     lastStatus: `已抓到 ${results.length} 筆結果`,
     lastResults: results
   });
+  await notify(sourceTabId, { type: "SEARCH_RESULTS", results });
 }
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message, sender) => {
   if (message?.type === "START_SEARCH") {
     chrome.storage.local.set({ lastStatus: "開始搜尋中..." });
-    runSearch(message.keywords || "", Number(message.count) || 1);
+    runSearch(message.keywords || "", Math.min(1000, Number(message.count) || 1), sender.tab?.id).catch(async (error) => {
+      await notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` });
+    });
     return true;
   }
 });
