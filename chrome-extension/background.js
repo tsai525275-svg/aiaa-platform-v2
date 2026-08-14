@@ -179,16 +179,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
       .finally(() => { control.active = false; });
     return true;
   }
-  if (message?.type === "PAUSE_SEARCH") {
-    control.paused = true;
-    chrome.storage.local.get("searchCheckpoint").then(({ searchCheckpoint }) => {
-      if (searchCheckpoint) {
-        chrome.storage.local.set({ searchCheckpoint: { ...searchCheckpoint, status: "paused" } });
-        notify(sender.tab?.id, { type: "SEARCH_PAUSED", status: "搜尋已暫停，進度已保存。", results: searchCheckpoint.results || [] });
-      }
-    });
-    return true;
-  }
   if (message?.type === "RESUME_SEARCH") {
     if (control.active) {
       control.paused = false;
