@@ -6,8 +6,5 @@ textarea,input,button{font:inherit}
 textarea,input{width:100%;box-sizing:border-box;border:1px solid #dbe3f0;border-radius:12px;padding:10px;background:#fff}
 textarea{min-height:84px;resize:vertical}
 button{border:0;border-radius:12px;padding:10px 12px;font-weight:800;background:#1d4ed8;color:#fff;cursor:pointer}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-#copy{background:#0f172a}
-#clear{background:#64748b}
 #status{margin:0;font-size:12px;color:#475569}
 #output{margin:0;max-height:240px;overflow:auto;background:#fff;border:1px solid #dbe3f0;border-radius:12px;padding:10px;font-size:11px;white-space:pre-wrap}

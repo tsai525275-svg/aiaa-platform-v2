@@ -1,1 +1,1 @@
-// 保留給未來擴充，實際收集在 background service worker 內完成。
+// Google 搜尋頁保留擴充點，真正抓取由 background service worker 完成。
