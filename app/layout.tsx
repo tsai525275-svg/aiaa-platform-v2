@@ -5,8 +5,8 @@ import "./globals.css";
 import { OAuthHashHandler } from "@/components/oauth-hash-handler";
 
 export const metadata: Metadata = {
-  title: "AIAA Online",
-  description: "AIAA Online, AI Agent Identity Authority.",
+  title: "社團搜尋自動化系統",
+  description: "輸入關鍵字，自動搜尋社團、排序結果並匯出 Excel 可用的 CSV。",
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.png",
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh-Hant" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <OAuthHashHandler />
         <AIAANoTranslate />
