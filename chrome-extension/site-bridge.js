@@ -17,6 +17,7 @@ window.addEventListener("message", (event) => {
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === "SEARCH_STATUS") sendToPage("SEARCH_STATUS", { status: message.status });
   if (message?.type === "SEARCH_RESULTS") sendToPage("SEARCH_RESULTS", { results: message.results });
+  if (message?.type === "SEARCH_BLOCKED") sendToPage("SEARCH_BLOCKED", { status: message.status, results: message.results });
 });
 
 sendToPage("EXTENSION_READY");
