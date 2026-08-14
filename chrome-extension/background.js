@@ -95,12 +95,16 @@ async function runSearch(keywords, count, sourceTabId) {
   const seen = new Set();
   const results = [];
 
-  for (const query of queries) {
+  for (const [queryIndex, query] of queries.entries()) {
+    const keywordLabel = query.replace(/^site:facebook\.com\/groups\s+/, "");
+    const fairTarget = queryIndex === queries.length - 1
+      ? count
+      : Math.min(count, Math.ceil(count / queries.length) * (queryIndex + 1));
     const searchTab = await chrome.tabs.create({ url: "about:blank", active: false });
     let captcha = false;
     try {
-      for (let start = 0, pageNumber = 1; results.length < count && start < 1000; start += 10, pageNumber++) {
-        await notify(sourceTabId, { type: "SEARCH_STATUS", status: `正在自動翻第 ${pageNumber} 頁：已找到 ${results.length} / ${count}` });
+      for (let start = 0, pageNumber = 1; results.length < fairTarget && start < 1000; start += 10, pageNumber++) {
+        await notify(sourceTabId, { type: "SEARCH_STATUS", status: `正在搜尋關鍵字「${keywordLabel}」第 ${pageNumber} 頁：總共已找到 ${results.length} / ${count}` });
         const page = await collectPageWithRetry(searchTab.id, query, start, sourceTabId, pageNumber);
         if (page.captcha) {
           captcha = true;
@@ -116,18 +120,17 @@ async function runSearch(keywords, count, sourceTabId) {
         for (const link of page.links) {
           if (seen.has(link.href)) continue;
           seen.add(link.href);
-          results.push({ keyword: query.replace(/^site:facebook\.com\/groups\s+/, ""), title: link.title || "Facebook 社團", url: link.href });
-          if (results.length >= count) break;
+          results.push({ keyword: keywordLabel, title: link.title || "Facebook 社團", url: link.href });
+          if (results.length >= fairTarget) break;
         }
-        if (results.length < count) {
-          await notify(sourceTabId, { type: "SEARCH_STATUS", status: `第 ${pageNumber} 頁完成：已找到 ${results.length} / ${count}，12 秒後翻下一頁` });
+        if (results.length < fairTarget) {
+          await notify(sourceTabId, { type: "SEARCH_STATUS", status: `關鍵字「${keywordLabel}」第 ${pageNumber} 頁完成，12 秒後翻下一頁` });
           await sleep(PAGE_INTERVAL_MS);
         }
       }
     } finally {
       if (!captcha && searchTab?.id) chrome.tabs.remove(searchTab.id).catch(() => {});
     }
-    if (results.length >= count) break;
   }
 
   await chrome.storage.local.set({
