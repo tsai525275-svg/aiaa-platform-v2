@@ -88,10 +88,11 @@ const brandedLandingHtml = landingHtml
   .replace('<p class="tagline">全球社團探索系統</p>', '<p class="tagline">TONG HENG TECHNOLOGY</p>')
   .replace('font:500 clamp(34px,4.2vw,67px) Georgia,"Times New Roman",serif', 'font:300 clamp(38px,4.4vw,70px) "Microsoft JhengHei",Arial,sans-serif');
 const brandedAdminHtml = interactiveAdminHtml
-  .replace('<div class="flex items-center gap-3"><div class="grid h-9 w-9 place-items-center rounded bg-white/20 font-black">GF</div><h1 class="text-xl font-black tracking-wide">社團搜尋管理系統</h1></div>', '<div class="flex items-center gap-3"><div class="grid h-9 w-9 place-items-center rounded bg-white/20 font-black">TH</div><div><h1 class="text-lg font-black leading-tight tracking-wide">通衡科技</h1><p class="mt-0.5 text-[11px] font-medium tracking-[.16em] text-white/85">社團搜尋管理系統</p></div></div>')
+  .replace('<div class="flex items-center gap-3"><div class="grid h-9 w-9 place-items-center rounded bg-white/20 font-black">GF</div><h1 class="text-xl font-black tracking-wide">社團搜尋管理系統</h1></div>', '<div class="flex items-center gap-3"><div class="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/90 bg-slate-950 shadow-lg"><div class="grid h-9 w-9 place-items-center rounded-full border border-lime-400/80"><span class="font-serif text-lg font-black tracking-tight text-white">TH</span></div></div><div><h1 class="text-lg font-black leading-tight tracking-wide">通衡科技</h1><p class="mt-0.5 text-[11px] font-medium tracking-[.16em] text-white/85">社團搜尋管理系統</p></div></div>')
   .replace('<div class="border-b border-slate-300 px-5 py-4 font-bold text-slate-600">☷ 搜尋功能</div>', '')
   .replace('● 正在檢查擴充功能…', '● 連線檢查中…')
-  .replace('Group Finder Administration System', '通衡科技 · 社團搜尋管理系統');
+  .replace('Group Finder Administration System', '通衡科技 · 社團搜尋管理系統')
+  .replace('script.js?v=2.5.0', 'script.js?v=2.6.0');
 const brandedJs = finalJs
   .replace('● Chrome 擴充功能已連線', '● 已連線')
   .replace('● 擴充功能未連線，正在重試…', '● 未連線')
