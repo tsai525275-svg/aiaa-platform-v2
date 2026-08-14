@@ -16,7 +16,14 @@ $('search').addEventListener('click',()=>{const keywords=$('keyword').value.trim
 $('download').addEventListener('click',async()=>{if(!rows.length)return;if(!window.ExcelJS){alert('Excel 元件載入失敗，請檢查網路後重新整理頁面');return}const btn=$('download'),old=btn.textContent;btn.disabled=true;btn.textContent='製作 Excel 中…';try{const wb=new ExcelJS.Workbook();wb.creator='社團搜尋自動化系統';wb.created=new Date();const ws=wb.addWorksheet('社團搜尋結果',{views:[{state:'frozen',ySplit:1}]});ws.columns=[{header:'排名',key:'rank',width:10},{header:'社團名稱',key:'title',width:55},{header:'Facebook 社團網址',key:'url',width:48},{header:'搜尋關鍵字',key:'keyword',width:28}];rows.forEach((r,i)=>ws.addRow({rank:i+1,title:r.title||'Facebook 社團',url:{text:r.url,hyperlink:r.url},keyword:r.keyword||''}));ws.autoFilter={from:'A1',to:'D'+(rows.length+1)};const header=ws.getRow(1);header.height=28;header.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1D4ED8'}};cell.font={name:'Microsoft JhengHei',size:12,bold:true,color:{argb:'FFFFFFFF'}};cell.alignment={vertical:'middle',horizontal:'center'};cell.border={bottom:{style:'medium',color:{argb:'FF1E3A8A'}}}});ws.eachRow((row,rowNumber)=>{if(rowNumber===1)return;row.height=34;row.eachCell(cell=>{cell.font={name:'Microsoft JhengHei',size:11,color:{argb:'FF0F172A'}};cell.alignment={vertical:'middle',wrapText:true};cell.border={bottom:{style:'thin',color:{argb:'FFE2E8F0'}}};if(rowNumber%2===1)cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF8FAFC'}}});row.getCell(1).alignment={vertical:'middle',horizontal:'center'};row.getCell(3).font={name:'Microsoft JhengHei',size:11,color:{argb:'FF2563EB'},underline:true}});ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0};const buffer=await wb.xlsx.writeBuffer();const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Facebook社團搜尋結果-'+new Date().toISOString().slice(0,10)+'.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(error){alert('Excel 產生失敗：'+error.message)}finally{btn.disabled=false;btn.textContent=old}});
 ping();setTimeout(ping,1000);setTimeout(()=>{if(!connected){$('connection').textContent='● 擴充功能未連線';$('connection').className='mt-5 inline-flex rounded-full bg-red-50 px-4 py-2 font-bold text-red-700'}},2200);`;
 
-const finalHtml = html.replace('script.js"></script>', 'script.js?v=1.8.1"></script>');
+const finalHtml = html
+  .replace('script.js"></script>', 'script.js?v=1.9.0"></script>')
+  .replace('class="grid gap-3 lg:grid-cols-[1fr_180px_210px_auto]"', 'class="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_180px_210px_190px_auto]"')
+  .replace('class="rounded-2xl border px-5 py-4 text-lg"></textarea>', 'class="min-h-[72px] max-h-[240px] rounded-2xl border px-5 py-4 text-lg"></textarea>')
+  .replace('class="rounded-2xl border px-5 text-lg"><button id="search"', 'class="h-[72px] rounded-2xl border px-5 text-lg"><button id="search"')
+  .replace('class="rounded-2xl bg-blue-700 px-7 py-4 text-xl', 'class="h-[72px] self-start rounded-2xl bg-blue-700 px-7 py-4 text-xl')
+  .replace('<button id="download"', '<button id="reset" class="h-[72px] self-start rounded-2xl border border-slate-300 bg-white px-5 py-4 text-lg font-bold text-slate-700">重新搜尋</button><button id="download"')
+  .replace('disabled class="rounded-2xl bg-violet-700', 'disabled class="h-[72px] self-start rounded-2xl bg-violet-700');
 const finalJs = js
   .replace(
     "let rows=[];let connected=false;",
@@ -41,6 +48,10 @@ const finalJs = js
   .replace(
     "ping();setTimeout(ping,1000);setTimeout(()=>{if(!connected){$('connection').textContent='● 擴充功能未連線';$('connection').className='mt-5 inline-flex rounded-full bg-red-50 px-4 py-2 font-bold text-red-700'}},2200);",
     "ping();setInterval(ping,2000);setTimeout(()=>{if(!connected){$('connection').textContent='● 擴充功能未連線，正在重試…';$('connection').className='mt-5 inline-flex rounded-full bg-red-50 px-4 py-2 font-bold text-red-700'}},2500);"
+  )
+  .replace(
+    "$('download').addEventListener",
+    "$('reset').addEventListener('click',()=>{window.postMessage({source:'aiaa-group-finder-page',type:'RESET_SEARCH'},'*');$('keyword').value='';rows=[];setResumable(false);$('download').disabled=true;$('title').textContent='尚未搜尋';$('status').textContent='可以開始搜尋';$('body').innerHTML='<tr><td colspan=\"4\" class=\"p-16 text-center text-slate-500\">等待搜尋</td></tr>';$('keyword').focus()});$('download').addEventListener"
   )
   ;
 writeFileSync(resolve(dist, "index.html"), finalHtml, "utf8");

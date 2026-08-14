@@ -1,11 +1,12 @@
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const PAGE_INTERVAL_MS = 12000;
 const MAX_PAGE_RETRIES = 2;
-const control = { active: false, paused: false, sourceTabId: null };
+const control = { active: false, paused: false, cancelled: false, sourceTabId: null };
 
 async function waitWhilePaused(sourceTabId) {
   let announced = false;
   while (control.paused) {
+    if (control.cancelled) throw new Error("__CANCELLED__");
     if (!announced) {
       await notify(sourceTabId, { type: "SEARCH_PAUSED", status: "搜尋已暫停，按「繼續搜尋」會從目前進度接著搜尋。" });
       announced = true;
@@ -17,6 +18,7 @@ async function waitWhilePaused(sourceTabId) {
 async function controlledWait(ms, sourceTabId) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
+    if (control.cancelled) throw new Error("__CANCELLED__");
     await waitWhilePaused(sourceTabId);
     await sleep(Math.min(500, end - Date.now()));
   }
@@ -128,6 +130,7 @@ async function runSearch(keywords, count, sourceTabId, checkpoint = null) {
       const initialStart = queryIndex === resumeQueryIndex ? (Number(checkpoint?.start) || 0) : 0;
       const initialPage = queryIndex === resumeQueryIndex ? (Number(checkpoint?.pageNumber) || 1) : 1;
       for (let start = initialStart, pageNumber = initialPage; results.length < fairTarget && start < 1000; start += 10, pageNumber++) {
+        if (control.cancelled) throw new Error("__CANCELLED__");
         await waitWhilePaused(sourceTabId);
         await chrome.storage.local.set({ searchCheckpoint: { keywords, count, queryIndex, start, pageNumber, results, status: "running" } });
         await notify(sourceTabId, { type: "SEARCH_STATUS", status: `正在搜尋關鍵字「${keywordLabel}」第 ${pageNumber} 頁：總共已找到 ${results.length} / ${count}` });
@@ -172,11 +175,18 @@ chrome.runtime.onMessage.addListener((message, sender) => {
     if (control.active) return true;
     control.active = true;
     control.paused = false;
+    control.cancelled = false;
     control.sourceTabId = sender.tab?.id;
     chrome.storage.local.set({ lastStatus: "開始搜尋中..." });
     runSearch(message.keywords || "", Math.min(1000, Number(message.count) || 1), sender.tab?.id)
-      .catch(async (error) => notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` }))
+      .catch(async (error) => { if (error.message !== "__CANCELLED__") await notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` }); })
       .finally(() => { control.active = false; });
+    return true;
+  }
+  if (message?.type === "RESET_SEARCH") {
+    control.cancelled = true;
+    control.paused = false;
+    chrome.storage.local.remove(["searchCheckpoint", "lastResults", "lastStatus"]);
     return true;
   }
   if (message?.type === "RESUME_SEARCH") {
@@ -187,6 +197,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
     }
     control.active = true;
     control.paused = false;
+    control.cancelled = false;
     control.sourceTabId = sender.tab?.id;
     chrome.storage.local.get("searchCheckpoint").then(({ searchCheckpoint }) => {
       if (!searchCheckpoint) {
@@ -195,7 +206,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         return;
       }
       runSearch(searchCheckpoint.keywords, searchCheckpoint.count, sender.tab?.id, searchCheckpoint)
-        .catch(async (error) => notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` }))
+        .catch(async (error) => { if (error.message !== "__CANCELLED__") await notify(sender.tab?.id, { type: "SEARCH_STATUS", status: `搜尋失敗：${error.message}` }); })
         .finally(() => { control.active = false; });
     });
     return true;

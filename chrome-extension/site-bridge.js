@@ -20,6 +20,7 @@ window.addEventListener("message", (event) => {
     });
   }
   if (event.data.type === "RESUME_SEARCH") chrome.runtime.sendMessage({ type: "RESUME_SEARCH" });
+  if (event.data.type === "RESET_SEARCH") chrome.runtime.sendMessage({ type: "RESET_SEARCH" });
 });
 
 chrome.runtime.onMessage.addListener((message) => {
