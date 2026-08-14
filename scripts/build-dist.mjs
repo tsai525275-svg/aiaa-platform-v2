@@ -16,7 +16,7 @@ $('search').addEventListener('click',()=>{const keywords=$('keyword').value.trim
 $('download').addEventListener('click',async()=>{if(!rows.length)return;if(!window.ExcelJS){alert('Excel 元件載入失敗，請檢查網路後重新整理頁面');return}const btn=$('download'),old=btn.textContent;btn.disabled=true;btn.textContent='製作 Excel 中…';try{const wb=new ExcelJS.Workbook();wb.creator='社團搜尋自動化系統';wb.created=new Date();const ws=wb.addWorksheet('社團搜尋結果',{views:[{state:'frozen',ySplit:1}]});ws.columns=[{header:'排名',key:'rank',width:10},{header:'社團名稱',key:'title',width:55},{header:'Facebook 社團網址',key:'url',width:48},{header:'搜尋關鍵字',key:'keyword',width:28}];rows.forEach((r,i)=>ws.addRow({rank:i+1,title:r.title||'Facebook 社團',url:{text:r.url,hyperlink:r.url},keyword:r.keyword||''}));ws.autoFilter={from:'A1',to:'D'+(rows.length+1)};const header=ws.getRow(1);header.height=28;header.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1D4ED8'}};cell.font={name:'Microsoft JhengHei',size:12,bold:true,color:{argb:'FFFFFFFF'}};cell.alignment={vertical:'middle',horizontal:'center'};cell.border={bottom:{style:'medium',color:{argb:'FF1E3A8A'}}}});ws.eachRow((row,rowNumber)=>{if(rowNumber===1)return;row.height=34;row.eachCell(cell=>{cell.font={name:'Microsoft JhengHei',size:11,color:{argb:'FF0F172A'}};cell.alignment={vertical:'middle',wrapText:true};cell.border={bottom:{style:'thin',color:{argb:'FFE2E8F0'}}};if(rowNumber%2===1)cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF8FAFC'}}});row.getCell(1).alignment={vertical:'middle',horizontal:'center'};row.getCell(3).font={name:'Microsoft JhengHei',size:11,color:{argb:'FF2563EB'},underline:true}});ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0};const buffer=await wb.xlsx.writeBuffer();const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Facebook社團搜尋結果-'+new Date().toISOString().slice(0,10)+'.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(error){alert('Excel 產生失敗：'+error.message)}finally{btn.disabled=false;btn.textContent=old}});
 ping();setTimeout(ping,1000);setTimeout(()=>{if(!connected){$('connection').textContent='● 擴充功能未連線';$('connection').className='mt-5 inline-flex rounded-full bg-red-50 px-4 py-2 font-bold text-red-700'}},2200);`;
 
-const finalHtml = html;
+const finalHtml = html.replace('script.js"></script>', 'script.js?v=1.8.1"></script>');
 const finalJs = js
   .replace(
     "let rows=[];let connected=false;",
@@ -37,6 +37,10 @@ const finalJs = js
   .replace(
     "$('search').addEventListener('click',()=>{const keywords=",
     "$('search').addEventListener('click',()=>{if(resumable){$('title').textContent='繼續搜尋中…';setResumable(false);window.postMessage({source:'aiaa-group-finder-page',type:'RESUME_SEARCH'},'*');return}const keywords="
+  )
+  .replace(
+    "ping();setTimeout(ping,1000);setTimeout(()=>{if(!connected){$('connection').textContent='● 擴充功能未連線';$('connection').className='mt-5 inline-flex rounded-full bg-red-50 px-4 py-2 font-bold text-red-700'}},2200);",
+    "ping();setInterval(ping,2000);setTimeout(()=>{if(!connected){$('connection').textContent='● 擴充功能未連線，正在重試…';$('connection').className='mt-5 inline-flex rounded-full bg-red-50 px-4 py-2 font-bold text-red-700'}},2500);"
   )
   ;
 writeFileSync(resolve(dist, "index.html"), finalHtml, "utf8");

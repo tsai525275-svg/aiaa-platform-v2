@@ -10,7 +10,7 @@ window.addEventListener("message", (event) => {
         resumable: Boolean(searchCheckpoint),
         results: searchCheckpoint?.results || []
       });
-    });
+    }).catch(() => sendToPage("EXTENSION_READY"));
   }
   if (event.data.type === "START_SEARCH") {
     chrome.runtime.sendMessage({
@@ -28,4 +28,6 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === "SEARCH_BLOCKED") sendToPage("SEARCH_BLOCKED", { status: message.status, results: message.results });
 });
 
-sendToPage("EXTENSION_READY");
+chrome.storage.local.get("searchCheckpoint").then(({ searchCheckpoint }) => {
+  sendToPage("EXTENSION_READY", { resumable: Boolean(searchCheckpoint), results: searchCheckpoint?.results || [] });
+}).catch(() => sendToPage("EXTENSION_READY"));
