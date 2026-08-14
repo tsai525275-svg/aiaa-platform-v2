@@ -87,8 +87,17 @@ const brandedLandingHtml = landingHtml
   .replace('<h1 class="name">GROUP FINDER</h1>', '<h1 class="name">通衡科技</h1>')
   .replace('<p class="tagline">全球社團探索系統</p>', '<p class="tagline">TONG HENG TECHNOLOGY</p>')
   .replace('font:500 clamp(34px,4.2vw,67px) Georgia,"Times New Roman",serif', 'font:300 clamp(38px,4.4vw,70px) "Microsoft JhengHei",Arial,sans-serif');
+const brandedAdminHtml = interactiveAdminHtml
+  .replace('<div class="flex items-center gap-3"><div class="grid h-9 w-9 place-items-center rounded bg-white/20 font-black">GF</div><h1 class="text-xl font-black tracking-wide">社團搜尋管理系統</h1></div>', '<div class="flex items-center gap-3"><div class="grid h-9 w-9 place-items-center rounded bg-white/20 font-black">TH</div><div><h1 class="text-lg font-black leading-tight tracking-wide">通衡科技</h1><p class="mt-0.5 text-[11px] font-medium tracking-[.16em] text-white/85">社團搜尋管理系統</p></div></div>')
+  .replace('<div class="border-b border-slate-300 px-5 py-4 font-bold text-slate-600">☷ 搜尋功能</div>', '')
+  .replace('● 正在檢查擴充功能…', '● 連線檢查中…')
+  .replace('Group Finder Administration System', '通衡科技 · 社團搜尋管理系統');
+const brandedJs = finalJs
+  .replace('● Chrome 擴充功能已連線', '● 已連線')
+  .replace('● 擴充功能未連線，正在重試…', '● 未連線')
+  .replace('● 擴充功能未連線', '● 未連線');
 writeFileSync(resolve(dist, "index.html"), brandedLandingHtml, "utf8");
-writeFileSync(resolve(dist, "system.html"), interactiveAdminHtml, "utf8");
-writeFileSync(resolve(dist, "script.js"), finalJs, "utf8");
+writeFileSync(resolve(dist, "system.html"), brandedAdminHtml, "utf8");
+writeFileSync(resolve(dist, "script.js"), brandedJs, "utf8");
 copyFileSync(resolve("public", "group-finder-home-hero.png"), resolve(dist, "assets", "group-finder-home-hero.png"));
 writeFileSync(resolve(dist, ".openai", "hosting.json"), JSON.stringify({ project_id: "appgprj_6a7ea6c042b081919ead78b59f4b29b8" }, null, 2));
