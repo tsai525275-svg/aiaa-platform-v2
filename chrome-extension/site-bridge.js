@@ -4,7 +4,14 @@ function sendToPage(type, data = {}) {
 
 window.addEventListener("message", (event) => {
   if (event.source !== window || event.data?.source !== "aiaa-group-finder-page") return;
-  if (event.data.type === "PING") sendToPage("EXTENSION_READY");
+  if (event.data.type === "PING") {
+    chrome.storage.local.get("searchCheckpoint").then(({ searchCheckpoint }) => {
+      sendToPage("EXTENSION_READY", {
+        resumable: Boolean(searchCheckpoint),
+        results: searchCheckpoint?.results || []
+      });
+    });
+  }
   if (event.data.type === "START_SEARCH") {
     chrome.runtime.sendMessage({
       type: "START_SEARCH",

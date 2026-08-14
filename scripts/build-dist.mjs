@@ -18,16 +18,32 @@ ping();setTimeout(ping,1000);setTimeout(()=>{if(!connected){$('connection').text
 
 const finalHtml = html.replace(
   '<button id="download"',
-  '<button id="pause" class="rounded-2xl bg-amber-500 px-5 py-4 text-lg font-bold text-white">暫停</button><button id="resume" class="rounded-2xl bg-emerald-600 px-5 py-4 text-lg font-bold text-white">繼續搜尋</button><button id="download"'
+  '<button id="pause" class="rounded-2xl bg-amber-500 px-5 py-4 text-lg font-bold text-white">暫停</button><button id="download"'
 );
 const finalJs = js
   .replace(
+    "let rows=[];let connected=false;",
+    "let rows=[];let connected=false;let resumable=false;function setResumable(value){resumable=value;$('search').textContent=value?'▶ 繼續搜尋':'🔍 開始搜尋'}"
+  )
+  .replace(
+    "$('status').textContent='可以開始搜尋'}",
+    "$('status').textContent='可以開始搜尋';if(e.data.resumable){setResumable(true);if(e.data.results?.length)render(e.data.results)}}"
+  )
+  .replace(
+    "if(e.data.type==='SEARCH_BLOCKED'){render(e.data.results||[]);$('title').textContent='Google 真人驗證';$('status').textContent=e.data.status}",
+    "if(e.data.type==='SEARCH_BLOCKED'){render(e.data.results||[]);setResumable(true);$('title').textContent='Google 真人驗證';$('status').textContent=e.data.status}"
+  )
+  .replace(
     "if(e.data.type==='SEARCH_RESULTS')",
-    "if(e.data.type==='SEARCH_PAUSED'){if(e.data.results)render(e.data.results);$('title').textContent='搜尋已暫停';$('status').textContent=e.data.status}if(e.data.type==='SEARCH_RESULTS')"
+    "if(e.data.type==='SEARCH_PAUSED'){if(e.data.results)render(e.data.results);setResumable(true);$('title').textContent='搜尋已暫停';$('status').textContent=e.data.status}if(e.data.type==='SEARCH_RESULTS'){setResumable(false)}if(e.data.type==='SEARCH_RESULTS')"
+  )
+  .replace(
+    "$('search').addEventListener('click',()=>{const keywords=",
+    "$('search').addEventListener('click',()=>{if(resumable){$('title').textContent='繼續搜尋中…';setResumable(false);window.postMessage({source:'aiaa-group-finder-page',type:'RESUME_SEARCH'},'*');return}const keywords="
   )
   .replace(
     "$('download').addEventListener",
-    "$('pause').addEventListener('click',()=>window.postMessage({source:'aiaa-group-finder-page',type:'PAUSE_SEARCH'},'*'));$('resume').addEventListener('click',()=>{$('title').textContent='繼續搜尋中…';window.postMessage({source:'aiaa-group-finder-page',type:'RESUME_SEARCH'},'*')});$('download').addEventListener"
+    "$('pause').addEventListener('click',()=>window.postMessage({source:'aiaa-group-finder-page',type:'PAUSE_SEARCH'},'*'));$('download').addEventListener"
   );
 writeFileSync(resolve(dist, "index.html"), finalHtml, "utf8");
 writeFileSync(resolve(dist, "script.js"), finalJs, "utf8");
