@@ -17,6 +17,10 @@ const seedJson = JSON.stringify([
 
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
+mkdirSync(resolve(dist, "server"), { recursive: true });
+mkdirSync(resolve(dist, ".openai"), { recursive: true });
+writeFileSync(resolve(dist, ".openai", "hosting.json"), JSON.stringify({ project_id: "appgprj_6a7ea6c042b081919ead78b59f4b29b8" }, null, 2), "utf8");
+writeFileSync(resolve(dist, "server", "index.js"), `export default {};`, "utf8");
 
 const html = `<!doctype html>
 <html lang="zh-Hant">
