@@ -9,7 +9,7 @@ function buildQuery(keyword) {
 function makeSearchUrl(query, start = 0) {
   const url = new URL("https://www.google.com/search");
   url.searchParams.set("q", query);
-  url.searchParams.set("num", "100");
+  url.searchParams.set("num", "10");
   if (start > 0) url.searchParams.set("start", String(start));
   url.searchParams.set("hl", "zh-TW");
   url.searchParams.set("pws", "0");
@@ -87,7 +87,10 @@ async function notify(tabId, message) {
 }
 
 async function runSearch(keywords, count, sourceTabId) {
-  const tokens = keywords.split(/[\n,，、;；|]+/).map((t) => t.trim()).filter(Boolean);
+  const normalizedKeywords = keywords
+    .replace(/\s+(?:或|OR)\s+/gi, "\n")
+    .replace(/([\u3400-\u9fff])\s+(?=[A-Za-zÀ-ỹ])/g, "$1\n");
+  const tokens = normalizedKeywords.split(/[\n,，、;；|]+/).map((t) => t.trim()).filter(Boolean);
   const queries = (tokens.length ? tokens : [keywords.trim()].filter(Boolean)).map(buildQuery);
   const seen = new Set();
   const results = [];
@@ -96,7 +99,7 @@ async function runSearch(keywords, count, sourceTabId) {
     const searchTab = await chrome.tabs.create({ url: "about:blank", active: false });
     let captcha = false;
     try {
-      for (let start = 0, pageNumber = 1; results.length < count && start < 1000; start += 100, pageNumber++) {
+      for (let start = 0, pageNumber = 1; results.length < count && start < 1000; start += 10, pageNumber++) {
         await notify(sourceTabId, { type: "SEARCH_STATUS", status: `正在自動翻第 ${pageNumber} 頁：已找到 ${results.length} / ${count}` });
         const page = await collectPageWithRetry(searchTab.id, query, start, sourceTabId, pageNumber);
         if (page.captcha) {
@@ -128,10 +131,10 @@ async function runSearch(keywords, count, sourceTabId) {
   }
 
   await chrome.storage.local.set({
-    lastStatus: `已抓到 ${results.length} 筆結果`,
+    lastStatus: results.length >= count ? `已抓到設定的 ${results.length} 筆結果` : `Google 已無更多不重複結果，共 ${results.length} 筆`,
     lastResults: results
   });
-  await notify(sourceTabId, { type: "SEARCH_RESULTS", results });
+  await notify(sourceTabId, { type: "SEARCH_RESULTS", results, requested: count, exhausted: results.length < count });
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {
