@@ -44,7 +44,7 @@ const finalJs = js
   )
   .replace(
     "if(!keywords){alert('請輸入關鍵字');return}",
-    "if(!keywords){alert('請輸入關鍵字');return}if($('statTarget'))$('statTarget').textContent=count"
+    "if(!keywords){alert('請輸入關鍵字');return}if($('statTarget'))$('statTarget').textContent=count;"
   )
   .replace(
     "className='mt-5 inline-flex rounded-full bg-emerald-50 px-4 py-2 font-bold text-emerald-700'",
