@@ -41,8 +41,22 @@ export default {
   }
 };`;
 
+const workerLegacy = `addEventListener("fetch", event => {
+  event.respondWith((async () => {
+    const url = new URL(event.request.url);
+    if (url.pathname.endsWith("/styles.css")) {
+      return new Response(${JSON.stringify(cssText)}, { headers: { "content-type": "text/css; charset=utf-8" } });
+    }
+    if (url.pathname.endsWith("/script.js")) {
+      return new Response(${JSON.stringify(jsText)}, { headers: { "content-type": "application/javascript; charset=utf-8" } });
+    }
+    return new Response(${JSON.stringify(html)}, { headers: { "content-type": "text/html; charset=utf-8" } });
+  })());
+});`;
+
 writeFileSync(resolve(dist, "index.html"), html, "utf8");
 writeFileSync(resolve(dist, "styles.css"), cssText, "utf8");
 writeFileSync(resolve(dist, "script.js"), jsText, "utf8");
 writeFileSync(resolve(dist, "server", "index.js"), worker, "utf8");
+writeFileSync(resolve(dist, "_worker.js"), workerLegacy, "utf8");
 writeFileSync(resolve(dist, ".openai", "hosting.json"), JSON.stringify({ project_id: "appgprj_6a7ea6c042b081919ead78b59f4b29b8" }, null, 2), "utf8");
