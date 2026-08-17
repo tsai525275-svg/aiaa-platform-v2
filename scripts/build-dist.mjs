@@ -82,7 +82,7 @@ const finalJs = js
   )
   ;
 const brandedLandingHtml = landingHtml
-  .replace("Group Finder｜全球社團探索系統", "通衡科技｜社團搜尋管理系統")
+  .replace("Group Finder｜全球社團探索系統", "通衡科技")
   .replace('aria-label="Group Finder 全球社團探索系統"', 'aria-label="通衡科技"')
   .replace("<span>GF</span>", "<span>TH</span>")
   .replace('<h1 class="name">GROUP FINDER</h1>', '<h1 class="name">通衡科技</h1>')
