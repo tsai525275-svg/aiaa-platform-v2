@@ -3,8 +3,10 @@ const $ = (id) => document.getElementById(id);
 const PAGE_SOURCE = "tongbalance-maps-finder-page";
 const EXTENSION_SOURCE = "tongbalance-maps-finder-extension";
 let rows = [];
+let completedRows = [];
 let connected = false;
 let resumable = false;
+let searching = false;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -44,9 +46,13 @@ function formatDistance(value) {
   return Number.isFinite(number) ? `${number.toFixed(2)} 公里` : "未提供";
 }
 
+function cloneRows(items) {
+  return Array.isArray(items) ? items.map((item) => ({ ...item })) : [];
+}
+
 function render(items) {
-  rows = Array.isArray(items) ? items : [];
-  $("maps-export").disabled = rows.length === 0;
+  rows = cloneRows(items);
+  $("maps-export").disabled = searching || rows.length === 0;
   $("maps-body").innerHTML = rows.length
     ? rows.map((row, index) => {
       const url = row.mapsUrl || row.url || "";
@@ -76,28 +82,34 @@ window.addEventListener("message", (event) => {
   if (event.source !== window || event.data?.source !== EXTENSION_SOURCE) return;
   const message = event.data;
   if (message.type === "MAPS_EXTENSION_READY") {
+    searching = false;
     setConnection(true);
     setResumable(message.resumable);
     if (message.inputs) restoreInputs(message.inputs);
     if (message.results?.length) {
-      render(message.results);
+      completedRows = cloneRows(message.results);
+      render(completedRows);
       $("maps-title").textContent = message.resumable ? "已恢復上次搜尋進度" : "上次搜尋結果";
     }
     $("maps-status").textContent = message.resumable ? "有尚未完成的搜尋，可按繼續搜尋" : "可以開始搜尋";
   }
   if (message.type === "MAPS_STATUS") {
+    searching = true;
     $("maps-title").textContent = "搜尋中…";
     $("maps-status").textContent = message.status || "搜尋中…";
     if (message.results) render(message.results);
   }
   if (message.type === "MAPS_BLOCKED") {
+    searching = false;
     render(message.results || []);
     setResumable(true);
     $("maps-title").textContent = "等待 Google 真人驗證";
     $("maps-status").textContent = message.status || "請完成真人驗證後按繼續搜尋";
   }
   if (message.type === "MAPS_RESULTS") {
-    render(message.results || []);
+    searching = false;
+    completedRows = cloneRows(message.results);
+    render(completedRows);
     setResumable(false);
     $("maps-title").textContent = "真實 Google Maps 搜尋結果";
     $("maps-status").textContent = message.exhausted
@@ -105,6 +117,7 @@ window.addEventListener("message", (event) => {
       : `完成，共找到 ${rows.length} 家店`;
   }
   if (message.type === "MAPS_ERROR") {
+    searching = false;
     setResumable(Boolean(message.resumable));
     $("maps-title").textContent = "搜尋發生問題";
     $("maps-status").textContent = message.status || "搜尋失敗";
@@ -139,6 +152,8 @@ $("maps-search").addEventListener("click", () => {
     return;
   }
   if (resumable) {
+    searching = true;
+    $("maps-export").disabled = true;
     setResumable(false);
     $("maps-title").textContent = "繼續搜尋中…";
     $("maps-status").textContent = "正從已保存的進度繼續搜尋";
@@ -157,6 +172,7 @@ $("maps-search").addEventListener("click", () => {
   }
   $("maps-radius").value = inputs.radiusKm;
   $("maps-count").value = inputs.count;
+  searching = true;
   render([]);
   $("maps-title").textContent = "搜尋中…";
   $("maps-status").textContent = `正在建立 ${keywords.length} 個關鍵字、合計 ${inputs.count} 家的搜尋工作`;
@@ -172,6 +188,8 @@ $("maps-reset").addEventListener("click", () => {
   $("maps-count").value = "100";
   $("maps-keywords").value = "";
   rows = [];
+  completedRows = [];
+  searching = false;
   setResumable(false);
   $("maps-export").disabled = true;
   $("maps-title").textContent = "尚未搜尋";
@@ -191,7 +209,12 @@ $("maps-nav-excel").addEventListener("click", () => {
 });
 
 $("maps-export").addEventListener("click", async () => {
-  if (!rows.length) return;
+  if (searching) {
+    alert("搜尋尚未完成，請等待搜尋完成後再下載 Excel。");
+    return;
+  }
+  const exportRows = cloneRows(completedRows.length ? completedRows : rows);
+  if (!exportRows.length) return;
   if (!window.ExcelJS) {
     alert("Excel 元件載入失敗，請檢查網路後重新整理頁面");
     return;
@@ -218,7 +241,7 @@ $("maps-export").addEventListener("click", async () => {
       { header: "Google Maps 網址", key: "mapsUrl", width: 60 },
       { header: "資料取得時間", key: "collectedAt", width: 22 }
     ];
-    rows.forEach((row, index) => {
+    exportRows.forEach((row, index) => {
       const url = row.mapsUrl || row.url || "";
       worksheet.addRow({
         rank: index + 1,
@@ -234,7 +257,7 @@ $("maps-export").addEventListener("click", async () => {
         collectedAt: row.collectedAt || ""
       });
     });
-    worksheet.autoFilter = { from: "A1", to: `K${rows.length + 1}` };
+    worksheet.autoFilter = { from: "A1", to: `K${exportRows.length + 1}` };
     const header = worksheet.getRow(1);
     header.height = 28;
     header.eachCell((cell) => {
@@ -262,6 +285,7 @@ $("maps-export").addEventListener("click", async () => {
     anchor.href = URL.createObjectURL(blob);
     anchor.download = `Google地圖店家搜尋結果-${new Date().toISOString().slice(0, 10)}.xlsx`;
     anchor.click();
+    $("maps-status").textContent = `Excel 已建立，共匯出 ${exportRows.length} 家店`;
     setTimeout(() => URL.revokeObjectURL(anchor.href), 1000);
   } catch (error) {
     alert(`Excel 產生失敗：${error.message}`);
