@@ -103,4 +103,7 @@ writeFileSync(resolve(dist, "index.html"), brandedLandingHtml, "utf8");
 writeFileSync(resolve(dist, "system.html"), brandedAdminHtml, "utf8");
 writeFileSync(resolve(dist, "script.js"), brandedJs, "utf8");
 copyFileSync(resolve("public", "group-finder-home-hero.png"), resolve(dist, "assets", "group-finder-home-hero.png"));
+copyFileSync(resolve("group-finder", "system.html"), resolve(dist, "system.html"));
+copyFileSync(resolve("group-finder", "maps-system.html"), resolve(dist, "maps-system.html"));
+copyFileSync(resolve("group-finder", "maps-script.js"), resolve(dist, "maps-script.js"));
 writeFileSync(resolve(dist, ".openai", "hosting.json"), JSON.stringify({ project_id: "appgprj_6a7ea6c042b081919ead78b59f4b29b8" }, null, 2));

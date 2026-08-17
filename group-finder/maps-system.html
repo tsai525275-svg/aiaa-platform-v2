@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Google 地圖店家搜尋｜通衡科技</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <style>
+    html{scroll-behavior:smooth;scroll-padding-top:16px}body{font-family:Arial,"Microsoft JhengHei",sans-serif}.admin-table tbody tr:nth-child(even){background:#f8faf8}.admin-table td,.admin-table th{border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb}summary::-webkit-details-marker{display:none}@media(max-width:1100px){.layout{display:block!important}.sidebar{width:100%!important;min-height:auto!important}.maps-toolbar{grid-template-columns:1fr 1fr!important}.maps-toolbar .wide{grid-column:1/-1}}@media(max-width:640px){.maps-toolbar{grid-template-columns:1fr!important}.maps-toolbar .wide{grid-column:auto}}.admin-mark{position:relative;display:grid;width:54px;height:54px;flex:0 0 54px;place-items:center;border:1px solid rgba(255,255,255,.8);border-radius:50%;background:rgba(1,22,26,.88);box-shadow:inset 0 0 0 5px rgba(255,255,255,.07),0 7px 20px rgba(0,0,0,.28);font:800 19px Georgia,serif;letter-spacing:-.08em}.admin-mark:before,.admin-mark:after{content:"";position:absolute;border-radius:50%}.admin-mark:before{inset:6px;border:1px solid rgba(197,255,140,.78)}.admin-mark:after{inset:11px;border:1px solid rgba(255,255,255,.22)}.admin-mark span{position:relative;z-index:1;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.55)}
+  </style>
+</head>
+<body class="m-0 bg-white text-slate-700">
+  <header id="system-top" class="flex h-16 items-center justify-between bg-lime-500 px-6 text-white shadow-sm">
+    <div class="flex items-center gap-3"><div class="admin-mark" aria-label="通衡科技"><span>TH</span></div><div><h1 class="text-lg font-black leading-tight tracking-wide">通衡科技</h1><p class="mt-0.5 text-[10px] font-semibold tracking-[.12em] text-white/85">TongBalance Technology</p></div></div>
+    <div id="maps-connection" class="rounded bg-white/15 px-4 py-2 text-sm font-bold">● 店家擴充功能檢查中…</div>
+  </header>
+  <div class="layout grid min-h-[calc(100vh-64px)] grid-cols-[210px_minmax(0,1fr)]">
+    <aside class="sidebar w-[210px] border-r border-slate-300 bg-slate-100">
+      <a href="./" class="block w-full border-b border-slate-300 px-5 py-4 font-bold text-slate-600 hover:bg-slate-200">⌂ 首頁</a>
+      <details class="group border-b border-slate-300">
+        <summary class="flex cursor-pointer list-none items-center justify-between px-5 py-4 font-bold text-slate-700 hover:bg-slate-200"><span>▣ 社團搜尋</span><span class="transition-transform group-open:rotate-90">›</span></summary>
+        <div><a href="./system.html#search-panel" class="block border-b border-slate-200 px-8 py-3 text-sm text-slate-500 hover:bg-slate-200">社團搜尋</a><a href="./system.html#results-panel" class="block border-b border-slate-200 px-8 py-3 text-sm text-slate-500 hover:bg-slate-200">搜尋結果</a><a href="./system.html#results-panel" class="block border-b border-slate-200 px-8 py-3 text-sm text-slate-500 hover:bg-slate-200">Excel 匯出</a></div>
+      </details>
+      <details open class="group border-b border-slate-300">
+        <summary class="flex cursor-pointer list-none items-center justify-between bg-slate-200 px-5 py-4 font-bold text-slate-700 hover:bg-slate-300"><span>⌖ Google 地圖店家搜尋</span><span class="transition-transform group-open:rotate-90">›</span></summary>
+        <div><a id="maps-nav-search" href="#maps-search-panel" class="block border-l-4 border-lime-500 bg-white px-8 py-3 font-bold text-lime-700 hover:bg-lime-50">Google 地圖搜尋</a><a id="maps-nav-results" href="#maps-results-panel" class="block border-b border-slate-200 px-8 py-3 text-sm text-slate-500 hover:bg-slate-200">搜尋結果</a><button id="maps-nav-excel" class="w-full border-b border-slate-200 px-8 py-3 text-left text-sm text-slate-500 hover:bg-slate-200">Excel 匯出</button></div>
+      </details>
+    </aside>
+    <main class="min-w-0 bg-white">
+      <div class="flex h-14 items-center gap-2 border-b border-slate-200 px-5 text-sm"><span class="text-lime-600">⌂</span><a href="./" class="font-bold text-slate-600 hover:text-lime-700">首頁</a><span class="text-slate-400">›</span><strong class="text-lime-700">Google 地圖店家搜尋</strong></div>
+      <section id="maps-search-panel" class="border-b border-slate-300 bg-slate-50 p-4">
+        <div class="maps-toolbar grid gap-2 lg:grid-cols-[1fr_1fr_1fr_120px_120px]">
+          <label class="text-xs font-bold text-slate-500">國家／地區<input id="maps-country" value="越南" placeholder="例如：越南、Việt Nam" class="mt-1 h-[42px] w-full border border-slate-300 bg-white px-3 text-sm outline-none focus:border-lime-500"></label>
+          <label class="text-xs font-bold text-slate-500">城市／省<input id="maps-city" placeholder="例如：胡志明市" class="mt-1 h-[42px] w-full border border-slate-300 bg-white px-3 text-sm outline-none focus:border-lime-500"></label>
+          <label class="text-xs font-bold text-slate-500">區／郡<input id="maps-district" placeholder="例如：第1郡、Quận 1" class="mt-1 h-[42px] w-full border border-slate-300 bg-white px-3 text-sm outline-none focus:border-lime-500"></label>
+          <label class="text-xs font-bold text-slate-500">半徑（公里）<input id="maps-radius" type="number" min="1" max="500" step="1" value="30" class="mt-1 h-[42px] w-full border border-slate-300 bg-white px-3 text-sm outline-none focus:border-lime-500"></label>
+          <label class="text-xs font-bold text-slate-500">合計店家數<input id="maps-count" type="number" min="1" max="1000" value="100" class="mt-1 h-[42px] w-full border border-slate-300 bg-white px-3 text-sm outline-none focus:border-lime-500"></label>
+          <label class="wide text-xs font-bold text-slate-500 lg:col-span-3">店家／行業關鍵字<textarea id="maps-keywords" rows="3" placeholder="每行輸入一個關鍵字，例如：&#10;當鋪&#10;tiệm cầm đồ" class="mt-1 min-h-[76px] w-full resize-y border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-lime-500"></textarea></label>
+          <div class="wide grid items-end gap-2 sm:grid-cols-3 lg:col-span-2"><button id="maps-search" class="h-[42px] bg-green-700 px-4 font-bold text-white hover:bg-green-800">開始搜尋</button><button id="maps-reset" class="h-[42px] border border-slate-300 bg-white px-4 font-bold text-slate-600 hover:bg-slate-100">重新搜尋</button><button id="maps-export" disabled class="h-[42px] bg-lime-600 px-4 font-bold text-white disabled:bg-slate-300">下載 Excel</button></div>
+        </div>
+        <p class="mt-2 text-xs text-slate-500">支援任何國家與語言 · 多個關鍵字全部合計至設定數量 · 半徑以選定地區的 Google Maps 中心計算直線距離</p>
+      </section>
+      <section id="maps-results-panel">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-300 px-5 py-3"><div><span class="mr-3 font-bold text-slate-700">店家搜尋結果</span><span id="maps-title" class="text-sm text-slate-500">尚未搜尋</span></div><div id="maps-status" class="text-sm font-bold text-green-700">可以開始搜尋</div></div>
+        <div class="overflow-auto"><table class="admin-table w-full min-w-[1400px] border-collapse text-left text-sm"><thead class="bg-green-100 text-slate-600"><tr><th class="w-20 px-4 py-3 text-center">排名</th><th class="w-64 px-4 py-3">店家名稱</th><th class="w-44 px-4 py-3">店家行業</th><th class="w-80 px-4 py-3">地址</th><th class="w-44 px-4 py-3">電話</th><th class="w-28 px-4 py-3">距離</th><th class="w-80 px-4 py-3">Google Maps 網址</th><th class="w-48 px-4 py-3">搜尋關鍵字</th></tr></thead><tbody id="maps-body"><tr><td colspan="8" class="px-4 py-20 text-center text-slate-400">等待搜尋資料</td></tr></tbody></table></div>
+      </section>
+      <footer class="border-t bg-slate-50 py-5 text-center text-xs text-slate-400">通衡科技 · Google 地圖店家搜尋管理系統</footer>
+    </main>
+  </div>
+  <script src="maps-script.js?v=1.0.0"></script>
+</body>
+</html>
+
